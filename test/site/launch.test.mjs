@@ -60,7 +60,11 @@ describe('defaultTarget', () => {
     assert.equal(defaultTarget(makeEntry({ own_app: 'ghes-only' })).host, '');
   });
   test('knows the owner kinds', () => {
-    assert.deepEqual(Object.keys(TARGET_KINDS), ['personal', 'org', 'enterprise']);
+    assert.deepEqual(TARGET_KINDS, {
+      personal: { label: 'Personal account', needsOwner: false },
+      org: { label: 'Organization', needsOwner: true },
+      enterprise: { label: 'Enterprise', needsOwner: true },
+    });
   });
 });
 

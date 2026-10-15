@@ -37,7 +37,7 @@ export function jsonEqual(a, b) {
   if (a === b) return true;
   const ta = typeOf(a);
   if (ta !== typeOf(b) || (ta !== 'array' && ta !== 'object')) return false;
-  if (ta === 'array') return a.length === b.length && a.every((v, i) => jsonEqual(v, b[i]));
+  // Arrays and objects compare the same way: same keys (indexes), equal values.
   const ka = Object.keys(a);
   return ka.length === Object.keys(b).length && ka.every((k) => Object.hasOwn(b, k) && jsonEqual(a[k], b[k]));
 }

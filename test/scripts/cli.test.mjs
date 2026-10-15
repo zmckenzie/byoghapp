@@ -19,7 +19,9 @@ describe('verify.mjs CLI', () => {
       const r = await runScriptAsync('scripts/verify.mjs', ['--report', reportPath], { root: repo.root });
       assert.equal(r.code, 0, r.stderr);
       assert.match(r.stdout, /no-baseline: 1/);
-      const report = JSON.parse(readFileSync(reportPath, 'utf8'));
+      const reportText = readFileSync(reportPath, 'utf8');
+      assert.ok(reportText.startsWith('{\n  "generated_at"'), 'the report is indented for reading');
+      const report = JSON.parse(reportText);
       assert.equal(report.results[0].status, 'no-baseline');
       const noReport = await runScriptAsync('scripts/verify.mjs', ['example'], { root: repo.root });
       assert.match(noReport.stdout, /\| example \| no-baseline \|/);
@@ -131,7 +133,9 @@ describe('stamp-verified.mjs CLI', () => {
 
 describe('check-repo-hygiene CLI', () => {
   test('passes the real repository and fails a dirty fixture', () => {
-    assert.equal(runScript('scripts/check-repo-hygiene.mjs').code, 0);
+    const ok = runScript('scripts/check-repo-hygiene.mjs');
+    assert.equal(ok.code, 0);
+    assert.equal(ok.stdout.trim(), 'Repository hygiene: OK');
     const repo = fixtureRepo({ example: makeEntry() });
     try {
       repo.write('TASKS.md', '- [ ] x');

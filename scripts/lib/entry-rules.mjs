@@ -4,7 +4,6 @@
 import { validate as validateSchema, jsonEqual } from './json-schema.mjs';
 
 export const PLACEHOLDER_HOST = 'example.invalid';
-const LEVEL_RANK = { read: 1, write: 2, admin: 3 };
 
 /** True for URLs under https://example.invalid/, the placeholder for customer-specific URLs. */
 export function isPlaceholderUrl(url) {
@@ -19,10 +18,8 @@ export function isPlaceholderUrl(url) {
 export function compareVersions(a, b) {
   const pa = a.split('.').map(Number);
   const pb = b.split('.').map(Number);
-  for (let i = 0; i < 3; i += 1) {
-    if (pa[i] !== pb[i]) return pa[i] - pb[i];
-  }
-  return 0;
+  const i = pa.findIndex((n, k) => n !== pb[k]);
+  return i === -1 ? 0 : pa[i] - pb[i];
 }
 
 function permissionSets(entry) {
@@ -53,7 +50,8 @@ export function checkPermissionSet({ label, permissions, events }, data) {
       errors.push(`${label}: unknown webhook event "${event}" (not in data/events.yaml)`);
     } else if (def.subscribable === false) {
       errors.push(`${label}: webhook event "${event}" can't be subscribed to by a GitHub App (${def.note})`);
-    } else if (def.requires_any.length > 0 && !def.requires_any.some((key) => LEVEL_RANK[permissions[key]] >= LEVEL_RANK.read)) {
+    } else if (def.requires_any.length > 0 && !def.requires_any.some((key) => Object.hasOwn(permissions, key))) {
+      // Any level (read, write or admin) is enough to subscribe.
       errors.push(`${label}: webhook event "${event}" needs one of these permissions: ${def.requires_any.join(', ')}`);
     }
   }
@@ -142,13 +140,12 @@ const DEFINITION_KEYS = ['manifest', 'variants'];
  */
 export function checkChange(before, after, { prAuthor, maintainers = [], today }) {
   const errors = [];
-  if (before && jsonEqual(before, after)) return errors;
-
   const known = new Set((before?.changelog ?? []).map((c) => c.version));
   const added = after.changelog.filter((c) => !known.has(c.version));
   const onlyVerification = before && jsonEqual(withoutVerification(before), withoutVerification(after));
-  if (before && added.length === 0 && !onlyVerification) errors.push('the entry changed but changelog has no new line: add one at the top');
-  if (before && added.length > 0 && after.changelog[0] !== added[0]) errors.push('new changelog lines must go at the top');
+  // A new entry's lines are all "added", so these two only bite on changed entries.
+  if (added.length === 0 && !onlyVerification) errors.push('the entry changed but changelog has no new line: add one at the top');
+  if (added.length > 0 && after.changelog[0] !== added[0]) errors.push('new changelog lines must go at the top');
   if (before && !jsonEqual(before.changelog, after.changelog.slice(added.length))) {
     errors.push('existing changelog lines must not be edited or removed');
   }
@@ -183,12 +180,9 @@ export function checkChange(before, after, { prAuthor, maintainers = [], today }
 export function codeOwnersFor(codeowners, path) {
   let owners = [];
   for (const raw of codeowners.split('\n')) {
-    const line = raw.replace(/#.*/, '').trim();
-    if (!line) continue;
-    const [pattern, ...who] = line.split(/\s+/);
-    const matches = pattern === '*'
-      || (pattern.endsWith('/') && `/${path}`.startsWith(pattern.startsWith('/') ? pattern : `/${pattern}`))
-      || `/${path}` === (pattern.startsWith('/') ? pattern : `/${pattern}`);
+    const [pattern, ...who] = raw.replace(/#.*/, '').trim().split(/\s+/);
+    const anchored = pattern.startsWith('/') ? pattern : `/${pattern}`;
+    const matches = pattern === '*' || (pattern.endsWith('/') ? `/${path}`.startsWith(anchored) : `/${path}` === anchored);
     if (matches) owners = who.filter((w) => w.startsWith('@') && !w.includes('/')).map((w) => w.slice(1));
   }
   return owners;

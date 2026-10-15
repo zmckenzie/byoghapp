@@ -40,6 +40,17 @@ describe('validate', () => {
     assert.deepEqual(messages({ type: ['string', 'null'] }, 2), ['$ must be string or null']);
   });
 
+  test('string and array keywords ignore other types', () => {
+    assert.deepEqual(messages({ pattern: '^a$', minLength: 3, maxLength: 0 }, 5), []);
+    assert.deepEqual(messages({ minItems: 2, maxItems: 0, uniqueItems: true }, 'aa'), []);
+    assert.deepEqual(messages({ minimum: 3 }, 'a'), []);
+    assert.deepEqual(messages({ required: ['x'] }, [1]), []);
+  });
+
+  test('patterns use Unicode mode', () => {
+    assert.deepEqual(messages({ pattern: '^\\p{L}+$' }, 'é'), []);
+  });
+
   test('a type mismatch stops further checks', () => {
     assert.deepEqual(messages({ type: 'string', minLength: 3 }, 5), ['$ must be string']);
   });

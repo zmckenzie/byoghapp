@@ -24,3 +24,14 @@ test('allows normal project files', () => {
     assert.ok(!flagged(p), p);
   }
 });
+
+test('names the reason for each kind of file', () => {
+  const reason = (p) => findViolations([p]).map((v) => v.reason);
+  assert.deepEqual(reason('TASKS.md'), ['planning and task notes are tracked in GitHub Issues and Projects, not in the repo']);
+  assert.deepEqual(reason('research/x.md'), ['research and notes documents stay out of the repo']);
+  assert.deepEqual(reason('CLAUDE.local.md'), ['agent-local configuration is personal and not committed']);
+  assert.deepEqual(reason('k.pem'), ['possible credential or private key']);
+  assert.deepEqual(reason('package-lock.json'), ['the project has zero npm dependencies (see AGENTS.md)']);
+  assert.deepEqual(reason('config/.env.example'), [], 'example env files in subdirectories are fine');
+  assert.deepEqual(reason('config/.env'), ['possible credential or private key']);
+});

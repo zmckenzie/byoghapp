@@ -125,7 +125,8 @@ describe('verifyEntries', () => {
       { slug: 'c', status: 'unreachable', error: 'x | y' },
       { slug: 'd', status: 'ok' },
     ] });
-    assert.match(md, /^## Documentation verification\n\nok: 2 · no-baseline: 1 · unreachable: 1\n/);
+    assert.match(md, /^## Documentation verification\n\nok: 2 · no-baseline: 1 · unreachable: 1\n\n\| Entry \| Status \| Detail \|\n\| --- \| --- \| --- \|\n\| a \| ok \|  \|\n/);
+    assert.ok(md.endsWith('| d | ok |  |\n'));
     assert.ok(md.includes('| a | ok |  |'));
     assert.ok(md.includes('| b | no-baseline | record `sha256:1` with /verified |'));
     assert.ok(md.includes('| c | unreachable | x \\| y |'));

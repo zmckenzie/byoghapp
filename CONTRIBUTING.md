@@ -59,7 +59,9 @@ it will be vendored and pinned, not installed from the registry at build time.
   only the test cases that execute it: the fastest one first, then the rest, stopping at the
   first failure. So **every test case must pass when run on its own** (no test may rely on
   another having run first). If a mutant is truly equivalent (no test could ever tell the
-  difference), end its line with `// mutation-ignore: <why>`.
+  difference), end its line with `// mutation-ignore: <why>`. Slow end-to-end tests go in
+  `*.integration.test.mjs` files: they run everywhere else, but mutation testing relies on the
+  faster unit tests to catch mutants.
 
 ## Adding or updating an entry
 

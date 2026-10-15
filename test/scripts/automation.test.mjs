@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createClient, GitHubError } from '../../scripts/lib/github.mjs';
-import { issueBody, issueTitle, LABEL, marker, syncIssues } from '../../scripts/verification-issues.mjs';
+import { formatOutcome, issueBody, issueTitle, LABEL, marker, syncIssues } from '../../scripts/verification-issues.mjs';
 import { applyStamp, forkInstructions, parseCommand, planStamp, stampEntry } from '../../scripts/stamp-verified.mjs';
 import { fakeFetch, fixtureRepo, makeEntry } from '../helpers.mjs';
 import { parse } from '../../scripts/lib/yaml.mjs';
@@ -69,6 +69,23 @@ describe('verification issues', () => {
     assert.equal(marker(changed), '<!-- byoghapp-verify renovate changed sha256:b -->');
     assert.equal(marker(down), '<!-- byoghapp-verify atlantis unreachable HTTP 500 -->');
     assert.equal(marker({ slug: 'z', status: 'changed' }), '<!-- byoghapp-verify z changed  -->');
+  });
+
+  test('the full issue body', () => {
+    assert.equal(issueBody(changed), [
+      '### Entry slug', '', 'renovate', '',
+      '### Documentation URL checked', '', 'https://d', '',
+      "### Entry's last_verified date", '', '2026-01-01', '',
+      '### What changed', '', '```text', 'The permission-related text changed.', 'stored:  sha256:a', 'current: sha256:b', '```', '',
+      '### Resolution', '',
+      '_For the maintainer: compare the vendor documentation with the entry. Update the entry if needed, then comment `/verified <slug>` on the pull request (or open one) to record the new fingerprint._',
+      '', '<!-- byoghapp-verify renovate changed sha256:b -->',
+    ].join('\n'));
+  });
+
+  test('formatOutcome lists slugs or none', () => {
+    assert.equal(formatOutcome({ created: [], commented: [], skipped: [] }), 'created: none; updated: none; already reported: none');
+    assert.equal(formatOutcome({ created: ['a', 'b'], commented: ['c', 'd'], skipped: ['e', 'f'] }), 'created: a, b; updated: c, d; already reported: e, f');
   });
 
   test('creates, comments on or skips issues', async () => {

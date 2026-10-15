@@ -31,9 +31,9 @@ export function readCallback(search, storage, now = Date.now()) {
   if (!code) return { ok: false, error: 'This page expects a code from GitHub. Start from an entry\'s "Create from manifest" button.' };
   if (!CODE_RE.test(code)) return { ok: false, error: 'The code from GitHub has an unexpected format.' };
 
-  let saved = null;
+  let saved;
   try {
-    saved = JSON.parse(storage.getItem(STATE_KEY) ?? 'null');
+    saved = JSON.parse(storage.getItem(STATE_KEY)); // a missing key parses as null
   } catch {
     saved = null;
   }
@@ -48,7 +48,6 @@ export function readCallback(search, storage, now = Date.now()) {
 
 /** REST API base for github.com or a ghe.com host. */
 export function apiBaseFor(host) {
-  if (host === 'github.com') return 'https://api.github.com';
   if (isCloudHost(host)) return `https://api.${host}`;
   throw new Error(`Unsupported host: ${host}`);
 }

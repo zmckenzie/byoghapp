@@ -62,6 +62,12 @@ export async function syncIssues(report, client) {
   return outcome;
 }
 
+/** One-line summary of what syncIssues did. */
+export function formatOutcome({ created, commented, skipped }) {
+  const list = (items) => items.join(', ') || 'none';
+  return `created: ${list(created)}; updated: ${list(commented)}; already reported: ${list(skipped)}`;
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const report = JSON.parse(readFileSync(process.argv[2], 'utf8'));
   const client = createClient({
@@ -71,5 +77,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     apiUrl: process.env.GITHUB_API_URL,
   });
   const outcome = await syncIssues(report, client);
-  console.log(`created: ${outcome.created.join(', ') || 'none'}; updated: ${outcome.commented.join(', ') || 'none'}; already reported: ${outcome.skipped.join(', ') || 'none'}`);
+  console.log(formatOutcome(outcome));
 }

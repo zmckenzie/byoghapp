@@ -47,7 +47,7 @@ export function tierBadge(tier, table) {
 function verificationBadge(entry) {
   const status = entry.verification.status;
   const when = entry.last_verified ? ` on ${esc(entry.last_verified)} by ${esc(entry.verified_by)}` : '';
-  return `<span class="status status-${esc(status)}">${esc(STATUS_LABELS[status] ?? status)}</span><span class="muted">${when}</span>`;
+  return `<span class="status status-${esc(status)}">${esc(STATUS_LABELS[status])}</span><span class="muted">${when}</span>`;
 }
 
 function supportChips(supports) {

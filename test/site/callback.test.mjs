@@ -21,6 +21,7 @@ describe('launch state', () => {
   test('remember and forget', () => {
     const storage = memoryStorage();
     rememberLaunch(storage, { state: 's1', host: 'github.com', slug: 'renovate' }, NOW);
+    assert.equal(STATE_KEY, 'byoghapp:manifest-launch');
     assert.deepEqual(JSON.parse(storage.getItem(STATE_KEY)), { state: 's1', host: 'github.com', slug: 'renovate', created: NOW });
     forgetLaunch(storage);
     assert.equal(storage.getItem(STATE_KEY), null);
@@ -37,6 +38,21 @@ describe('readCallback', () => {
   test('accepts a matching state within the hour', () => {
     assert.deepEqual(readCallback('?code=xyz_1-2&state=abc', saved(), NOW + 1000), { ok: true, code: 'xyz_1-2', host: 'github.com', slug: 'renovate' });
     assert.equal(readCallback('?code=x&state=abc', saved(), NOW + 60 * 60 * 1000).ok, true);
+  });
+
+  test('every rejection is ok: false', () => {
+    const cases = [
+      readCallback('', saved(), NOW),
+      readCallback('?code=a%2Fb&state=abc', saved(), NOW),
+      readCallback('?code=x&state=abc', memoryStorage(), NOW),
+      readCallback('?code=x&state=other', saved(), NOW),
+      readCallback('?code=x&state=abc', saved(), NOW + 60 * 60 * 1000 + 1),
+      readCallback('?code=x&state=abc', saved({ host: 'evil.example' }), NOW),
+    ];
+    for (const r of cases) {
+      assert.equal(r.ok, false);
+      assert.deepEqual(Object.keys(r), ['ok', 'error']);
+    }
   });
 
   test('rejects a missing or malformed code', () => {

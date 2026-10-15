@@ -35,17 +35,20 @@ describe('checkPermissionSet', () => {
 
   test('accepts known permissions, levels and satisfied events', () => {
     assert.deepEqual(set({ contents: 'read' }, ['push']), []);
-    assert.deepEqual(set({ issues: 'write', pull_requests: 'read' }, ['milestone']), []);
+    assert.deepEqual(set({ issues: 'write' }, ['milestone']), [], 'any one of several permissions is enough');
+    assert.deepEqual(set({ repository_projects: 'admin' }, ['project']), [], 'any level counts');
     assert.deepEqual(set({}, ['security_advisory']), []);
   });
 
   test('rejects unknown permissions and levels', () => {
     assert.deepEqual(set({ nope: 'read' }), ['manifest: unknown permission "nope" (not in data/permissions.yaml)']);
     assert.match(set({ workflows: 'read' })[0], /permission "workflows" has no "read" level \(allowed: write\)/);
+    assert.equal(set({ contents: 'admin' })[0], 'manifest: permission "contents" has no "admin" level (allowed: read, write)');
   });
 
   test('rejects events without their permission', () => {
     assert.deepEqual(set({ metadata: 'read' }, ['push']), ['manifest: webhook event "push" needs one of these permissions: contents']);
+    assert.deepEqual(set({}, ['milestone']), ['manifest: webhook event "milestone" needs one of these permissions: issues, pull_requests']);
   });
 
   test('rejects unknown and unsubscribable events', () => {
@@ -70,6 +73,10 @@ describe('checkEntry', () => {
     assert.deepEqual(check(makeEntry(), 'other'), ['slug "example" must match the file name "other.yaml"']);
   });
 
+  test('errors in the manifest are labelled "manifest"', () => {
+    assert.deepEqual(check(makeEntry({ manifest: { default_permissions: { nope: 'read' } } })), ['manifest: unknown permission "nope" (not in data/permissions.yaml)']);
+  });
+
   test('category must exist', () => {
     assert.deepEqual(check(makeEntry({ category: 'not-a-category' })), ['category "not-a-category" is not in data/categories.yaml']);
   });
@@ -90,11 +97,22 @@ describe('checkEntry', () => {
     const entry = makeEntry({ manifest: { default_permissions: { enterprise_copilot_metrics: 'read' } } });
     assert.deepEqual(check(entry), ['permissions enterprise_copilot_metrics can only be set by hand: describe them in manual_steps']);
     assert.deepEqual(check({ ...entry, manual_steps: ['Add it by hand.'] }), []);
+    const two = makeEntry({ manifest: { default_permissions: { enterprise_copilot_metrics: 'read', enterprise_custom_properties_for_organizations: 'read' } } });
+    assert.deepEqual(check(two), ['permissions enterprise_copilot_metrics, enterprise_custom_properties_for_organizations can only be set by hand: describe them in manual_steps']);
   });
 
   test('events need an active webhook', () => {
     const entry = makeWebhookEntry({ manifest: { hook_attributes: { url: 'https://hooks.example.com', active: false } } });
     assert.deepEqual(check(entry), ['webhook events are listed but manifest.hook_attributes.active is false']);
+    const oneEvent = makeEntry({ manifest: { default_events: ['push'] } });
+    assert.deepEqual(check(oneEvent), ['webhook events are listed but manifest.hook_attributes.active is false']);
+    const variantEvents = makeEntry({
+      variants: [
+        { id: 'a', name: 'A', default_permissions: { contents: 'read', metadata: 'read' }, default_events: [] },
+        { id: 'b', name: 'B', default_permissions: { contents: 'read' }, default_events: ['push'] },
+      ],
+    });
+    assert.deepEqual(check(variantEvents), ['webhook events are listed but manifest.hook_attributes.active is false']);
   });
 
   test('placeholder webhook URLs and two_step_webhook go together', () => {
@@ -192,6 +210,7 @@ describe('checkChange', () => {
     const next = { ...v1, notes: 'n', changelog: [line('1.0.1', 'mallory'), ...v1.changelog] };
     assert.deepEqual(checkChange(v1, next, ctx), ['changelog author "mallory" must be the pull request author "alice"']);
     assert.deepEqual(checkChange(v1, next, { ...ctx, prAuthor: 'Maint' }), []);
+    assert.deepEqual(checkChange(v1, next, { ...ctx, prAuthor: 'second', maintainers: ['maint', 'second'] }), []);
     assert.deepEqual(checkChange(v1, next, { ...ctx, prAuthor: undefined }), []);
   });
 
@@ -216,14 +235,17 @@ describe('codeOwnersFor', () => {
     '/entries/    @maint @org/team @other  # trailing comment',
     'docs/        @writer',
     '/SECURITY.md @sec',
+    'README.md   @readme not-a-login',
   ].join('\n');
 
   test('last matching rule wins and teams are skipped', () => {
     assert.deepEqual(codeOwnersFor(file, 'entries/x.yaml'), ['maint', 'other']);
-    assert.deepEqual(codeOwnersFor(file, 'README.md'), ['everyone']);
+    assert.deepEqual(codeOwnersFor(file, 'LICENSE'), ['everyone']);
     assert.deepEqual(codeOwnersFor(file, 'docs/a.md'), ['writer']);
     assert.deepEqual(codeOwnersFor(file, 'SECURITY.md'), ['sec']);
     assert.deepEqual(codeOwnersFor(file, 'other/SECURITY.md'), ['everyone']);
+    assert.deepEqual(codeOwnersFor(file, 'README.md'), ['readme'], 'unanchored file rules match from the root; bare words are not owners');
+    assert.deepEqual(codeOwnersFor(file, 'docs'), ['everyone'], 'a directory rule does not match a file of the same name');
     assert.deepEqual(codeOwnersFor('', 'x'), []);
   });
 });

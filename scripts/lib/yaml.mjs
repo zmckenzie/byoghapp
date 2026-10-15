@@ -16,6 +16,7 @@
 export class YAMLError extends Error {
   constructor(line, message) {
     super(`line ${line}: ${message}`);
+    this.name = 'YAMLError';
     this.line = line;
   }
 }
@@ -44,7 +45,7 @@ function readQuoted(s, n) {
   const quote = s[0];
   if (quote === '"') {
     let j = 1;
-    while (j < s.length && s[j] !== '"') j += s[j] === '\\' ? 2 : 1;
+    while (j < s.length && s[j] !== '"') j += s[j] === '\\' ? 2 : 1; // mutation-ignore: <= reaches the same end-of-string error
     if (j >= s.length) throw new YAMLError(n, 'unterminated double-quoted string');
     const body = s.slice(1, j);
     if (body.replace(DOUBLE_ESCAPES, '').includes('\\')) throw new YAMLError(n, 'unsupported escape in double-quoted string (use \\" \\\\ \\n \\t \\uXXXX)');
@@ -53,7 +54,7 @@ function readQuoted(s, n) {
   let j = 1;
   let value = '';
   for (;;) {
-    if (j >= s.length) throw new YAMLError(n, 'unterminated single-quoted string');
+    if (j >= s.length) throw new YAMLError(n, 'unterminated single-quoted string'); // mutation-ignore: > throws one character later, same error
     if (s[j] === "'") {
       if (s[j + 1] === "'") {
         value += "'";
@@ -124,8 +125,11 @@ class Parser {
     if (!first) throw new YAMLError(1, 'the document is empty');
     if (first.indent !== 0) throw new YAMLError(first.n, 'the document must start at column 1');
     const value = this.parseBlock(0);
+    // Every block stops at the first line it can't use; anything left over is misplaced.
     const extra = this.peek();
-    if (extra) throw new YAMLError(extra.n, 'unexpected indentation');
+    if (extra) {
+      throw new YAMLError(extra.n, extra.indent > 0 ? 'unexpected indentation' : 'a document holds one mapping or one list, not both');
+    }
     return value;
   }
 
@@ -143,8 +147,6 @@ class Parser {
       this.i += 1;
       map[key] = this.parseValue(rest, indent, line.n, true);
     }
-    const next = this.peek();
-    if (next && next.indent > indent) throw new YAMLError(next.n, 'unexpected indentation');
     return map;
   }
 
@@ -154,7 +156,7 @@ class Parser {
       const after = line.text.slice(1);
       const rest = after.trimStart();
       const column = indent + 1 + (after.length - rest.length);
-      if (rest !== '' && !rest.startsWith('#') && looksLikeKey(rest)) {
+      if (looksLikeKey(rest)) {
         // "- key: value" starts a mapping whose keys align with "key".
         this.lines[this.i] = { ...line, indent: column, text: rest };
         list.push(this.parseMapping(column));
@@ -163,8 +165,6 @@ class Parser {
         list.push(this.parseValue(rest, indent, line.n, false));
       }
     }
-    const next = this.peek();
-    if (next && next.indent > indent) throw new YAMLError(next.n, 'unexpected indentation');
     return list;
   }
 
@@ -191,14 +191,13 @@ class Parser {
       const isBlank = line.raw.trim() === '';
       if (!isBlank && line.indent <= parentIndent) break;
       if (!isBlank) {
-        if (line.raw.slice(0, line.indent).includes('\t')) throw new YAMLError(line.n, 'tabs are not allowed in indentation; use spaces');
         contentIndent ??= line.indent;
         if (line.indent < contentIndent) throw new YAMLError(line.n, 'block text is indented less than its first line');
       }
       body.push(isBlank ? '' : line.raw.slice(contentIndent));
       this.i += 1;
     }
-    while (body.length > 0 && body[body.length - 1] === '') body.pop();
+    while (body.at(-1) === '') body.pop();
     let text;
     if (style === '|') {
       text = body.join('\n');
@@ -243,9 +242,9 @@ function splitKey(text, n) {
     after = text.slice(m[0].length - 1);
     if (/^[&*!?]/.test(key)) throw new YAMLError(n, 'anchors, aliases, tags and complex keys are not supported');
   }
-  if (!after.startsWith(':') || !/^:(\s|$)/.test(after)) throw new YAMLError(n, 'expected ": " after the key');
+  if (!/^:(\s|$)/.test(after)) throw new YAMLError(n, 'expected ": " after the key');
   if (key === '') throw new YAMLError(n, 'empty key');
-  return { key, rest: after.slice(1) };
+  return { key, rest: after.replace(/^:/, '') };
 }
 
 /** Parses a document in the supported subset. */
@@ -255,8 +254,9 @@ export function parse(src) {
 
 /** True when a string can be written without quotes and reads back unchanged. */
 export function isPlainSafe(s) {
-  if (s === '' || s !== s.trim() || /[\n\r\t]/.test(s) || SPECIAL_START.test(s)) return false;
-  if (/(^|\s)#/.test(s) || /:(\s|$)/.test(s)) return false;
+  // Line breaks would be split by the parser; everything else unsafe either
+  // throws in parseScalar or reads back differently (trimmed, comment cut off).
+  if (/[\n\r]/.test(s)) return false;
   try {
     return parseScalar(s) === s;
   } catch {
@@ -351,9 +351,10 @@ export function setTopLevel(src, updates) {
       continue;
     }
     let end = start + 1;
-    while (end < lines.length && (lines[end] === '' || /^\s/.test(lines[end]) || lines[end].startsWith('#'))) end += 1;
-    // Keep blank and comment lines that sit between this key's block and the next key.
-    while (end - 1 > start && (lines[end - 1].trim() === '' || /^#/.test(lines[end - 1]))) end -= 1;
+    // The key's block: following indented or blank lines. A comment at column 1 ends it.
+    while (end < lines.length && (lines[end] === '' || /^\s/.test(lines[end]))) end += 1;
+    // Blank lines after the block belong to the gap before the next key.
+    while (lines[end - 1].trim() === '' && end - 1 > start) end -= 1;
     lines.splice(start, end - start, ...replacement);
   }
   const out = `${lines.join('\n')}\n`;

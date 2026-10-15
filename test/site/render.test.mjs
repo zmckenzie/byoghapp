@@ -193,3 +193,31 @@ describe('renderNotFound', () => {
     assert.ok(renderNotFound('<x>').includes('<code>&lt;x&gt;</code>'));
   });
 });
+
+describe('labels and separators', () => {
+  test('own-app, owner and credential labels', () => {
+    const all = makeEntry({
+      own_app: 'optional',
+      supports: { user: true, org: true, enterprise: true, ghes: true },
+      credentials_needed: ['app_id', 'client_id', 'client_secret', 'private_key', 'webhook_secret', 'installation_id'],
+    });
+    const card = renderEntryCard(all, { table, categories, highest: 'low' });
+    assert.ok(card.includes('Own app optional'));
+    assert.ok(card.includes('<span class="chip">Personal</span><span class="chip">Organization</span><span class="chip">Enterprise</span><span class="chip">GHES</span>'));
+    const detail = renderEntryDetail(all, { table, categories, target: { kind: 'org', owner: '', host: 'github.com' }, appName: 'A', contributors: ['Ann', 'Bob'] });
+    assert.ok(detail.includes('<dd>App ID, Client ID, Client secret, Private key, Webhook secret, Installation ID</dd>'));
+    assert.ok(detail.includes('Contributors: Ann, Bob'));
+    const unknown = renderEntryDetail(makeEntry({ category: 'mystery' }), { table, categories, target: { kind: 'org', owner: '', host: 'github.com' }, appName: 'A' });
+    assert.ok(unknown.includes('Example Corp · mystery · Requires your own app'));
+  });
+
+  test('histogram, manual-only list and card list separators', () => {
+    const risk = renderRisk(makeEntry({ manifest: { default_permissions: { enterprise_copilot_metrics: 'read', enterprise_custom_properties_for_organizations: 'read' } } }), table);
+    assert.ok(risk.includes('<code>enterprise_copilot_metrics</code>, <code>enterprise_custom_properties_for_organizations</code> can'));
+    assert.ok(risk.includes('<li><span class="tier tier-critical">Critical</span> <strong>0</strong></li><li><span class="tier tier-high">High</span> <strong>0</strong></li><li><span class="tier tier-medium">Medium</span> <strong>0</strong></li><li><span class="tier tier-low">Low</span> <strong>2</strong></li>'));
+    const list = renderEntryList([makeEntry(), makeEntry({ slug: 'b' })], { table, categories, highestBySlug: new Map() });
+    assert.match(list, /<\/li>\n<li class="card">/);
+    assert.match(list, /^<p class="count">2 entries<\/p>\n<ul class="cards">\n<li/);
+    assert.match(list, /<\/li>\n<\/ul>$/);
+  });
+});

@@ -277,3 +277,52 @@ describe('setTopLevel', () => {
     assert.throws(() => setTopLevel('a: [1]\n', { b: 1 }), YAMLError);
   });
 });
+
+describe('edge cases', () => {
+  test('leftover lines after the top-level block', () => {
+    fails('a: 1\n- b', /line 2: a document holds one mapping or one list, not both/);
+    fails('- a\nb: 1', /line 2: a document holds one mapping or one list, not both/);
+    fails('a:\n  - x\n    y: 1', /line 3: unexpected indentation/);
+  });
+
+  test('parseScalar reports line 1 by default and rejects an empty value', () => {
+    assert.throws(() => parseScalar('yes'), /^YAMLError: line 1: /);
+    assert.throws(() => parseScalar('yes', 7), /^YAMLError: line 7: /);
+    assert.throws(() => parseScalar(''), /missing value: write null, "" or \[\]/);
+  });
+
+  test('list items: empty items, quoted keys and quoted values with colons', () => {
+    fails('-\n- a', /line 1: missing value/);
+    assert.deepEqual(parse("- 'k': v\n- \"k2\": 2\n- \"a: b\"\n- 'c: d'"), [{ k: 'v' }, { k2: 2 }, 'a: b', 'c: d']);
+    fails('- "unterminated', /unterminated double-quoted string/);
+    assert.deepEqual(parse('a: # nested below\n  b: 1'), { a: { b: 1 } });
+    assert.deepEqual(parse('- # nested below\n  - x'), [['x']]);
+  });
+
+  test('isPlainSafe rejects line breaks', () => {
+    assert.equal(isPlainSafe('a\rb'), false);
+    assert.equal(isPlainSafe('a\tb'), true, 'a tab inside a value reads back unchanged');
+    assert.deepEqual(parse(stringify({ t: 'a\tb', r: 'a\rb' })), { t: 'a\tb', r: 'a\rb' });
+  });
+
+  test('folding starts above 80 characters and wraps at 100 columns', () => {
+    const words = (n) => Array.from({ length: n }, () => 'abcd').join(' ');
+    const at80 = words(16); // 16 * 5 - 1 = 79 characters
+    assert.equal(stringify({ k: `${at80}x` }), `k: ${at80}x\n`, '80 characters stay on one line');
+    assert.match(stringify({ k: `${at80}xy` }), /^k: >-\n/, '81 characters fold');
+    // At indent 2 a folded line may hold 98 characters.
+    const line98 = 'x'.repeat(98);
+    const two = `${line98} y`;
+    assert.equal(stringify({ k: two }), `k: >-\n  ${line98}\n  y\n`);
+    const line97 = `${'x'.repeat(96)} z`;
+    assert.equal(stringify({ k: `${line97} q` }), `k: >-\n  ${line97}\n  q\n`);
+    assert.equal(stringify({ k: `${'x'.repeat(95)} zz q` }), `k: >-\n  ${'x'.repeat(95)} zz\n  q\n`, 'exactly 98 fits');
+  });
+
+  test('setTopLevel trims blank lines before the next key and escapes regex characters in keys', () => {
+    assert.equal(setTopLevel('a:\n  - x\n\n\nb: 1\n', { a: 2 }), 'a: 2\n\n\nb: 1\n');
+    assert.equal(setTopLevel('a:\n  - x\n\n', { a: 2 }), 'a: 2\n\n', 'blank lines outside the block are kept');
+    assert.equal(setTopLevel('axb: 1\na.b: 2\n', { 'a.b': 3 }), 'axb: 1\na.b: 3\n');
+    assert.equal(setTopLevel('a:\n  # inside\n  b: 1\n# outside\nc: 1\n', { a: 0 }), 'a: 0\n# outside\nc: 1\n');
+  });
+});

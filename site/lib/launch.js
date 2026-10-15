@@ -25,7 +25,7 @@ export function isCloudHost(host) {
  * @param {{kind: string, owner?: string, host?: string}} input
  * @returns {{ok: true, target: {kind: string, owner: string, host: string}} | {ok: false, error: string}}
  */
-export function parseTarget({ kind, owner = '', host = 'github.com' }, { requireHost = false } = {}) {
+export function parseTarget({ kind, owner = '', host = '' }, { requireHost = false } = {}) {
   if (!Object.hasOwn(TARGET_KINDS, kind)) return { ok: false, error: 'Choose who will own the app.' };
   const typedHost = host.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/+$/, '');
   if (requireHost && !typedHost) return { ok: false, error: 'Enter your GitHub Enterprise Server host name.' };

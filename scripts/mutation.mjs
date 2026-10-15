@@ -41,9 +41,12 @@ export function sourceFiles(root = ROOT) {
   return SOURCE_DIRS.flatMap((d) => listFiles(root, d, /\.(mjs|js)$/)).filter((f) => !EXCLUDED.has(f)).sort();
 }
 
-/** Unit test files, repo-relative. */
+/**
+ * Unit test files, repo-relative. *.integration.test.mjs files are slow
+ * end-to-end tests: they run in CI but are not used to kill mutants.
+ */
 export function testFiles(root = ROOT) {
-  return TEST_DIRS.flatMap((d) => listFiles(root, d, /\.test\.mjs$/)).sort();
+  return TEST_DIRS.flatMap((d) => listFiles(root, d, /\.test\.mjs$/)).filter((f) => !f.endsWith('.integration.test.mjs')).sort();
 }
 
 const REPORTER = fileURLToPath(new URL('./lib/test-list-reporter.mjs', import.meta.url));
