@@ -20,8 +20,8 @@ const REGEX_AFTER_WORD = new Set(['return', 'typeof', 'instanceof', 'in', 'of', 
 export function tokenize(src) {
   const tokens = [];
   const comments = [];
-  let i = 0;
-  let line = 1;
+  // A "#!" line at the very start is for the shell, not JavaScript.
+  let i = src.startsWith('#!') ? src.indexOf('\n') + 1 || src.length : 0;
   const stack = []; // template nesting: brace depth inside each ${ }
   const push = (type, start, end) => tokens.push({ type, value: src.slice(start, end), start, end, line: lineAt(start) });
   const lineStarts = [0];
@@ -61,7 +61,6 @@ export function tokenize(src) {
 
   while (i < src.length) {
     const c = src[i];
-    if (c === '\n') { line += 1; i += 1; continue; }
     if (/\s/.test(c)) { i += 1; continue; }
     if (c === '/' && src[i + 1] === '/') {
       const end = src.indexOf('\n', i);
@@ -157,7 +156,6 @@ const WORD_SWAPS = {
   some: 'every', every: 'some',
   startsWith: 'endsWith', endsWith: 'startsWith',
   min: 'max', max: 'min',
-  trim: 'trimStart',
 };
 // A "+" or "-" after these is unary (sign), which the operator swap leaves alone.
 const OPERAND_END = new Set(['word', 'number', 'string', 'template', 'regex']);

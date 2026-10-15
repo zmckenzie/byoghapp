@@ -38,6 +38,26 @@ describe('tokenize', () => {
     assert.deepEqual(values('/^a/.test(s)')[0], 'regex:/^a/');
   });
 
+  test('a "/" after any operator or keyword that ends an expression start starts a regex', () => {
+    const punct = ['(', ',', '=', ':', '[', '!', '&', '|', '?', '{', '}', ';', '&&', '||', '??', '=>', '==', '===', '!=', '!==', '<', '>', '<=', '>=', '+', '-', '*', '%', '+=', '-=', '*=', '/=', '...', '~', '^'];
+    const words = ['return', 'typeof', 'instanceof', 'in', 'of', 'new', 'delete', 'void', 'throw', 'case', 'do', 'else', 'yield', 'await'];
+    for (const before of [...punct, ...words]) {
+      const last = tokenize(`a ${before} /x/g`).tokens.at(-1);
+      assert.deepEqual([last.type, last.value], ['regex', '/x/g'], `after ${before}`);
+    }
+    for (const before of ['a', '1', '"s"', ')', ']', 'x.y']) {
+      const types = tokenize(`${before} / x / g`).tokens.map((t) => t.type);
+      assert.ok(!types.includes('regex'), `division after ${before}`);
+    }
+  });
+
+  test('skips a #! line at the start of a file', () => {
+    assert.deepEqual(values('#!/usr/bin/env node\nconst a = 1;'), ['word:const', 'word:a', 'punct:=', 'number:1', 'punct:;']);
+    assert.deepEqual(values('#!/usr/bin/env node'), []);
+    assert.equal(tokenize('#!/x\na').tokens[0].line, 2);
+    assert.deepEqual(mutate('#!/usr/bin/env node\nx = a / b;'), ['operator:/->*']);
+  });
+
   test('reports errors for unterminated input', () => {
     assert.throws(() => tokenize('"abc'), /Unterminated string at line 1/);
     assert.throws(() => tokenize("'a\nb'"), /Unterminated string/);
@@ -170,6 +190,7 @@ describe('scoring and reporting', () => {
       { file: 'a.mjs', patterns: ['^three$'], timeoutMs: 5000 },
       { file: 'c.mjs', patterns: ['^five$'], timeoutMs: 8000 },
     ]);
+    assert.equal(planRuns([c('a.mjs', 'one', 10)], { minTimeoutMs: 100 })[0].timeoutMs, 2030);
   });
 
   test('the test-list reporter prints full paths of leaf cases only', async () => {
@@ -304,7 +325,7 @@ describe('runMutation', () => {
     repo.write('site/lib/loop.js', 'export function count(n) {\n  let i = 0;\n  while (i < n) i += 1;\n  return i;\n}\n');
     repo.write('test/site/loop.test.mjs', "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { count } from '../../site/lib/loop.js';\ntest('count', () => { assert.equal(count(3), 3); assert.equal(count(0), 0); });\n");
     try {
-      const result = await runMutation({ root: repo.root, files: ['site/lib/loop.js'], concurrency: 2 });
+      const result = await runMutation({ root: repo.root, files: ['site/lib/loop.js'], concurrency: 2, minTimeoutMs: 1_000 });
       assert.equal(result.survived, 0, JSON.stringify(result.survivors));
     } finally {
       repo.cleanup();

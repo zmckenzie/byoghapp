@@ -147,9 +147,9 @@ export function testsCovering(profiles, source, offset) {
  * first (it kills most mutants), then the remaining cases grouped by file,
  * fastest file first. Each run is {file, patterns, timeoutMs}.
  */
-export function planRuns(covering) {
+export function planRuns(covering, { minTimeoutMs = 5_000 } = {}) {
   if (covering.length === 0) return [];
-  const timeout = (ms) => Math.max(5_000, ms * 3 + 2_000);
+  const timeout = (ms) => Math.max(minTimeoutMs, ms * 3 + 2_000);
   const [first, ...rest] = covering;
   const runs = [{ file: first.file, patterns: [namePattern(first.path)], timeoutMs: timeout(first.ms) }];
   const byFile = new Map();
@@ -168,7 +168,7 @@ export function planRuns(covering) {
  * includes it (see planRuns), stopping at the first failure.
  * @returns {Promise<{files: object[], killed: number, survived: number, score: number, survivors: object[]}>}
  */
-export async function runMutation({ root = ROOT, files, concurrency = availableParallelism(), log = () => {} } = {}) {
+export async function runMutation({ root = ROOT, files, concurrency = availableParallelism(), minTimeoutMs, log = () => {} } = {}) {
   const plan = (files ?? sourceFiles(root)).map((source) => ({ source, src: readFileSync(join(root, source), 'utf8') }));
   const sources = new Map(plan.map((p) => [p.source, p.src]));
   const sandboxes = Array.from({ length: concurrency }, () => makeSandbox(root));
@@ -182,7 +182,7 @@ export async function runMutation({ root = ROOT, files, concurrency = availableP
     await pool(sandboxes, mutants, async (dir, mutant) => {
       const started = Date.now();
       const { file } = mutant;
-      const runs = planRuns(testsCovering(profiles, file.source, mutant.start));
+      const runs = planRuns(testsCovering(profiles, file.source, mutant.start), { minTimeoutMs });
       let status = runs.length === 0 ? 'no-coverage' : 'survived';
       if (runs.length > 0) {
         const target = join(dir, file.source);
