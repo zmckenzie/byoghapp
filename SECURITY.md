@@ -37,8 +37,34 @@ byoghapp is a volunteer-run project and these targets are best effort.
 
 ## Supported versions
 
-byoghapp is a continuously deployed static site. Only the current `main` branch and the site
-deployed from it are supported.
+byoghapp is a continuously deployed static site. Only the current `main` branch, the site
+deployed from it and the latest release are supported.
+
+## Verifying a release
+
+Each [release](https://github.com/zmckenzie/byoghapp/releases) publishes:
+
+- `byoghapp-site-<version>.tar.gz`, the site ready to serve;
+- `byoghapp-registry-<version>.json`, the registry data on its own;
+- `SHA256SUMS`;
+- `byoghapp-<version>.sigstore.json`, a Sigstore-signed
+  [SLSA build provenance](https://slsa.dev/provenance) attestation for both files.
+
+The release workflow (`.github/workflows/release.yml`) builds them from the tagged commit and
+signs the provenance with its GitHub Actions identity, so a file that verifies was built by this
+repository's workflow from that commit. To check a download with the
+[GitHub CLI](https://cli.github.com/):
+
+```sh
+gh attestation verify byoghapp-site-0.1.0.tar.gz --repo zmckenzie/byoghapp
+# or offline, with the bundle from the release:
+gh attestation verify byoghapp-site-0.1.0.tar.gz --repo zmckenzie/byoghapp \
+  --bundle byoghapp-0.1.0.sigstore.json
+sha256sum --check SHA256SUMS
+```
+
+Builds are reproducible: the archive and `registry.json` depend only on the commit, so you can
+rebuild a release from its tag and compare checksums.
 
 ## Security posture
 

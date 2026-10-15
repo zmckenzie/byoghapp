@@ -135,5 +135,7 @@ Verify these against GitHub's docs before you rely on them in code.
 - **Keep your local environment out of the record.** Commits, pull requests, issues and comments
   must not contain agent session links or IDs, local paths, sandbox or proxy details, or personal
   email addresses. Describe the change, not the machine it was made on.
+- **Releases are the maintainers' call.** Don't push `v*` tags or create releases. You can
+  prepare the version bump in `package.json` in a pull request.
 - **Never** weaken the CSP, add a network origin, add a dependency, add a secret, or broaden
   workflow `permissions:` without an issue that approves it.

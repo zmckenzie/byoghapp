@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { buildRegistry } from '../../scripts/build.mjs';
+import { buildRegistry, buildTime } from '../../scripts/build.mjs';
 import { ALLOWED_URL, EXPECTED_CSP, lintHtml, lintSite, lintUrls } from '../../scripts/lint-site.mjs';
 import { REPO, fixtureRepo, makeEntry, runScript } from '../helpers.mjs';
 
@@ -56,9 +56,28 @@ describe('buildRegistry', () => {
       assert.equal(r.code, 0, r.stderr);
       assert.match(r.stdout, /Wrote site\/registry\.json: 1 entries/);
       assert.equal(JSON.parse(readFileSync(join(repo.root, 'site/registry.json'), 'utf8')).entries[0].slug, 'example');
+      const pinned = () => {
+        assert.equal(runScript('scripts/build.mjs', [], { root: repo.root, env: { SOURCE_DATE_EPOCH: '1780000000' } }).code, 0);
+        return readFileSync(join(repo.root, 'site/registry.json'), 'utf8');
+      };
+      const first = pinned();
+      assert.equal(JSON.parse(first).generated_at, '2026-05-28T20:26:40.000Z');
+      assert.equal(pinned(), first, 'the same commit and SOURCE_DATE_EPOCH build the same file');
     } finally {
       repo.cleanup();
     }
+  });
+
+  test('buildTime honours SOURCE_DATE_EPOCH', () => {
+    const now = new Date('2026-06-01T00:00:00Z');
+    assert.equal(buildTime({}, now), now);
+    assert.equal(buildTime({ SOURCE_DATE_EPOCH: '' }, now), now);
+    assert.equal(buildTime({ SOURCE_DATE_EPOCH: '0' }, now).toISOString(), '1970-01-01T00:00:00.000Z');
+    assert.equal(buildTime({ SOURCE_DATE_EPOCH: '1780000000' }, now).toISOString(), '2026-05-28T20:26:40.000Z');
+    for (const bad of ['-1', '1.5', 'soon', ' 1']) {
+      assert.throws(() => buildTime({ SOURCE_DATE_EPOCH: bad }, now), new RegExp(`whole number of seconds, not "${bad.replace('.', '\\.')}"`));
+    }
+    assert.ok(buildTime({ SOURCE_DATE_EPOCH: '5' }) instanceof Date);
   });
 });
 
