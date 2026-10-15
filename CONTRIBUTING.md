@@ -124,6 +124,26 @@ git commit -s -m "Add Atlantis entry"
 This adds a `Signed-off-by: Your Name <you@example.com>` line. The sign-off is **your**
 certification. An AI tool cannot sign off on your behalf (see below).
 
+## Releases
+
+Maintainers cut releases; the workflow does the rest.
+
+1. Open a pull request that sets the new version in `package.json` (semantic versioning: a new
+   entry or field is a minor release, a fix is a patch).
+2. After it merges, tag the merge commit and push the tag:
+
+   ```sh
+   git switch main && git pull
+   git tag -a v0.2.0 -m "byoghapp 0.2.0"
+   git push origin v0.2.0
+   ```
+
+3. `.github/workflows/release.yml` checks that the tag matches `package.json`, runs the checks and
+   tests, builds the site reproducibly, signs its build provenance with Sigstore and publishes the
+   release. Don't create the release in the GitHub UI: the workflow creates it.
+
+[SECURITY.md](SECURITY.md#verifying-a-release) explains how to verify a release.
+
 ## Using AI tools
 
 AI-assisted contributions are welcome. This project is set up to work well with coding agents:
