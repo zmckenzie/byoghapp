@@ -158,7 +158,8 @@ Releases are automated, but nothing is published until a maintainer approves it 
    the site reproducibly, packages it, and shows the version, checksums and notes in its summary.
 4. **Second approval:** a maintainer approves the `release` environment on that run. Only then
    does the workflow sign the build provenance with Sigstore and publish the release, creating
-   the `vX.Y.Z` tag at the commit it built.
+   the `vX.Y.Z` tag at the commit it built. If that tag already exists, it stops without publishing, and it
+   checks afterwards that the tag points at the commit it built.
 
 Versions follow [semantic versioning](https://semver.org/): a breaking change bumps the major
 version, a `feat` the minor version and a `fix`, `perf` or `revert` the patch version. Before 1.0.0,
