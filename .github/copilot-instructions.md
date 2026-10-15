@@ -14,6 +14,8 @@ When writing code:
 - Pin GitHub Actions to a full commit SHA with a version comment, and keep workflow
   `permissions:` least-privilege.
 - Don't commit planning or scratch files (`TASKS.md`, `TODO.md`, `PLAN.md`, notes, research).
+- Give pull requests Conventional Commit titles (`feat(entries): add X`, `fix(site): …`), and
+  never push `v*` tags, create releases or change the version in `package.json`.
 
 When reviewing a pull request, flag:
 

@@ -9,6 +9,8 @@ on:
     branches: [main]
   schedule:
     - cron: "41 5 * * 3"
+  # Started by the Release PR workflow on its own pull request.
+  workflow_dispatch:
 
 permissions:
   contents: read

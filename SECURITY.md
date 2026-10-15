@@ -50,9 +50,9 @@ Each [release](https://github.com/zmckenzie/byoghapp/releases) publishes:
 - `byoghapp-<version>.sigstore.json`, a Sigstore-signed
   [SLSA build provenance](https://slsa.dev/provenance) attestation for both files.
 
-The release workflow (`.github/workflows/release.yml`) builds them from the tagged commit and
-signs the provenance with its GitHub Actions identity, so a file that verifies was built by this
-repository's workflow from that commit. To check a download with the
+The release workflow (`.github/workflows/release.yml`) builds them from the released commit and,
+only after a maintainer approves the `release` environment, signs the provenance with its GitHub
+Actions identity. A file that verifies was built by this repository's workflow from that commit. To check a download with the
 [GitHub CLI](https://cli.github.com/):
 
 ```sh

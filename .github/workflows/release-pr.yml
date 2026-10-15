@@ -1,0 +1,63 @@
+# Release PR: after every push to main, works out the next version from the
+# conventional commits since the last release and keeps one pull request open
+# (branch release/next) that sets it in package.json and package-lock.json, with
+# the release notes. Merging that pull request is the first maintainer approval;
+# the Release workflow then waits for the second before it publishes.
+#
+# The bump commit is made through the API, so GitHub signs it. Pull requests a
+# workflow opens start no workflows, so this dispatches the required checks.
+name: Release PR
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  release-pr:
+    name: Open or update the release pull request
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      # Writes the release/next branch.
+      contents: write
+      # Opens and updates the release pull request.
+      pull-requests: write
+      # Starts the required checks on it.
+      actions: write
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # History and tags: the commits since the last release decide the version.
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Plan
+        id: plan
+        run: node scripts/release.mjs plan --notes "${RUNNER_TEMP}/release-notes.md"
+
+      - name: Open or update the release pull request
+        if: steps.plan.outputs.action == 'propose'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.plan.outputs.version }}
+          BASE_BRANCH: ${{ github.ref_name }}
+        run: node scripts/release.mjs propose --version "${VERSION}" --notes "${RUNNER_TEMP}/release-notes.md"

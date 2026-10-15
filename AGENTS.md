@@ -45,8 +45,8 @@ data/categories.yaml        category key -> label
 schema/entry.schema.json    the entry schema (checked by scripts/lib/json-schema.mjs; editors use it via the yaml-language-server comment)
 site/                       index.html, callback.html, app.js, callback.js, style.css
 site/lib/                   pure modules shared by the browser and Node: risk, launch, callback, search, render
-scripts/                    validate, build, lint-site, verify, verification-issues, stamp-verified, mutation, serve
-scripts/lib/                strict YAML subset, schema checker, entry rules, repo/git access, GitHub client, mutation core
+scripts/                    validate, build, lint-site, verify, verification-issues, stamp-verified, mutation, serve, release, check-pr-title
+scripts/lib/                strict YAML subset, schema checker, entry rules, repo/git access, GitHub client, mutation core, conventional commits, release planning
 test/scripts, test/site     unit tests (node:test); test/helpers.mjs builds fixtures
 test/e2e/                   browser tests over the Chrome DevTools Protocol (test/e2e/cdp.mjs)
 fuzz/                       Jazzer.js fuzz targets; test/fuzz runs them over their seeds
@@ -135,7 +135,10 @@ Verify these against GitHub's docs before you rely on them in code.
 - **Keep your local environment out of the record.** Commits, pull requests, issues and comments
   must not contain agent session links or IDs, local paths, sandbox or proxy details, or personal
   email addresses. Describe the change, not the machine it was made on.
-- **Releases are the maintainers' call.** Don't push `v*` tags or create releases. You can
-  prepare the version bump in `package.json` in a pull request.
+- **Pull request titles are Conventional Commits** (`feat(entries): add X`, `fix(site): …`,
+  `docs: …`; see CONTRIBUTING.md). They become the commits on `main` and decide the next version.
+- **Releases are automated and approved by maintainers.** Don't push `v*` tags, create releases,
+  change the version in `package.json` or edit the `chore(release): …` pull request: the Release
+  PR workflow owns them.
 - **Never** weaken the CSP, add a network origin, add a dependency, add a secret, or broaden
   workflow `permissions:` without an issue that approves it.
