@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: gemini-enterprise-github
+name: Gemini Enterprise GitHub connector
+vendor: Google Cloud
+category: other
+website: https://cloud.google.com/gemini-enterprise
+documentation_url: >-
+  https://docs.cloud.google.com/gemini/enterprise/docs/connectors/github/github-configuration
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: all
+  level: org-or-user
+  notes: The docs say to install the app on All repositories.
+credentials_needed:
+  - client_id
+  - client_secret
+two_step_webhook: false
+manual_steps:
+  - >-
+    Select Expire user authorization tokens and Request user authorization (OAuth) during
+    installation.
+  - >-
+    Generate a client secret and use the client ID and client secret when you create the GitHub data
+    store in Gemini Enterprise.
+notes: >-
+  The docs register the app under the personal Settings > Developer settings page and choose Only on
+  this account for where it can be installed.
+manifest:
+  name: Gemini Enterprise
+  url: https://cloud.google.com/gemini-enterprise
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  callback_urls:
+    - https://vertexaisearch.cloud.google.com/oauth-redirect
+  request_oauth_on_install: true
+  public: false
+  default_permissions:
+    actions: write
+    administration: read
+    contents: write
+    discussions: write
+    issue_types: read
+    issues: write
+    members: read
+    metadata: read
+    organization_projects: write
+    profile: write
+    pull_requests: write
+    secret_scanning_alerts: read
+    security_events: read
+    starring: write
+    vulnerability_alerts: read
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: snyk-github-server-app
+name: Snyk GitHub Server App (Universal Broker)
+vendor: Snyk
+category: security
+website: https://snyk.io
+documentation_url: >-
+  https://docs.snyk.io/developer-tools/integrations/scm-integrations/scm-integrations-and-snyk-broker
+documentation_urls:
+  - >-
+    https://docs.snyk.io/developer-tools/integrations/scm-integrations/organization-level-integrations/github-server-app
+own_app: ghes-only
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - installation_id
+  - private_key
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the webhook URL to <your Snyk region>/api/hidden/scm-apps/api/github-app/webhook, for
+    example https://app.snyk.io/api/hidden/scm-apps/api/github-app/webhook.
+  - >-
+    Note the client ID and app ID, generate a private key, install the app, and copy the
+    installation ID from the installation page URL.
+  - >-
+    Run snyk-broker-config workflows connections create (type github-server-app), then connections
+    integrate for each Snyk Organization.
+notes: >-
+  Enterprise plans only. Without Universal Broker, Snyk creates the GitHub Server App for you from
+  the Snyk UI; you create your own app only when you use Universal Broker. The docs' prefilled URL
+  leaves "Where can this GitHub App be installed?" set to Any account.
+manifest:
+  name: Snyk
+  url: https://snyk.io
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    checks: write
+    contents: write
+    members: read
+    metadata: read
+    pull_requests: write
+    repository_hooks: write
+    statuses: write
+  default_events:
+    - repository
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

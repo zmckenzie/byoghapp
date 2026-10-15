@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: cloudquery
+name: CloudQuery Platform
+vendor: CloudQuery
+category: asset-management
+website: https://www.cloudquery.io
+documentation_url: >-
+  https://www.cloudquery.io/docs/platform/integration-guides/setting-up-a-github-integration
+own_app: optional
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - installation_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Generate a private key and install the app on each organization you want to sync, noting each
+    installation ID.
+  - >-
+    In CloudQuery Platform, add a GitHub integration with GitHub App authentication and enter the
+    app ID, private key, and an organization name and installation ID per installation.
+notes: >-
+  A personal access token also works. The permissions are the docs' example ("e.g.") set; grant
+  read-only access to whatever resources you sync, and see GitHub's permissions reference per table.
+manifest:
+  name: CloudQuery Integration
+  url: https://www.cloudquery.io
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    contents: read
+    issues: read
+    members: read
+    metadata: read
+    pull_requests: read
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.
