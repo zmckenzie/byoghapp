@@ -22,9 +22,9 @@ import { applyMutant, generateMutants, mutationScore } from './lib/mutation.mjs'
 import { ROOT, git } from './lib/repo.mjs';
 
 export const DEFAULT_THRESHOLD = 80;
-const SOURCE_DIRS = ['scripts', 'scripts/lib', 'site/lib'];
+const SOURCE_DIRS = ['scripts', 'scripts/lib', 'site/lib', 'fuzz'];
 const EXCLUDED = new Set(['scripts/mutation.mjs']);
-const TEST_DIRS = ['test/scripts', 'test/site'];
+const TEST_DIRS = ['test/scripts', 'test/site', 'test/fuzz'];
 
 function listFiles(root, dir, pattern) {
   try {

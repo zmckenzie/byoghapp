@@ -30,6 +30,9 @@ function permissionSets(entry) {
   return sets;
 }
 
+/** table[key] when key is the table's own entry, so "constructor" or "toString" aren't found. */
+const own = (table, key) => (Object.hasOwn(table, key) ? table[key] : undefined);
+
 /**
  * Checks one permission/event set against the shared tables.
  * @returns {string[]} error messages
@@ -37,15 +40,15 @@ function permissionSets(entry) {
 export function checkPermissionSet({ label, permissions, events }, data) {
   const errors = [];
   for (const [key, level] of Object.entries(permissions)) {
-    const def = data.permissions.permissions[key];
+    const def = own(data.permissions.permissions, key);
     if (!def) {
       errors.push(`${label}: unknown permission "${key}" (not in data/permissions.yaml)`);
-    } else if (!def.levels[level]) {
+    } else if (!own(def.levels, level)) {
       errors.push(`${label}: permission "${key}" has no "${level}" level (allowed: ${Object.keys(def.levels).join(', ')})`);
     }
   }
   for (const event of events) {
-    const def = data.events.events[event];
+    const def = own(data.events.events, event);
     if (!def) {
       errors.push(`${label}: unknown webhook event "${event}" (not in data/events.yaml)`);
     } else if (def.subscribable === false) {
@@ -85,7 +88,7 @@ export function checkEntry(entry, { slug, today, data }) {
   }
 
   const manualOnly = permissionSets(entry).flatMap((s) =>
-    Object.keys(s.permissions).filter((k) => data.permissions.permissions[k]?.manual_only));
+    Object.keys(s.permissions).filter((k) => own(data.permissions.permissions, k)?.manual_only));
   if (manualOnly.length > 0 && entry.manual_steps.length === 0) {
     errors.push(`permissions ${[...new Set(manualOnly)].join(', ')} can only be set by hand: describe them in manual_steps`);
   }

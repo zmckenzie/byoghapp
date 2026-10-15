@@ -16,7 +16,8 @@ marked `needs-review` until a maintainer verifies them.
 
 ## Commands
 
-All commands use Node.js 22+ built-ins; there is nothing to install.
+All commands use Node.js 22+ built-ins; there is nothing to install, except for fuzzing
+(`npm ci` installs Jazzer.js).
 
 | Command | What it does |
 | --- | --- |
@@ -29,6 +30,7 @@ All commands use Node.js 22+ built-ins; there is nothing to install.
 | `npm run lint:site` | Check CSP tags, inline code and URL allowlist in `site/` |
 | `npm run check` | Hygiene, validate, build and lint in one go |
 | `npm run serve` | Serve `site/` at http://127.0.0.1:8000 (run `npm run build` first) |
+| `npm run fuzz:yaml`, `npm run fuzz:render` | Fuzz the YAML parser or the renderer for 5 minutes with Jazzer.js (needs `npm ci`; crashes land in `.fuzz/`) |
 
 Run `npm run check && npm run coverage` before you push. Run `npm run mutation -- --changed origin/main`
 when you change code under `scripts/` or `site/lib/`.
@@ -47,6 +49,8 @@ scripts/                    validate, build, lint-site, verify, verification-iss
 scripts/lib/                strict YAML subset, schema checker, entry rules, repo/git access, GitHub client, mutation core
 test/scripts, test/site     unit tests (node:test); test/helpers.mjs builds fixtures
 test/e2e/                   browser tests over the Chrome DevTools Protocol (test/e2e/cdp.mjs)
+fuzz/                       Jazzer.js fuzz targets; test/fuzz runs them over their seeds
+.clusterfuzzlite/           ClusterFuzzLite / OSS-Fuzz build of the fuzz targets (CI runs Jazzer.js directly)
 ```
 
 Keep logic in `site/lib/` and `scripts/lib/` as pure functions; keep `site/app.js`,
@@ -54,10 +58,12 @@ Keep logic in `site/lib/` and `scripts/lib/` as pure functions; keep `site/app.j
 
 ## Non-negotiable design rules
 
-1. **Zero dependencies.** No npm packages at runtime, build or test time. Use the web platform
-   and Node.js built-ins (`node:fs`, `node:test`, global `fetch`, global `WebSocket`). There is
-   no `package-lock.json`, and adding one needs an approved issue. If a dependency is ever
-   approved, it is vendored and pinned.
+1. **Zero runtime dependencies.** The site, scripts and tests use only the web platform and
+   Node.js built-ins (`node:fs`, `node:test`, global `fetch`, global `WebSocket`), and
+   `npm test`, `npm run coverage` and `npm run check` work with nothing installed. The only
+   exception is the fuzzing engine, approved in issue #3: `@jazzer.js/core` is an exact-pinned
+   `devDependency` in `package-lock.json`, updated by Dependabot. Adding any other dependency
+   needs an approved issue.
 2. **No third-party requests from the site.** No CDNs, web fonts, analytics or remote images.
    The only allowed cross-origin calls are navigation and form posts to `github.com`, `*.ghe.com`
    (or a user-supplied GHES host for plain links), and the opt-in manifest conversion `POST` to

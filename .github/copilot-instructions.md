@@ -6,7 +6,8 @@ request.
 
 When writing code:
 
-- Add zero npm dependencies. Use web platform APIs and Node.js built-ins only.
+- Add no npm dependencies. Use web platform APIs and Node.js built-ins only; the fuzzing engine
+  (Jazzer.js, a dev dependency) is the one approved exception.
 - The site makes no third-party requests and runs under a strict CSP, so don't use inline
   scripts or styles, `eval`, CDNs, web fonts or analytics.
 - Never store or log GitHub App credentials (PEM, client secret, webhook secret).

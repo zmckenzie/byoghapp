@@ -33,7 +33,10 @@ pull request description, or user-facing docs under `docs/`.
 
 ## Development
 
-The project deliberately has **zero npm dependencies**, at runtime, build and test time.
+The project deliberately has **zero runtime dependencies**: the site, scripts and tests use only
+the web platform and Node.js built-ins, so there is nothing to install. The one dev dependency is
+the fuzzing engine, [Jazzer.js](https://github.com/CodeIntelligenceTesting/jazzer.js), pinned in
+`package-lock.json` (see issue #3).
 
 - **Requirements:** Node.js 22.12 or newer (see `.nvmrc`), Git, and Chrome or Chromium for the
   browser tests.
@@ -41,9 +44,13 @@ The project deliberately has **zero npm dependencies**, at runtime, build and te
   `npm run coverage` (unit tests with the coverage gate). [AGENTS.md](AGENTS.md#commands) lists
   every command.
 - **Run the site:** `npm run build && npm run serve`, then open http://127.0.0.1:8000.
+- **Fuzz:** `npm ci`, then `npm run fuzz:yaml` or `npm run fuzz:render` (5 minutes each). The
+  targets live in `fuzz/`. If one finds a crash, add the input to `test/fuzz/targets.test.mjs`
+  and fix the bug. CI fuzzes every pull request the same way (`.github/workflows/fuzz.yml`).
 
-Please don't add a dependency without discussing it in an issue first. If one is ever justified,
-it will be vendored and pinned, not installed from the registry at build time.
+Please don't add a dependency without discussing it in an issue first. An approved one is a
+`devDependency`, pinned exactly in `package-lock.json` and updated by Dependabot; the site and
+scripts never import it.
 
 ### Testing standards
 

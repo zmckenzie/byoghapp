@@ -12,6 +12,16 @@ const fails = (src, pattern) => assert.throws(() => parse(src), (err) => {
 });
 
 describe('parse: supported syntax', () => {
+  test('quoted tabs, -0 and documents that are only an empty collection', () => {
+    assert.deepEqual(parse('a: "x\ty"'), { a: 'x\ty' });
+    assert.deepEqual(parse("a: 'x\ty'"), { a: 'x\ty' });
+    assert.ok(Object.is(parse('a: -0').a, 0));
+    assert.equal(parse('a: -3').a, -3);
+    assert.deepEqual(parse('{}'), {});
+    assert.deepEqual(parse('[] # nothing yet\n'), []);
+    assert.deepEqual(parse(stringify({})), {});
+  });
+
   test('nested mappings, sequences and scalars', () => {
     const src = [
       '# leading comment',
@@ -134,6 +144,20 @@ describe('parse: rejections', () => {
     fails('---\na: 1', /line 1: document markers/);
     fails('a: 1\n...', /line 2: document markers/);
     fails('%YAML 1.2\na: 1', /directives are not supported/);
+    fails('{}\nb: 1', /line 2: a document holds one mapping or one list, not both/);
+    fails('a: 1\n b: 2', /line 2: unexpected indentation/);
+  });
+
+  // Found by fuzz/fuzz_yaml.js.
+  test('control characters and __proto__ keys', () => {
+    fails('a: "x\u0000"', /line 1: control character U\+0000 is not allowed; write it as \\uXXXX/);
+    fails("a: 1\nb: 'x\u0001'", /line 2: control character U\+0001/);
+    fails('a: x\u001f', /U\+001F/);
+    fails('a: x\u007f', /U\+007F/);
+    fails('# note \u0008\na: 1', /line 1: control character U\+0008/);
+    fails('__proto__: x', /line 1: the key __proto__ is not allowed/);
+    fails('a:\n  "__proto__":\n    slug: evil', /line 2: the key __proto__ is not allowed/);
+    assert.deepEqual(parse('constructor: 1'), { constructor: 1 });
   });
 
   test('unsupported features', () => {

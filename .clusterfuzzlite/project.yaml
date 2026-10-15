@@ -1,0 +1,4 @@
+# ClusterFuzzLite project: JavaScript fuzz targets in fuzz/, run with Jazzer.js.
+language: javascript
+# Jazzer.js's native module needs glibc 2.32 or newer, so build and run on Ubuntu 24.04.
+base_os_version: ubuntu-24-04

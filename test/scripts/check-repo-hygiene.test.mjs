@@ -13,7 +13,7 @@ test('rejects planning and scratch files', () => {
 
 test('rejects credentials and npm artifacts', () => {
   for (const p of ['app.private-key.pem', '.env', '.env.local', 'node_modules/x/index.js',
-    'package-lock.json', '.claude/settings.local.json', 'CLAUDE.local.md']) {
+    'yarn.lock', 'pnpm-lock.yaml', '.claude/settings.local.json', 'CLAUDE.local.md']) {
     assert.ok(flagged(p), p);
   }
 });
@@ -31,7 +31,9 @@ test('names the reason for each kind of file', () => {
   assert.deepEqual(reason('research/x.md'), ['research and notes documents stay out of the repo']);
   assert.deepEqual(reason('CLAUDE.local.md'), ['agent-local configuration is personal and not committed']);
   assert.deepEqual(reason('k.pem'), ['possible credential or private key']);
-  assert.deepEqual(reason('package-lock.json'), ['the project has zero npm dependencies (see AGENTS.md)']);
+  assert.deepEqual(reason('node_modules/x/index.js'), ['installed packages are never committed (see AGENTS.md)']);
+  assert.deepEqual(reason('sub/npm-shrinkwrap.json'), ['npm is the only package manager; its package-lock.json pins the dev dependencies']);
+  assert.deepEqual(reason('package-lock.json'), []);
   assert.deepEqual(reason('config/.env.example'), [], 'example env files in subdirectories are fine');
   assert.deepEqual(reason('config/.env'), ['possible credential or private key']);
 });

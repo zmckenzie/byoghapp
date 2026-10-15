@@ -39,6 +39,8 @@ describe('permissionTier', () => {
     assert.equal(permissionTier(table, 'workflows', 'write'), 'critical');
     assert.equal(permissionTier(table, 'nope', 'read'), null);
     assert.equal(permissionTier(table, 'workflows', 'read'), null);
+    assert.equal(permissionTier(table, 'constructor', 'read'), null);
+    assert.equal(permissionTier(table, 'contents', 'constructor'), null);
   });
 });
 
@@ -83,6 +85,7 @@ describe('summarize', () => {
     assert.equal(s.highest, null);
     assert.deepEqual(s.histogram, { low: 0, medium: 0, high: 0, critical: 0 });
     assert.equal(summarize(makeEntry({ manifest: { default_permissions: {} } }), table).highest, null);
+    assert.equal(summarize(makeEntry({ manifest: { default_permissions: { constructor: 'read' } } }), table).items[0].name, 'constructor');
   });
 
   test('flags manual-only permissions', () => {

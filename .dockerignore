@@ -1,0 +1,4 @@
+# Keep local installs and scratch files out of the ClusterFuzzLite build.
+node_modules/
+.scratch/
+.fuzz/

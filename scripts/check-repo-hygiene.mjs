@@ -30,8 +30,12 @@ export const RULES = [
       /(^|\/)\.dev\.vars/.test(p),
   },
   {
-    reason: 'the project has zero npm dependencies (see AGENTS.md)',
-    test: (p) => /(^|\/)(node_modules\/|package-lock\.json$|yarn\.lock$|pnpm-lock\.yaml$)/.test(p),
+    reason: 'installed packages are never committed (see AGENTS.md)',
+    test: (p) => /(^|\/)node_modules\//.test(p),
+  },
+  {
+    reason: 'npm is the only package manager; its package-lock.json pins the dev dependencies',
+    test: (p) => /(^|\/)(yarn\.lock|pnpm-lock\.yaml|npm-shrinkwrap\.json)$/.test(p),
   },
 ];
 

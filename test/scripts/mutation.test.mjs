@@ -163,10 +163,12 @@ describe('scoring and reporting', () => {
     const sources = sourceFiles(REPO);
     assert.ok(sources.includes('site/lib/risk.js'));
     assert.ok(sources.includes('scripts/lib/mutation.mjs'));
+    assert.ok(sources.includes('fuzz/fuzz_yaml.js'));
     assert.ok(!sources.includes('scripts/mutation.mjs'));
     assert.ok(!sources.some((f) => f.startsWith('test/')));
     const tests = testFiles(REPO);
     assert.ok(tests.includes('test/site/risk.test.mjs'));
+    assert.ok(tests.includes('test/fuzz/targets.test.mjs'));
     assert.ok(tests.every((t) => t.endsWith('.test.mjs')));
     assert.ok(!tests.some((t) => t.startsWith('test/e2e/')));
     assert.ok(!tests.some((t) => t.endsWith('.integration.test.mjs')), 'integration tests do not kill mutants');
