@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: codacy-self-hosted
+name: Codacy Self-hosted
+vendor: Codacy
+category: code-quality
+website: https://www.codacy.com
+documentation_url: https://docs.codacy.com/chart/configuration/integrations/github-app-create/
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+  notes: The docs set 'Where can this GitHub App be installed?' to Any account.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the homepage URL and user authorization callback URL to the base URL of your Codacy
+    instance.
+  - Enable Request user authorization (OAuth) during installation.
+  - >-
+    Set the webhook URL to https://<codacy-host>/2.0/events/gh/organization (GitHub Cloud) or
+    https://<codacy-host>/2.0/events/ghe/organization (GitHub Enterprise).
+  - >-
+    Generate a private key and a client secret, and note the app name, app ID, client ID, client
+    secret and private key for Codacy.
+notes: >-
+  The page was last updated in November 2022. It lists no Contents permission and no webhook events,
+  and asks for Git SSH keys read & write as a user permission.
+manifest:
+  name: Codacy
+  url: https://www.codacy.com
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    administration: write
+    checks: write
+    emails: read
+    issues: write
+    keys: write
+    members: read
+    metadata: read
+    organization_hooks: write
+    pull_requests: write
+    repository_hooks: write
+    statuses: write
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: airmdr
+name: AirMDR
+vendor: AirMDR
+category: security
+website: https://www.airmdr.com
+documentation_url: https://docs.airmdr.com/Integrations/GitHubApp
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - installation_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Generate a private key, install the app, and copy the installation ID from the installation page
+    URL.
+  - >-
+    In AirMDR Integrations, search for GitHub App, add a new connection and enter the app ID,
+    installation ID and PEM key, or share them securely with AirMDR.
+notes: >-
+  Contents and Pull requests write are needed only for the "Analyze and Raise PR" skill; the
+  repository event skills need Metadata read. The docs list GitHub.com and GitHub Enterprise Cloud
+  as supported.
+manifest:
+  name: AirMDR
+  url: https://www.airmdr.com
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    contents: write
+    metadata: read
+    pull_requests: write
+  default_events: []
+variants:
+  - id: full
+    name: All skills, including Analyze and Raise PR
+    default_permissions:
+      contents: write
+      metadata: read
+      pull_requests: write
+    default_events: []
+  - id: events-only
+    name: Repository and user activity, and detections
+    description: Without the Analyze and Raise PR skill.
+    default_permissions:
+      metadata: read
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

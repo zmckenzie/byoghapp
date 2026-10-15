@@ -1,0 +1,68 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: openshift-pipelines-as-code
+name: OpenShift Pipelines as Code
+vendor: Red Hat
+category: ci-cd
+website: https://pipelinesascode.com
+documentation_url: >-
+  https://raw.githubusercontent.com/openshift-pipelines/pipelines-as-code/main/docs/content/docs/providers/github-app.md
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the homepage URL to your OpenShift Console URL and the webhook URL to the Pipelines-as-Code
+    controller route or ingress URL, with a random webhook secret.
+  - >-
+    Generate a private key and create the pipelines-as-code-secret with github-private-key,
+    github-application-id and webhook.secret.
+  - Install the app on the repositories you want to use with Pipelines-as-Code.
+  - >-
+    For GitHub Enterprise Server, add its hostname to trusted-provider-hostnames in the
+    pipelines-as-code ConfigMap.
+notes: tkn pac bootstrap can create the app and secrets for you.
+manifest:
+  name: OpenShift Pipelines
+  url: https://pipelinesascode.com
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    checks: write
+    contents: write
+    issues: write
+    members: read
+    metadata: read
+    pull_requests: write
+  default_events:
+    - check_run
+    - check_suite
+    - commit_comment
+    - issue_comment
+    - pull_request
+    - push
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

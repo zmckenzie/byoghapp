@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: microsoft-365-copilot-github-server
+name: Microsoft 365 Copilot connector for GitHub Server Knowledge
+vendor: Microsoft
+category: other
+website: https://www.microsoft.com/microsoft-365/copilot
+documentation_url: >-
+  https://learn.microsoft.com/en-us/microsoft-365/copilot/connectors/github-server-knowledge-admin-setup
+own_app: optional
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - client_secret
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    For Microsoft 365 Government, use the callback URL
+    https://gcsgcc.office.com/v1.0/admin/oauth/callback instead.
+  - >-
+    Generate a client secret for on-behalf-of-user authentication, or a private key for installation
+    authentication. You don't need both.
+  - Install the app on the organization the connector should index.
+notes: >-
+  Microsoft recommends its own managed GitHub app; your own app is optional. The docs suggest Any
+  account for where the app can be installed. The page also covers raising the GitHub Enterprise
+  Server API rate limit for large ingestions.
+manifest:
+  name: Microsoft 365 Copilot connector
+  url: https://www.microsoft.com/microsoft-365/copilot
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  callback_urls:
+    - https://gcs.office.com/v1.0/admin/oauth/callback
+  public: false
+  default_permissions:
+    administration: read
+    contents: read
+    emails: read
+    members: read
+    metadata: read
+    organization_administration: read
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

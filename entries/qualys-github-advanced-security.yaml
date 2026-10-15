@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: qualys-github-advanced-security
+name: Qualys ETM GitHub Advanced Security connector
+vendor: Qualys
+category: security
+website: https://www.qualys.com
+documentation_url: https://docs.qualys.com/en/conn/latest/integrations/github_advanced_security.htm
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Generate a private key, then in Qualys ETM open Connectors > Integration, manage GitHub Advanced
+    Security - Code Security and enter the app ID and PEM file.
+  - Enable Dependabot alerts and code scanning alerts on each repository.
+  - Create and activate a connector profile with a schedule.
+notes: >-
+  The docs list the supported version as SaaS (latest) and do not cover GitHub Enterprise Server.
+manifest:
+  name: Qualys ETM
+  url: https://www.qualys.com
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    contents: read
+    metadata: read
+    security_events: read
+    vulnerability_alerts: read
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

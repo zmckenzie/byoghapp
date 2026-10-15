@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: linearb-gitstream
+name: gitStream (GitHub Enterprise Server)
+vendor: LinearB
+category: other
+website: https://gitstream.cm
+documentation_url: https://linearb.helpdocs.io/article/ft1k39t12u-gs-gh-server-install
+own_app: ghes-only
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - private_key
+two_step_webhook: true
+manual_steps:
+  - >-
+    In LinearB, open Settings > Git, find the GitHub Server integration, click Connect gitStream and
+    copy the webhook URL and secret into the app.
+  - >-
+    Keep "gitstream" in lowercase in the app name, and disable "Expire user authorization tokens".
+  - Set the callback URL to the one given for your self-hosted gitStream deployment.
+  - >-
+    Generate a private key and enter it with the app ID on the LinearB gitStream setup page.
+  - >-
+    Add a .cm/gitstream.cm rules file and a .github/workflows/gitstream.yml workflow to each
+    repository, or use an org-wide cm repository.
+notes: >-
+  The docs call this list "typical permissions" and also ask for "Code: Write" to approve pull
+  requests, which is not a GitHub App permission name; Contents read and write is used. They
+  recommend limiting content writes to .cm/gitstream.cm and .github/workflows/gitstream.yml.
+manifest:
+  name: gitstream
+  url: https://gitstream.cm
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    actions: write
+    administration: read
+    checks: write
+    contents: write
+    emails: read
+    issues: read
+    metadata: read
+    pull_requests: write
+    workflows: write
+  default_events:
+    - check_run
+    - issue_comment
+    - pull_request
+    - push
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: cortex-self-managed
+name: Cortex (self-managed)
+vendor: Cortex
+category: dev-portal
+website: https://www.cortex.io
+documentation_url: https://docs.cortex.io/self-managed/features/integrations/github
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the callback URL to https://<FRONTEND HOST>/github/redirect and the webhook URL to
+    https://<API HOST>/api/internal/v1/github/webhook, with a random webhook secret.
+  - >-
+    Disable "Expire user authorization tokens" and enable "Request user authorization (OAuth) during
+    installation".
+  - Limit the Single file permission to the path cortex.yaml.
+  - Generate a private key, then install the app in your organization.
+notes: >-
+  Contents and Pull requests write are only needed for the Scaffolder. The credential list comes
+  from the legacy section, which passes them as environment variables; for GitHub Enterprise Server,
+  set GITHUB_URL to your API endpoint.
+manifest:
+  name: Cortex
+  url: https://www.cortex.io
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    actions: read
+    administration: write
+    checks: write
+    contents: write
+    members: read
+    metadata: read
+    pull_requests: write
+    secrets: write
+    security_events: read
+    single_file: write
+    statuses: write
+    vulnerability_alerts: read
+    workflows: write
+  default_events:
+    - check_suite
+    - push
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

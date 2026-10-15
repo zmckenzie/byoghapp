@@ -1,0 +1,106 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: red-hat-developer-hub
+name: Red Hat Developer Hub
+vendor: Red Hat
+category: dev-portal
+website: https://developers.redhat.com/rhdh
+documentation_url: >-
+  https://raw.githubusercontent.com/redhat-developer/red-hat-developers-documentation-rhdh/release-1.8/modules/integrating-with-github/proc-enabling-github-repository-discovery.adoc
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+  notes: >-
+    The docs say to choose "Only on this account" for where the app can be installed.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Set the authorization callback URL to https://<your Developer Hub
+    domain>/api/auth/github/handler/frame and the homepage URL to your Developer Hub URL.
+  - >-
+    Generate a client secret and a private key, then install the app on your account.
+  - >-
+    Add the app ID, client ID, client secret, private key, host domain and organization to your
+    Developer Hub secrets and enable the GitHub catalog provider in app-config.yaml.
+notes: >-
+  The docs say to adapt permissions to your needs; the template permissions apply only if you use
+  the same app for software templates. The unmaintained 1.4 docs listed a different set with an
+  active webhook. The link is the source of the 1.8 "Integrating Red Hat Developer Hub with GitHub"
+  guide, because docs.redhat.com blocks automated link checks.
+manifest:
+  name: Red Hat Developer Hub
+  url: https://developers.redhat.com/rhdh
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    contents: read
+    members: read
+    metadata: read
+    statuses: read
+  default_events: []
+variants:
+  - id: catalog
+    name: Software catalog
+    description: Reading software components and organization data.
+    default_permissions:
+      contents: read
+      members: read
+      metadata: read
+      statuses: read
+    default_events: []
+  - id: templates
+    name: Catalog and software templates
+    description: >-
+      Also publishing software templates: creating repositories, pull requests and issues.
+    default_permissions:
+      administration: write
+      contents: write
+      issues: write
+      members: read
+      metadata: read
+      pull_requests: write
+      statuses: read
+    default_events: []
+  - id: templates-full
+    name: Templates with workflows, variables, secrets and environments
+    description: >-
+      Only if your templates include GitHub workflows, Actions repository variables or secrets, or
+      environments.
+    default_permissions:
+      actions_variables: write
+      administration: write
+      contents: write
+      environments: write
+      issues: write
+      members: read
+      metadata: read
+      pull_requests: write
+      secrets: write
+      statuses: read
+      workflows: write
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

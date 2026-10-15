@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: infisical-self-hosted
+name: Infisical (self-hosted)
+vendor: Infisical
+category: iac
+website: https://infisical.com
+documentation_url: https://infisical.com/docs/integrations/app-connections/github
+own_app: optional
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Set the homepage URL to your Infisical domain and the callback URL to
+    https://<your-domain>/organization/app-connections/github/oauth/callback.
+  - Enable "Request user authorization (OAuth) during installation".
+  - >-
+    Generate a client secret and a private key, and enter the client ID, client secret, app slug,
+    app ID and private key in the server admin panel (Integrations > GitHub App) or the
+    INF_APP_CONNECTION_GITHUB_APP_* environment variables.
+  - >-
+    For an app registered on GitHub Enterprise Server, set INF_APP_CONNECTION_GITHUB_APP_HOST to its
+    hostname.
+notes: >-
+  Self-hosted Infisical can also connect with an OAuth App or a personal access token, and can
+  register a private app itself through the manifest flow.
+manifest:
+  name: Infisical
+  url: https://infisical.com
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    actions: read
+    environments: write
+    metadata: read
+    organization_secrets: write
+    secrets: write
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

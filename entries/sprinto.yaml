@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: sprinto
+name: Sprinto
+vendor: Sprinto
+category: grc
+website: https://sprinto.com
+documentation_url: https://docs.sprinto.com/integrations/overview/github-integration
+own_app: optional
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+  notes: Selecting specific repositories limits what Sprinto monitors.
+credentials_needed:
+  - app_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Set the homepage, callback and setup URLs for your Sprinto region (for example US:
+    app.sprinto.com/githubapp/githubAppCallback).
+  - >-
+    Generate a private key, then enter the app public link, app ID and private key in Sprinto and
+    click Test Connection.
+  - >-
+    Allow Sprinto's public IP for your region if your organization enforces an IP allow list, then
+    authorise and install the app.
+notes: >-
+  Sprinto also offers its own Sprinto Audit app; bring your own app is for GitHub Enterprise, data
+  residency or restricted environments. The docs list callback URLs with http:// for most regions,
+  so they are not prefilled here.
+manifest:
+  name: sprinto-audit-app
+  url: https://sprinto.com
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    administration: read
+    checks: read
+    members: read
+    metadata: read
+    organization_administration: read
+    pull_requests: read
+    vulnerability_alerts: read
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: codeant-ghes
+name: CodeAnt AI (GitHub Enterprise Server)
+vendor: CodeAnt AI
+category: ai-review
+website: https://codeant.ai
+documentation_url: https://docs.codeant.ai/setup/github_enterprise
+own_app: ghes-only
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Create an OAuth App first (homepage https://codeant.ai, callback https://app.codeant.ai) and
+    save its client ID and client secret.
+  - >-
+    Set the webhook URL to https://github.codeant.ai/webhooks with content type application/json and
+    a webhook secret of at least 32 characters.
+  - >-
+    Generate a private key, then in CodeAnt choose Self-Hosted > Self-Hosted GitHub and enter the
+    base URL, OAuth client ID and secret, app ID, private key and webhook secret.
+  - >-
+    Install the app on the repositories you want analysed, then log in to CodeAnt through
+    Self-Hosted GitHub to finish.
+notes: >-
+  The docs give a fixed webhook URL (https://github.codeant.ai/webhooks); this entry stores a
+  placeholder, so enter that URL when you create the app. The docs set "Where can this GitHub App be
+  installed?" to Any account; this entry creates a private app. CodeAnt also needs a separate OAuth
+  App for user sign-in.
+manifest:
+  name: CodeAnt
+  url: https://codeant.ai
+  description: GitHub App for CodeAnt
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  callback_urls:
+    - https://app.codeant.ai/
+  request_oauth_on_install: true
+  public: false
+  default_permissions:
+    administration: read
+    checks: write
+    contents: write
+    deployments: read
+    issues: write
+    members: read
+    metadata: read
+    organization_administration: read
+    profile: write
+    pull_requests: write
+    repository_hooks: read
+    statuses: write
+  default_events:
+    - issue_comment
+    - issues
+    - pull_request
+    - pull_request_review
+    - pull_request_review_comment
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

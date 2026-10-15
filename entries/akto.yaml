@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: akto
+name: Akto
+vendor: Akto
+category: security
+website: https://www.akto.io
+documentation_url: >-
+  https://ai-security-docs.akto.io/integrations/ci-cd-integrations/github-actions/create-github-app
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - Install the app on your repositories and download a private key.
+  - >-
+    In Akto, open Settings > Integrations > Reporting > Github App, click Configure, and enter the
+    app ID and the .pem private key.
+notes: >-
+  The docs ask for read access to "code" and "member"; these are read as Contents and Members.
+manifest:
+  name: Akto Github App
+  url: https://www.akto.io
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    administration: read
+    checks: write
+    contents: read
+    issues: write
+    members: read
+    metadata: read
+    pull_requests: write
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

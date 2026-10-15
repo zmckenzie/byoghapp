@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: jetbrains-central-console-ghes
+name: JetBrains Central Console (GitHub Enterprise Server)
+vendor: JetBrains
+category: other
+website: https://console.jetbrains.cloud/
+documentation_url: https://www.jetbrains.com/help/jetbrains-console/github-enterprise-server.html
+own_app: ghes-only
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: false
+manual_steps:
+  - >-
+    Prefer the Automatic tab under Integrations > Hosted VCS: JetBrains Central Console creates the
+    app from a manifest in your GitHub Enterprise Server organization.
+  - >-
+    If you create the app by hand, enter the app ID, client ID, client secret, install URL, private
+    key and webhook secret on the Manual tab.
+  - >-
+    Install the app on your organization, then select Authorize next to the connection in JetBrains
+    Central Console.
+notes: >-
+  The docs list these permissions as a minimum. They suggest Any account for where the app can be
+  installed, or Only on this account when several JetBrains Central Console organizations share the
+  instance. One app per instance. The webhook secret isn't needed for the connection but is required
+  for Air automations.
+manifest:
+  name: JetBrains Central
+  url: https://console.jetbrains.cloud/
+  hook_attributes:
+    url: https://api.jetbrains.cloud/webhooks/github-enterprise/
+    active: true
+  callback_urls:
+    - https://api.jetbrains.cloud/repo-connections/auth/callback
+  request_oauth_on_install: false
+  public: false
+  default_permissions:
+    contents: write
+    issues: read
+    metadata: read
+    pull_requests: read
+    workflows: write
+  default_events:
+    - issues
+    - pull_request
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

@@ -1,0 +1,124 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: mend-renovate-self-hosted
+name: Mend Renovate Self-hosted
+vendor: Mend.io
+category: dependencies
+website: https://www.mend.io/
+documentation_url: >-
+  https://docs.mend.io/renovate/latest/set-up-mend-renovate-self-hosted-app-for-github
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Point the webhook URL at /webhook on the server running Mend Renovate, on port 80 or whichever
+    port you mapped (for example http://1.2.3.4/webhook).
+  - >-
+    Enter a webhook secret that matches MEND_RNV_WEBHOOK_SECRET (default 'renovate').
+  - >-
+    Generate a private key and set MEND_RNV_GITHUB_APP_ID and MEND_RNV_GITHUB_APP_KEY (or
+    MEND_RNV_GITHUB_PEM_FILE_PATH).
+  - >-
+    On GitHub Enterprise Server, set MEND_RNV_ENDPOINT to the API endpoint (with a trailing slash)
+    and GITHUB_COM_TOKEN to a github.com personal access token.
+notes: >-
+  On GitHub Enterprise Server the docs suggest naming the app "Renovate"; on github.com that name is
+  taken by the hosted Mend Renovate app. Dependabot alerts read-only is marked optional.
+  Description, homepage, callback and setup URLs do not matter.
+manifest:
+  name: Mend Renovate Self-hosted
+  url: https://www.mend.io/
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    administration: read
+    checks: write
+    contents: write
+    issues: write
+    members: read
+    metadata: read
+    pull_requests: write
+    statuses: write
+    vulnerability_alerts: read
+    workflows: write
+  default_events:
+    - check_run
+    - check_suite
+    - issues
+    - pull_request
+    - push
+    - repository
+    - security_advisory
+    - status
+variants:
+  - id: with-dependabot-alerts
+    name: With Dependabot alerts
+    description: Everything the docs list, including the optional Dependabot alerts read-only.
+    default_permissions:
+      administration: read
+      checks: write
+      contents: write
+      issues: write
+      members: read
+      metadata: read
+      pull_requests: write
+      statuses: write
+      vulnerability_alerts: read
+      workflows: write
+    default_events:
+      - check_run
+      - check_suite
+      - issues
+      - pull_request
+      - push
+      - repository
+      - security_advisory
+      - status
+  - id: without-dependabot-alerts
+    name: Without Dependabot alerts
+    description: Leaves out the permission the docs mark optional.
+    default_permissions:
+      administration: read
+      checks: write
+      contents: write
+      issues: write
+      members: read
+      metadata: read
+      pull_requests: write
+      statuses: write
+      workflows: write
+    default_events:
+      - check_run
+      - check_suite
+      - issues
+      - pull_request
+      - push
+      - repository
+      - security_advisory
+      - status
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: servicenow-devops
+name: ServiceNow DevOps Change Velocity
+vendor: ServiceNow
+category: other
+website: https://www.servicenow.com
+documentation_url: https://www.servicenow.com/docs/r/MlbQAgTiiiMOLOw9T36wJg/0lS8umWorxhW8hBQt9UHsQ
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - installation_id
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the user authorization callback URL to
+    https://<instance-name>.service-now.com/oauth_redirect.do and clear Expire user authorization
+    tokens.
+  - >-
+    Set the webhook URL to
+    https://<instance-name>.service-now.com/api/sn_devops/v2/devops/tool/apps?toolId=<Tool ID>,
+    where the tool ID is the GitHub tool's sys_id in DevOps Change Velocity, or add it later with
+    Configure GitHub App > Auto configure with existing token.
+  - >-
+    Generate a private key, turn it into a Java KeyStore (JKS) certificate, attach it to the
+    instance, and create a JWT signing key and JWT provider with the app ID as the iss claim.
+  - >-
+    Register GitHub as an OAuth provider (JWT Bearer grant) with the client ID and client secret and
+    the token URL https://api.github.com/app/installations/<installation_id>/access_tokens (GHES:
+    https://<HOST_URL>/api/v3/app/installations/<installation_id>/access_tokens).
+notes: >-
+  From the JWT bearer setup page, which applies to GitHub and GitHub Enterprise with a MID server.
+  The docs call the first permission "Action"; this entry maps it to Actions. Webhooks write lets
+  ServiceNow configure webhooks itself.
+manifest:
+  name: ServiceNow DevOps
+  url: https://www.servicenow.com
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    actions: read
+    checks: read
+    contents: read
+    deployments: write
+    environments: read
+    metadata: read
+    pull_requests: read
+    repository_hooks: write
+    secrets: read
+  default_events:
+    - deployment_protection_rule
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

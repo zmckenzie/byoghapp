@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: dbt-platform
+name: dbt platform (custom GitHub app)
+vendor: dbt Labs
+category: data
+website: https://www.getdbt.com
+documentation_url: https://docs.getdbt.com/docs/platform/git/connect-github
+own_app: ghes-only
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    In dbt, open Account settings > Integrations > Git, expand GitHub and copy the Redirect URL into
+    the app's callback URL.
+  - >-
+    Enter the GitHub base URL, app ID, client ID, client secret, private key and (optionally)
+    install URL in dbt.
+  - Ask every developer on the account to relink their GitHub profile.
+notes: >-
+  Private beta for Enterprise and Enterprise+ accounts that use GitHub Enterprise Server or GitHub
+  with EU data residency (ghe.com); github.com uses dbt's shared app. The docs keep the webhook
+  active with any placeholder URL because dbt doesn't use it; this entry turns the webhook off.
+  Switching from the shared app breaks existing GitHub profile links.
+manifest:
+  name: dbt platform
+  url: https://www.getdbt.com
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    checks: write
+    contents: write
+    metadata: read
+    pull_requests: write
+    repository_hooks: write
+    statuses: write
+    workflows: write
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

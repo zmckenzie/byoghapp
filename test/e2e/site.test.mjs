@@ -72,9 +72,9 @@ describe('site in a browser', { skip }, () => {
     assert.ok(await count('#category option') > 5);
     assert.equal(await count('#tier option'), 5);
 
-    await type('#q', 'renovate');
+    await type('#q', 'atlantis');
     assert.equal(await count('.card'), 1);
-    assert.equal(await $eval('location.hash'), '#q=renovate');
+    assert.equal(await $eval('location.hash'), '#q=atlantis');
     assert.equal(await text('.count'), '1 entry');
 
     await type('#q', '');

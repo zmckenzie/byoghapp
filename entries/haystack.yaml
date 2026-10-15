@@ -1,0 +1,116 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: haystack
+name: Haystack (GitHub Enterprise)
+vendor: Haystack
+category: eng-intelligence
+website: https://www.usehaystack.io
+documentation_url: https://help.usehaystack.io/setup/integrations/github-enterprise
+own_app: ghes-only
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: false
+manual_steps:
+  - >-
+    Allow Haystack's IP addresses (listed in the docs) through your GitHub Enterprise firewall.
+  - >-
+    Set the user authorization callback URL to
+    https://dash.usehaystack.io/onboarding/github-enterprise/complete.
+  - >-
+    Generate your own webhook secret (the docs suggest openssl rand) and keep it for Haystack.
+  - >-
+    Generate a client secret and a private key, install the app on your organizations, and enter the
+    app ID, client ID, client secret, public link, webhook secret and private key in Haystack.
+notes: >-
+  The docs say all permissions are read-only. They also list the "Team discussions" organization
+  permission, which is left out because it has no current GitHub App permission key, and place
+  "Commit comment" under user permissions; it is treated as the commit_comment event.
+manifest:
+  name: Haystack Enterprise
+  url: https://www.usehaystack.io
+  hook_attributes:
+    url: https://webhooks.usehaystack.io/integrations/vcs/github-enterprise
+    active: true
+  public: false
+  default_permissions:
+    actions: read
+    administration: read
+    checks: read
+    contents: read
+    deployments: read
+    issues: read
+    members: read
+    metadata: read
+    organization_administration: read
+    organization_hooks: read
+    organization_plan: read
+    organization_projects: read
+    organization_user_blocking: read
+    pages: read
+    pull_requests: read
+    repository_hooks: read
+    repository_projects: read
+    statuses: read
+    vulnerability_alerts: read
+  default_events:
+    - check_run
+    - check_suite
+    - commit_comment
+    - create
+    - delete
+    - deploy_key
+    - deployment
+    - deployment_status
+    - fork
+    - gollum
+    - issue_comment
+    - issues
+    - label
+    - member
+    - membership
+    - meta
+    - milestone
+    - org_block
+    - organization
+    - page_build
+    - project
+    - project_card
+    - project_column
+    - public
+    - pull_request
+    - pull_request_review
+    - pull_request_review_comment
+    - push
+    - release
+    - repository
+    - repository_dispatch
+    - security_advisory
+    - star
+    - status
+    - team
+    - team_add
+    - watch
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.
