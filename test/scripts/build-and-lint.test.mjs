@@ -82,6 +82,8 @@ describe('lintHtml', () => {
   test('rejects inline code, styles, handlers and remote assets', () => {
     const csp = EXPECTED_CSP['index.html'];
     assert.deepEqual(lintHtml('index.html', page(csp, '<script>alert(1)</script>')), ['inline <script> is not allowed', '<script> elements must be empty']);
+    assert.deepEqual(lintHtml('index.html', page(csp, '<script>alert(1)</script >')), ['inline <script> is not allowed', '<script> elements must be empty']);
+    assert.deepEqual(lintHtml('index.html', page(csp, '<script>alert(1)</script\tfoo>')), ['inline <script> is not allowed', '<script> elements must be empty']);
     assert.deepEqual(lintHtml('index.html', page(csp, '<style>p{}</style>')), ['<style> elements are not allowed']);
     assert.deepEqual(lintHtml('index.html', page(csp, '<p style="color:red">')), ['style attributes are not allowed']);
     assert.deepEqual(lintHtml('index.html', page(csp, '<button onclick="x()">')), ['event-handler attribute onclick= is not allowed']);

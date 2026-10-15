@@ -4,7 +4,7 @@
 
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { extname, join, normalize, sep } from 'node:path';
+import { extname, join, resolve, sep } from 'node:path';
 import { ROOT } from './lib/repo.mjs';
 
 const TYPES = {
@@ -14,19 +14,24 @@ const TYPES = {
   '.json': 'application/json; charset=utf-8',
 };
 
-/** Maps a request path to a file under root, or null if it escapes root. */
+/** Maps a request path to a file under root, or null if it is malformed or escapes root. */
 export function resolvePath(root, urlPath) {
-  let path = decodeURIComponent(urlPath.split('?')[0]);
+  let path;
+  try {
+    path = decodeURIComponent(urlPath.split('?')[0]);
+  } catch {
+    return null;
+  }
   if (path.endsWith('/')) path += 'index.html';
-  const full = normalize(join(root, path));
-  return full === root || full.startsWith(root + sep) ? full : null;
+  const full = resolve(join(root, path));
+  return full.startsWith(root + sep) ? full : null;
 }
 
 /** Starts the server; resolves to {server, url}. Port 0 picks a free port. */
 export function startServer({ root = join(ROOT, 'site'), port = 8000, host = '127.0.0.1' } = {}) {
   const server = createServer(async (req, res) => {
     const file = resolvePath(root, req.url);
-    if (!file) {
+    if (!file?.startsWith(root + sep)) {
       res.writeHead(400).end('Bad request');
       return;
     }

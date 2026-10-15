@@ -28,11 +28,12 @@ export function htmlToText(html) {
     .replace(/<(br|\/p|\/li|\/tr|\/h[1-6]|\/div|\/pre|\/td|\/th)\b[^>]*>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#x?27;|&#39;/g, "'")
+    // Last, so "&amp;lt;" becomes "&lt;" and not "<".
+    .replace(/&amp;/g, '&')
     .split('\n')
     .map((line) => line.replace(/\s+/g, ' ').trim())
     .filter(Boolean)

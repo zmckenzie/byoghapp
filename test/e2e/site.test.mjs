@@ -29,13 +29,15 @@ describe('site in a browser', { skip }, () => {
   let siteDir;
   const coverage = new CoverageCollector(GLUE, (p) => readFileSync(join(REPO, 'site', p), 'utf8'));
 
+  /** A JavaScript literal for value, safe to splice into evaluated code. */
+  const js = (value) => JSON.stringify(value).replace(/[<>/\u2028\u2029]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
   const $eval = (expr) => page.evaluate(expr);
-  const text = (sel) => $eval(`document.querySelector(${JSON.stringify(sel)})?.textContent ?? null`);
-  const count = (sel) => $eval(`document.querySelectorAll(${JSON.stringify(sel)}).length`);
+  const text = (sel) => $eval(`document.querySelector(${js(sel)})?.textContent ?? null`);
+  const count = (sel) => $eval(`document.querySelectorAll(${js(sel)}).length`);
   /** Sets a form control's value and fires the input event, as typing would. */
-  const type = (sel, value) => $eval(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); el.value = ${JSON.stringify(value)}; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); })()`);
-  const click = (sel) => $eval(`document.querySelector(${JSON.stringify(sel)}).click()`);
-  const hidden = (sel) => $eval(`document.querySelector(${JSON.stringify(sel)}).hidden`);
+  const type = (sel, value) => $eval(`(() => { const el = document.querySelector(${js(sel)}); el.value = ${js(value)}; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  const click = (sel) => $eval(`document.querySelector(${js(sel)}).click()`);
+  const hidden = (sel) => $eval(`document.querySelector(${js(sel)}).hidden`);
 
   /** Full navigation: saves coverage from the outgoing document first. */
   async function load(url) {
@@ -203,8 +205,8 @@ describe('site in a browser', { skip }, () => {
   });
 
   const conversion = { id: 42, slug: 'my-app', name: 'My App', html_url: 'https://github.com/apps/my-app', client_id: 'Iv1.abc', client_secret: 'secret-1', webhook_secret: null, pem: '-----BEGIN RSA PRIVATE KEY-----\nabc\n-----END RSA PRIVATE KEY-----' };
-  const remember = (state, host = 'github.com') => $eval(`sessionStorage.setItem('byoghapp:manifest-launch', JSON.stringify({ state: ${JSON.stringify(state)}, host: ${JSON.stringify(host)}, slug: 'renovate', created: Date.now() }))`);
-  const fakeConversion = (status, body) => $eval(`window.fetch = async (url, init) => { window.__converted = { url, method: init.method }; return new Response(${JSON.stringify(JSON.stringify(body))}, { status: ${status} }); }`);
+  const remember = (state, host = 'github.com') => $eval(`sessionStorage.setItem('byoghapp:manifest-launch', JSON.stringify({ state: ${js(state)}, host: ${js(host)}, slug: 'renovate', created: Date.now() }))`);
+  const fakeConversion = (status, body) => $eval(`window.fetch = async (url, init) => { window.__converted = { url, method: init.method }; return new Response(${js(JSON.stringify(body))}, { status: ${status} }); }`);
 
   test('the callback shows the credentials once, after a click', async () => {
     await load(base);

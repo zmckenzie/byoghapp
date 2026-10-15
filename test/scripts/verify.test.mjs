@@ -22,6 +22,7 @@ describe('htmlToText', () => {
     assert.deepEqual(text.split('\n'), ['Home Example Corp setup', 'Grant Contents : Read-only', 'Pull requests: read & write', 'Subscribe to the push event.', 'Unrelated paragraph about pricing.']);
     assert.equal(htmlToText('a&nbsp;b&lt;c&gt;&quot;d&#39;e&#x27;f'), 'a b<c>"d\'e\'f');
     assert.equal(htmlToText('<br>one<br/>two'), 'one\ntwo');
+    assert.equal(htmlToText('&amp;lt;b&amp;gt; &amp;amp;'), '&lt;b&gt; &amp;');
   });
 });
 

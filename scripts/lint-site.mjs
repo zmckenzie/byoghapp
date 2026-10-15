@@ -28,7 +28,7 @@ export function lintHtml(name, html) {
   if (csp && html.search(/<meta\s+http-equiv="Content-Security-Policy"/i) > html.search(/<(script|link|style)\b/i)) {
     problems.push('the CSP meta tag must come before any script, link or style element');
   }
-  for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+  for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\b[^>]*>/gi)) {
     if (!/\bsrc=/.test(m[1])) problems.push('inline <script> is not allowed');
     if (m[2].trim()) problems.push('<script> elements must be empty');
   }

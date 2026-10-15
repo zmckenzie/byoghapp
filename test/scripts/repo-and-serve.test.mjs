@@ -85,6 +85,8 @@ describe('serve', () => {
     assert.equal(resolvePath('/srv/site', '/../secret'), null);
     assert.equal(resolvePath('/srv/site', '/%2e%2e/secret'), null);
     assert.equal(resolvePath('/srv/site', '/sub/'), '/srv/site/sub/index.html');
+    assert.equal(resolvePath('/srv/site', '/%E0%A4%A'), null);
+    assert.equal(resolvePath('/srv/site', '/..'), null);
   });
 
   test('serves files with content types and handles errors', async () => {
@@ -99,6 +101,7 @@ describe('serve', () => {
       assert.equal((await fetch(`${url}missing.json`)).status, 404);
       const bad = await fetch(`${url}%2e%2e%2fpackage.json`);
       assert.equal(bad.status, 400);
+      assert.equal((await fetch(`${url}%E0%A4%A`)).status, 400);
     } finally {
       server.close();
     }

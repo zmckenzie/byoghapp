@@ -122,7 +122,7 @@ describe('renderEntryDetail', () => {
     assert.ok(html.includes('data-slug="example"'));
     assert.ok(html.includes('A maintainer has not yet confirmed'));
     assert.ok(html.includes('Do &lt;this&gt;'));
-    assert.ok(html.includes('https://example.com/more'));
+    assert.ok(html.includes('href="https://example.com/more"'));
     assert.ok(html.includes('Report a problem'));
     assert.ok(html.includes('report-problem.yml'));
     assert.ok(html.includes('value="acme"'));
