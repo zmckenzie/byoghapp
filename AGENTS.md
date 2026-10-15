@@ -126,5 +126,8 @@ Verify these against GitHub's docs before you rely on them in code.
   `Assisted-by:` if your tool does. Never add `Signed-off-by:` for a human; the DCO sign-off is
   theirs to make.
 - **Pull requests:** fill in `.github/PULL_REQUEST_TEMPLATE.md`, including the AI disclosure.
+- **Keep your local environment out of the record.** Commits, pull requests, issues and comments
+  must not contain agent session links or IDs, local paths, sandbox or proxy details, or personal
+  email addresses. Describe the change, not the machine it was made on.
 - **Never** weaken the CSP, add a network origin, add a dependency, add a secret, or broaden
   workflow `permissions:` without an issue that approves it.
