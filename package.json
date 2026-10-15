@@ -1,6 +1,6 @@
 {
   "name": "byoghapp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "An open registry of GitHub App definitions that you create and own.",
   "license": "Apache-2.0",
