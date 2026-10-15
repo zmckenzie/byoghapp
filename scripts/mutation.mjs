@@ -3,9 +3,9 @@
 // checks that the unit tests fail for each one. A surviving mutant means a
 // behaviour no test pins down. Zero dependencies; see scripts/lib/mutation.mjs.
 //
-// Each test file runs once with V8 coverage first; every mutant then runs only
-// the test files that execute its position, fastest first, stopping at the
-// first failure.
+// Every test case runs once, alone, with V8 coverage first. Each mutant then
+// runs only the test cases that execute its position: the fastest one first,
+// then the rest grouped by file, stopping at the first failure.
 //
 //   node scripts/mutation.mjs                        all files, fails below the threshold
 //   node scripts/mutation.mjs --changed origin/main  only files changed since a ref
@@ -14,7 +14,8 @@
 import { spawn } from 'node:child_process';
 import { cpSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { availableParallelism, tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { readCoverageDir } from './lib/coverage.mjs';
 import { applyMutant, generateMutants, mutationScore } from './lib/mutation.mjs';
@@ -45,19 +46,29 @@ export function testFiles(root = ROOT) {
   return TEST_DIRS.flatMap((d) => listFiles(root, d, /\.test\.mjs$/)).sort();
 }
 
+const REPORTER = fileURLToPath(new URL('./lib/test-list-reporter.mjs', import.meta.url));
+
+/** A regular expression matching exactly one test path for --test-name-pattern. */
+export function namePattern(path) {
+  return `^${path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`;
+}
+
 /**
- * Runs node --test on one or more files as a top-level process in its own
- * process group (so a timeout also kills the test files it started).
+ * Runs one test file with plain `node` (no --test wrapper process), optionally
+ * limited to some test cases, in its own process group so a timeout also kills
+ * anything the tests started.
+ * @param {{patterns?: string[], env?: object, args?: string[]}} options
  * @returns {Promise<{passed: boolean, timedOut: boolean, ms: number}>}
  */
-export function runTests(cwd, tests, timeoutMs, extraEnv = {}) {
+export function runTests(cwd, file, timeoutMs, { patterns = [], env: extraEnv = {}, args = [] } = {}) {
   return new Promise((resolvePromise) => {
     const started = Date.now();
     const env = { ...process.env };
     delete env.NODE_V8_COVERAGE;
     delete env.NODE_TEST_CONTEXT;
     Object.assign(env, extraEnv);
-    const child = spawn(process.execPath, ['--test', '--test-reporter=dot', ...tests], { cwd, env, stdio: 'ignore', detached: true });
+    const flags = [...args, ...patterns.map((p) => `--test-name-pattern=${p}`)];
+    const child = spawn(process.execPath, [...flags, file], { cwd, env, stdio: 'ignore', detached: true });
     const timer = setTimeout(() => {
       try {
         process.kill(-child.pid, 'SIGKILL');
@@ -86,58 +97,100 @@ async function pool(sandboxes, jobs, worker) {
   }));
 }
 
+/** The test cases in each file, from one run per file with the test-list reporter. */
+export async function listTestCases(sandboxes, files) {
+  const cases = [];
+  await pool(sandboxes, files, async (dir, file) => {
+    const out = join(mkdtempSync(join(tmpdir(), 'byoghapp-list-')), 'cases.jsonl');
+    try {
+      const run = await runTests(dir, file, 300_000, { args: [`--test-reporter=${REPORTER}`, `--test-reporter-destination=${out}`] });
+      const lines = readFileSync(out, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
+      const failed = lines.filter((l) => !l.passed);
+      if (!run.passed || failed.length > 0) {
+        throw new Error(`${file} fails without any mutation: fix it first${failed.length ? ` (${failed.map((f) => f.path).join('; ')})` : ''}`);
+      }
+      for (const { path } of lines) cases.push({ file, path });
+    } finally {
+      rmSync(dirname(out), { recursive: true, force: true });
+    }
+  });
+  return cases.sort((a, b) => a.file.localeCompare(b.file) || a.path.localeCompare(b.path));
+}
+
 /**
- * Runs every test file once, unmutated, with V8 coverage (child processes
- * included). Returns, fastest first, each test's duration and which characters
+ * Runs every test case once, alone, with V8 coverage (child processes
+ * included). Returns, fastest first, each case's duration and which characters
  * of each source it executed.
  */
-export async function profileTests(sandboxes, tests, sources) {
+export async function profileTests(sandboxes, cases, sources) {
   const profiles = [];
-  await pool(sandboxes, tests, async (dir, test) => {
+  await pool(sandboxes, cases, async (dir, testCase) => {
     const covDir = mkdtempSync(join(tmpdir(), 'byoghapp-cov-'));
     try {
-      const run = await runTests(dir, [test], 300_000, { NODE_V8_COVERAGE: covDir });
-      if (!run.passed) throw new Error(`${test} fails without any mutation: fix it first`);
-      profiles.push({ test, ms: run.ms, masks: readCoverageDir(covDir, dir, sources) });
+      const run = await runTests(dir, testCase.file, 300_000, { patterns: [namePattern(testCase.path)], env: { NODE_V8_COVERAGE: covDir } });
+      if (!run.passed) throw new Error(`"${testCase.path}" in ${testCase.file} fails when run alone: make it independent of other tests`);
+      profiles.push({ ...testCase, ms: run.ms, masks: readCoverageDir(covDir, dir, sources) });
     } finally {
       rmSync(covDir, { recursive: true, force: true });
     }
   });
-  return profiles.sort((a, b) => a.ms - b.ms || a.test.localeCompare(b.test));
+  return profiles.sort((a, b) => a.ms - b.ms || a.file.localeCompare(b.file) || a.path.localeCompare(b.path));
 }
 
-/** The profiled tests that execute a mutant's position, fastest first. */
+/** The profiled test cases that execute a mutant's position, fastest first. */
 export function testsCovering(profiles, source, offset) {
   return profiles.filter((p) => p.masks.get(source)?.[offset] === 1);
 }
 
 /**
- * Runs mutation testing. Each mutant runs only the tests whose coverage
- * includes it, fastest first, stopping at the first failure.
+ * The runs that test one mutant, in order: the single fastest covering case
+ * first (it kills most mutants), then the remaining cases grouped by file,
+ * fastest file first. Each run is {file, patterns, timeoutMs}.
+ */
+export function planRuns(covering) {
+  if (covering.length === 0) return [];
+  const timeout = (ms) => Math.max(5_000, ms * 3 + 2_000);
+  const [first, ...rest] = covering;
+  const runs = [{ file: first.file, patterns: [namePattern(first.path)], timeoutMs: timeout(first.ms) }];
+  const byFile = new Map();
+  for (const c of rest) {
+    const group = byFile.get(c.file) ?? { file: c.file, patterns: [], ms: 0 };
+    group.patterns.push(namePattern(c.path));
+    group.ms += c.ms;
+    byFile.set(c.file, group);
+  }
+  for (const g of [...byFile.values()].sort((a, b) => a.ms - b.ms)) runs.push({ file: g.file, patterns: g.patterns, timeoutMs: timeout(g.ms) });
+  return runs;
+}
+
+/**
+ * Runs mutation testing. Each mutant runs only the test cases whose coverage
+ * includes it (see planRuns), stopping at the first failure.
  * @returns {Promise<{files: object[], killed: number, survived: number, score: number, survivors: object[]}>}
  */
-export async function runMutation({ root = ROOT, files, concurrency = Math.max(1, availableParallelism() - 1), log = () => {} } = {}) {
+export async function runMutation({ root = ROOT, files, concurrency = availableParallelism(), log = () => {} } = {}) {
   const plan = (files ?? sourceFiles(root)).map((source) => ({ source, src: readFileSync(join(root, source), 'utf8') }));
   const sources = new Map(plan.map((p) => [p.source, p.src]));
   const sandboxes = Array.from({ length: concurrency }, () => makeSandbox(root));
   try {
-    log(`Profiling ${testFiles(root).length} test files with coverage…`);
-    const profiles = await profileTests(sandboxes, testFiles(root), sources);
+    const cases = await listTestCases(sandboxes, testFiles(root));
+    log(`Profiling ${cases.length} test cases with coverage…`);
+    const profiles = await profileTests(sandboxes, cases, sources);
     const mutants = plan.flatMap((p) => generateMutants(p.src).map((m) => ({ ...m, file: p })));
     log(`Testing ${mutants.length} mutants in ${sandboxes.length} sandboxes…`);
     const results = [];
     await pool(sandboxes, mutants, async (dir, mutant) => {
       const { file } = mutant;
-      const covering = testsCovering(profiles, file.source, mutant.start);
-      let status = covering.length === 0 ? 'no-coverage' : 'survived';
-      if (covering.length > 0) {
+      const runs = planRuns(testsCovering(profiles, file.source, mutant.start));
+      let status = runs.length === 0 ? 'no-coverage' : 'survived';
+      if (runs.length > 0) {
         const target = join(dir, file.source);
         writeFileSync(target, applyMutant(file.src, mutant));
         try {
-          for (const profile of covering) {
-            const run = await runTests(dir, [profile.test], Math.max(5_000, profile.ms * 3 + 3_000));
-            if (run.timedOut) status = 'timeout';
-            else if (!run.passed) status = 'killed';
+          for (const run of runs) {
+            const result = await runTests(dir, run.file, run.timeoutMs, { patterns: run.patterns });
+            if (result.timedOut) status = 'timeout';
+            else if (!result.passed) status = 'killed';
             if (status !== 'survived') break;
           }
         } finally {
@@ -145,7 +198,7 @@ export async function runMutation({ root = ROOT, files, concurrency = Math.max(1
         }
       }
       results.push({ source: file.source, line: mutant.line, operator: mutant.operator, original: mutant.original, replacement: mutant.replacement, status });
-      if (results.length % 50 === 0) log(`${results.length}/${mutants.length} mutants tested`);
+      if (results.length % 100 === 0) log(`${results.length}/${mutants.length} mutants tested`);
     });
     return summarize(plan.map((p) => p.source), results);
   } finally {

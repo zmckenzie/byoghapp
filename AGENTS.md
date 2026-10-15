@@ -82,6 +82,8 @@ Keep logic in `site/lib/` and `scripts/lib/` as pure functions; keep `site/app.j
 - A surviving mutant means a behaviour no test checks: add an assertion that would fail. Only
   mark a line `// mutation-ignore` when the mutant is provably equivalent, and say why in the
   comment.
+- Every test case must pass when run alone (`node --test-name-pattern='^<full name>$' <file>`):
+  mutation testing runs cases one at a time.
 - Tests never touch the network or the real entries' contents: use `test/helpers.mjs`
   (`makeEntry`, `fixtureRepo`, `fakeFetch`, `fakeServer`).
 

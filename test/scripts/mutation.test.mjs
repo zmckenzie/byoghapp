@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { applyMutant, generateMutants, mutationScore, tokenize } from '../../scripts/lib/mutation.mjs';
-import { DEFAULT_THRESHOLD, formatReport, profileTests, runMutation, runTests, sourceFiles, summarize, testFiles, testsCovering } from '../../scripts/mutation.mjs';
+import { DEFAULT_THRESHOLD, formatReport, listTestCases, namePattern, planRuns, profileTests, runMutation, runTests, sourceFiles, summarize, testFiles, testsCovering } from '../../scripts/mutation.mjs';
+import testListReporter from '../../scripts/lib/test-list-reporter.mjs';
 import { REPO, fixtureRepo, runScriptAsync } from '../helpers.mjs';
 
 const values = (src) => tokenize(src).tokens.map((t) => `${t.type}:${t.value}`);
@@ -150,6 +151,47 @@ describe('scoring and reporting', () => {
     assert.deepEqual(sourceFiles(join(REPO, 'no-such-dir')), []);
   });
 
+  test('namePattern matches one full test path literally', () => {
+    assert.equal(namePattern('suite a (b) one'), '^suite a \\(b\\) one$');
+    const re = new RegExp(namePattern('x.y [z]*'));
+    assert.ok(re.test('x.y [z]*'));
+    assert.ok(!re.test('xay [z]*'));
+    assert.ok(!re.test('prefix x.y [z]*'));
+  });
+
+  test('planRuns tries the fastest case alone, then the rest by file', () => {
+    const c = (file, path, ms) => ({ file, path, ms });
+    assert.deepEqual(planRuns([]), []);
+    const runs = planRuns([c('a.mjs', 'one', 10), c('b.mjs', 'two', 20), c('a.mjs', 'three', 30), c('b.mjs', 'four', 1), c('c.mjs', 'five', 2000)]);
+    assert.deepEqual(runs, [
+      { file: 'a.mjs', patterns: ['^one$'], timeoutMs: 5000 },
+      { file: 'b.mjs', patterns: ['^two$', '^four$'], timeoutMs: 5000 },
+      { file: 'a.mjs', patterns: ['^three$'], timeoutMs: 5000 },
+      { file: 'c.mjs', patterns: ['^five$'], timeoutMs: 8000 },
+    ]);
+  });
+
+  test('the test-list reporter prints full paths of leaf cases only', async () => {
+    async function* events() {
+      yield { type: 'test:start', data: { name: 'suite', nesting: 0 } };
+      yield { type: 'test:start', data: { name: 'inner', nesting: 1 } };
+      yield { type: 'test:pass', data: { name: 'inner', nesting: 1, details: { duration_ms: 2, type: 'test' } } };
+      yield { type: 'test:start', data: { name: 'bad', nesting: 1 } };
+      yield { type: 'test:fail', data: { name: 'bad', nesting: 1, details: { duration_ms: 3 } } };
+      yield { type: 'test:pass', data: { name: 'suite', nesting: 0, details: { duration_ms: 6, type: 'suite' } } };
+      yield { type: 'test:start', data: { name: 'top', nesting: 0 } };
+      yield { type: 'test:pass', data: { name: 'top', nesting: 0, details: {} } };
+      yield { type: 'test:diagnostic', data: { message: 'x' } };
+    }
+    const lines = [];
+    for await (const line of testListReporter(events())) lines.push(JSON.parse(line));
+    assert.deepEqual(lines, [
+      { path: 'suite inner', ms: 2, passed: true },
+      { path: 'suite bad', ms: 3, passed: false },
+      { path: 'top', ms: 0, passed: true },
+    ]);
+  });
+
   test('testsCovering picks profiled tests that execute an offset, in profile order', () => {
     const mask = (bits) => Uint8Array.from(bits);
     const profiles = [
@@ -165,21 +207,23 @@ describe('scoring and reporting', () => {
 });
 
 describe('profiling', () => {
-  test('profileTests records coverage per test, fastest first, including child processes', async () => {
+  test('profileTests records coverage per test case, including child processes', async () => {
     const repo = fixtureRepo({}, { gitInit: false });
     repo.write('site/lib/a.js', 'export function a(x) {\n  if (x) return 1;\n  return 2;\n}\n');
     repo.write('test/site/a.test.mjs', "import { test } from 'node:test';\nimport { a } from '../../site/lib/a.js';\ntest('a', () => a(true));\n");
     repo.write('test/site/child.test.mjs', "import { test } from 'node:test';\nimport { execFileSync } from 'node:child_process';\ntest('child', () => { execFileSync(process.execPath, ['-e', \"import('./site/lib/a.js').then((m) => m.a(false))\"]); });\n");
     const src = readFileSync(join(repo.root, 'site/lib/a.js'), 'utf8');
     try {
-      const profiles = await profileTests([repo.root], ['test/site/a.test.mjs', 'test/site/child.test.mjs'], new Map([['site/lib/a.js', src]]));
+      const cases = await listTestCases([repo.root], ['test/site/a.test.mjs', 'test/site/child.test.mjs']);
+      assert.deepEqual(cases, [{ file: 'test/site/a.test.mjs', path: 'a' }, { file: 'test/site/child.test.mjs', path: 'child' }]);
+      const profiles = await profileTests([repo.root], cases, new Map([['site/lib/a.js', src]]));
       assert.equal(profiles.length, 2);
       assert.ok(profiles[0].ms <= profiles[1].ms);
-      const byTest = Object.fromEntries(profiles.map((p) => [p.test, p.masks.get('site/lib/a.js')]));
+      const byTest = Object.fromEntries(profiles.map((p) => [p.path, p.masks.get('site/lib/a.js')]));
       const at = (text) => src.indexOf(text);
-      assert.equal(byTest['test/site/a.test.mjs'][at('return 1')], 1);
-      assert.equal(byTest['test/site/a.test.mjs'][at('return 2')], 0);
-      assert.equal(byTest['test/site/child.test.mjs'][at('return 2')], 1, 'coverage from a child process counts');
+      assert.equal(byTest.a[at('return 1')], 1);
+      assert.equal(byTest.a[at('return 2')], 0);
+      assert.equal(byTest.child[at('return 2')], 1, 'coverage from a child process counts');
     } finally {
       repo.cleanup();
     }
@@ -191,11 +235,13 @@ describe('profiling', () => {
     repo.write('test/site/fail.test.mjs', "import { test } from 'node:test';\ntest('no', () => { throw new Error('x'); });\n");
     repo.write('test/site/hang.test.mjs', "import { test } from 'node:test';\ntest('hang', () => { for (;;); });\n");
     try {
-      const pass = await runTests(repo.root, ['test/site/pass.test.mjs'], 30_000);
+      const pass = await runTests(repo.root, 'test/site/pass.test.mjs', 30_000);
       assert.deepEqual([pass.passed, pass.timedOut], [true, false]);
-      const fail = await runTests(repo.root, ['test/site/fail.test.mjs'], 30_000);
+      const fail = await runTests(repo.root, 'test/site/fail.test.mjs', 30_000);
       assert.deepEqual([fail.passed, fail.timedOut], [false, false]);
-      const hang = await runTests(repo.root, ['test/site/hang.test.mjs'], 1_000);
+      const onlyPass = await runTests(repo.root, 'test/site/fail.test.mjs', 30_000, { patterns: ['^nothing$'] });
+      assert.equal(onlyPass.passed, true, 'patterns limit which cases run');
+      const hang = await runTests(repo.root, 'test/site/hang.test.mjs', 1_000);
       assert.deepEqual([hang.passed, hang.timedOut], [false, true]);
     } finally {
       repo.cleanup();
@@ -226,11 +272,20 @@ describe('runMutation', () => {
       assert.ok(weakResult.files[0].survived > 0);
       assert.equal(weakResult.files[1].score, 0);
       assert.ok(weakResult.survivors.some((s) => s.status === 'no-coverage' && s.source === 'site/lib/untested.js'));
-      assert.ok(logs.some((m) => /Profiling \d+ test files/.test(m)));
+      assert.ok(logs.some((m) => /Profiling \d+ test cases/.test(m)));
       assert.ok(logs.some((m) => /Testing \d+ mutants in 2 sandboxes/.test(m)));
     } finally {
       good.cleanup();
       poor.cleanup();
+    }
+  });
+
+  test('refuses order-dependent cases that fail when run alone', async () => {
+    const coupled = project("import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport '../../site/lib/calc.js';\nlet ready = false;\ntest('setup', () => { ready = true; });\ntest('uses setup', () => assert.ok(ready));\n");
+    try {
+      await assert.rejects(runMutation({ root: coupled.root, files: ['site/lib/calc.js'], concurrency: 1 }), /"uses setup" in test\/site\/calc\.test\.mjs fails when run alone/);
+    } finally {
+      coupled.cleanup();
     }
   });
 
