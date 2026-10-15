@@ -58,7 +58,7 @@ describe('verification-issues.mjs CLI', () => {
 });
 
 describe('stamp-verified.mjs CLI', () => {
-  const pr = { state: 'open', head: { ref: 'feature', repo: { full_name: 'o/r' } }, base: { repo: { full_name: 'o/r' } } };
+  const pr = { state: 'open', head: { ref: 'feature', sha: 'abc123', repo: { full_name: 'o/r' } }, base: { repo: { full_name: 'o/r' } } };
 
   test('plan writes step outputs for a same-repo PR', async () => {
     const server = await fakeServer({
@@ -75,7 +75,7 @@ describe('stamp-verified.mjs CLI', () => {
         env: { GITHUB_TOKEN: 't', GITHUB_REPOSITORY: 'o/r', GITHUB_API_URL: server.url, GITHUB_OUTPUT: output },
       });
       assert.equal(r.code, 0, r.stderr);
-      assert.equal(readFileSync(output, 'utf8'), 'ok=true\nsame_repo=true\nhead_ref=feature\nslugs=example\nmessage=\n');
+      assert.equal(readFileSync(output, 'utf8'), 'ok=true\nsame_repo=true\nhead_ref=feature\nhead_sha=abc123\nslugs=example\nmessage=\n');
     } finally {
       repo.cleanup();
       await server.close();
@@ -83,7 +83,7 @@ describe('stamp-verified.mjs CLI', () => {
   });
 
   test('plan prints multi-line outputs for forks and refusals', async () => {
-    const fork = { ...pr, head: { ref: 'f', repo: { full_name: 'x/r' } } };
+    const fork = { ...pr, head: { ref: 'f', sha: 'def456', repo: { full_name: 'x/r' } } };
     const server = await fakeServer({
       'GET /repos/o/r/pulls/6': { json: fork },
       'GET /repos/o/r/pulls/6/files': { json: [{ filename: 'entries/example.yaml', status: 'added' }] },
@@ -95,13 +95,41 @@ describe('stamp-verified.mjs CLI', () => {
       const env = { GITHUB_TOKEN: 't', GITHUB_REPOSITORY: 'o/r', GITHUB_API_URL: server.url, GITHUB_OUTPUT: '' };
       const r = await runScriptAsync('scripts/stamp-verified.mjs', ['plan', '--pr', '6', '--commenter', 'zmckenzie', '--body-file', bodyFile, '--date', '2026-06-01'], { env });
       assert.equal(r.code, 0, r.stderr);
-      assert.match(r.stdout, /^ok=true\nsame_repo=false\nhead_ref=f\nslugs=example\nmessage<<EOF_STAMP\nVerified by @zmckenzie/);
+      assert.match(r.stdout, /^ok=true\nsame_repo=false\nhead_ref=f\nhead_sha=def456\nslugs=example\nmessage<<EOF_STAMP\nVerified by @zmckenzie/);
       assert.match(r.stdout, /last_verified: 2026-06-01/);
       const refused = await runScriptAsync('scripts/stamp-verified.mjs', ['plan', '--pr', '6', '--commenter', 'mallory', '--body-file', bodyFile], { env });
-      assert.match(refused.stdout, /^ok=false\nsame_repo=false\nhead_ref=\nslugs=\nmessage=@mallory isn't a code owner/);
+      assert.match(refused.stdout, /^ok=false\nsame_repo=false\nhead_ref=\nhead_sha=\nslugs=\nmessage=@mallory isn't a code owner/);
     } finally {
       repo.cleanup();
       await server.close();
+    }
+  });
+
+  test('push stamps the planned head through the API', async () => {
+    const server = await fakeServer({ 'GET /d': { body: DOC_PAGE } });
+    const entry = stringify(makeEntry({ documentation_url: `${server.url}/d` }));
+    const routes = {
+      'GET /repos/o/r/git/commits/abc123': { json: { tree: { sha: 'tree0' } } },
+      'GET /repos/o/r/contents/entries/example.yaml': { json: { content: Buffer.from(entry).toString('base64') } },
+      'POST /repos/o/r/git/trees': { status: 201, json: { sha: 'tree1' } },
+      'POST /repos/o/r/git/commits': { status: 201, json: { sha: 'new1' } },
+      'PATCH /repos/o/r/git/refs/heads/feature': { json: {} },
+    };
+    const api = await fakeServer(routes);
+    try {
+      const env = { GITHUB_TOKEN: 't', GITHUB_REPOSITORY: 'o/r', GITHUB_API_URL: api.url };
+      const args = ['push', '--head-ref', 'feature', '--head-sha', 'abc123', '--login', 'maint', '--date', '2026-06-01'];
+      const plain = await runScriptAsync('scripts/stamp-verified.mjs', [...args, 'example'], { env });
+      assert.equal(plain.code, 0, plain.stderr);
+      assert.equal(plain.stdout, 'Stamped example\nPushed new1\n');
+      const fetched = await runScriptAsync('scripts/stamp-verified.mjs', [...args, '--fetch', 'example'], { env });
+      assert.equal(fetched.code, 0, fetched.stderr);
+      assert.match(fetched.stdout, /^Stamped example \(sha256:[0-9a-f]{64}\)\nPushed new1\n$/);
+      const tree = JSON.parse(api.requests.find((r) => r.method === 'POST' && r.url.endsWith('/git/trees')).body);
+      assert.equal(parse(tree.tree[0].content).last_verified, '2026-06-01');
+    } finally {
+      await server.close();
+      await api.close();
     }
   });
 
@@ -124,7 +152,7 @@ describe('stamp-verified.mjs CLI', () => {
       assert.match(fetched.stdout, /Stamped example \(sha256:[0-9a-f]{64}\)/);
       const usage = runScript('scripts/stamp-verified.mjs', ['nope']);
       assert.equal(usage.code, 2);
-      assert.match(usage.stderr, /Usage: stamp-verified\.mjs plan\|apply/);
+      assert.match(usage.stderr, /Usage: stamp-verified\.mjs plan\|push\|apply/);
     } finally {
       repo.cleanup();
     }

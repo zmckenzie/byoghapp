@@ -36,5 +36,15 @@ export function createClient({ fetch, token, repo, apiUrl = 'https://api.github.
     listComments: (number) => request('GET', `${base}/issues/${number}/comments?per_page=100`),
     createIssue: (issue) => request('POST', `${base}/issues`, issue),
     createComment: (number, body) => request('POST', `${base}/issues/${number}/comments`, { body }),
+    /** A file's text at a commit. */
+    getFileText: async (path, ref) => {
+      const file = await request('GET', `${base}/contents/${path}?ref=${encodeURIComponent(ref)}`);
+      return Buffer.from(file.content, 'base64').toString('utf8');
+    },
+    getCommit: (sha) => request('GET', `${base}/git/commits/${sha}`),
+    createTree: (tree) => request('POST', `${base}/git/trees`, tree),
+    createCommit: (commit) => request('POST', `${base}/git/commits`, commit),
+    /** Moves a branch to sha; GitHub refuses unless it is a fast-forward. */
+    fastForward: (branch, sha) => request('PATCH', `${base}/git/refs/heads/${branch}`, { sha, force: false }),
   };
 }

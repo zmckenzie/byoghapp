@@ -48,8 +48,9 @@ that break them won't be merged.
 
 **The repository holds no secrets.** Every workflow runs on the built-in `GITHUB_TOKEN` with
 least-privilege permissions. No API keys, deploy keys or personal access tokens are stored. The
-`/verified` comment workflow only runs for code owners, executes the default branch's scripts,
-and treats the pull request's files as data.
+`/verified` comment workflow only runs for code owners and executes the default branch's
+scripts. It never checks out the pull request: it reads the entries through the API at the
+commit it planned against, and its stamp commit only lands as a fast-forward from that commit.
 
 **No third-party requests from the site.** The site loads no CDN scripts, fonts, analytics or
 trackers, and doesn't fetch vendor logos live. All assets are served from the same origin.

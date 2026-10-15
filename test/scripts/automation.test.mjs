@@ -4,9 +4,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createClient, GitHubError } from '../../scripts/lib/github.mjs';
 import { formatOutcome, issueBody, issueTitle, LABEL, marker, syncIssues } from '../../scripts/verification-issues.mjs';
-import { applyStamp, forkInstructions, parseCommand, planStamp, stampEntry } from '../../scripts/stamp-verified.mjs';
-import { fakeFetch, fixtureRepo, makeEntry } from '../helpers.mjs';
-import { parse } from '../../scripts/lib/yaml.mjs';
+import { applyStamp, forkInstructions, parseCommand, planStamp, pushStamp, stampEntry } from '../../scripts/stamp-verified.mjs';
+import { fakeFetch, fixtureRepo, makeEntry, realData } from '../helpers.mjs';
+import { parse, stringify } from '../../scripts/lib/yaml.mjs';
 
 describe('GitHub client', () => {
   test('sends authenticated requests and parses JSON', async () => {
@@ -142,7 +142,7 @@ describe('stamp-verified', () => {
 
   const codeowners = readFileSync(join(import.meta.dirname, '../../.github/CODEOWNERS'), 'utf8');
   const fakeClient = (pr, files) => ({ getPull: async () => pr, listPullFiles: async () => files });
-  const pr = { state: 'open', head: { ref: 'feature', repo: { full_name: 'o/r' } }, base: { repo: { full_name: 'o/r' } } };
+  const pr = { state: 'open', head: { ref: 'feature', sha: 'abc123', repo: { full_name: 'o/r' } }, base: { repo: { full_name: 'o/r' } } };
   const files = [
     { filename: 'entries/renovate.yaml', status: 'modified' },
     { filename: 'entries/gone.yaml', status: 'removed' },
@@ -152,8 +152,8 @@ describe('stamp-verified', () => {
 
   test('planStamp checks the command, the commenter and the PR', async () => {
     const plan = (over = {}) => planStamp({ client: fakeClient(pr, files), prNumber: 1, commenter: 'zmckenzie', body: '/verified', codeowners, ...over });
-    assert.deepEqual(await plan(), { ok: true, sameRepo: true, headRef: 'feature', slugs: ['renovate'] });
-    assert.deepEqual(await plan({ commenter: 'ZMcKenzie', body: '/verified a b' }), { ok: true, sameRepo: true, headRef: 'feature', slugs: ['a', 'b'] });
+    assert.deepEqual(await plan(), { ok: true, sameRepo: true, headRef: 'feature', headSha: 'abc123', slugs: ['renovate'] });
+    assert.deepEqual(await plan({ commenter: 'ZMcKenzie', body: '/verified a b' }), { ok: true, sameRepo: true, headRef: 'feature', headSha: 'abc123', slugs: ['a', 'b'] });
     assert.deepEqual(await plan({ body: 'hello' }), { ok: false, message: 'Not a /verified command.' });
     assert.deepEqual(await plan({ body: '/verified ../x' }), { ok: false, message: 'Slugs may only contain lowercase letters, numbers and hyphens.' });
     assert.match((await plan({ commenter: 'mallory' })).message, /@mallory isn't a code owner of entries\//);
@@ -183,6 +183,42 @@ describe('stamp-verified', () => {
     } finally {
       repo.cleanup();
     }
+  });
+
+  test('pushStamp commits the stamp on top of the planned head through the API', async () => {
+    const text = stringify(makeEntry());
+    let branchMoved = false;
+    const fetch = fakeFetch((url, init) => {
+      const route = `${init.method} ${url.replace('https://api.test/repos/o/r', '')}`;
+      if (route === 'GET /git/commits/abc123') return { json: { tree: { sha: 'tree0' } } };
+      if (route === 'GET /contents/entries/example.yaml?ref=abc123') return { json: { content: Buffer.from(text).toString('base64'), encoding: 'base64' } };
+      if (route === 'POST /git/trees') return { status: 201, json: { sha: 'tree1' } };
+      if (route === 'POST /git/commits') return { status: 201, json: { sha: 'new1' } };
+      if (route === 'PATCH /git/refs/heads/feat/x') return branchMoved ? { status: 422, body: 'Update is not a fast forward' } : { json: { object: { sha: 'new1' } } };
+      if (url === 'https://example.com/docs/github-app') return { body: '<p>Contents: read</p>' };
+      return undefined;
+    });
+    const client = createClient({ fetch, token: 't', repo: 'o/r', apiUrl: 'https://api.test' });
+    const args = { client, headRef: 'feat/x', headSha: 'abc123', slugs: ['example'], login: 'maint', date: '2026-06-01' };
+    assert.deepEqual(await pushStamp(args), { sha: 'new1', results: [{ slug: 'example', docHash: null }] });
+    const body = (route) => JSON.parse(fetch.calls.find((c) => `${c.init.method} ${c.url}`.endsWith(route)).init.body);
+    const tree = body('/git/trees');
+    assert.equal(tree.base_tree, 'tree0');
+    assert.equal(tree.tree.length, 1);
+    assert.deepEqual({ ...tree.tree[0], content: undefined }, { path: 'entries/example.yaml', mode: '100644', type: 'blob', content: undefined });
+    const written = parse(tree.tree[0].content);
+    assert.equal(written.verified_by, 'maint');
+    assert.equal(written.last_verified, '2026-06-01');
+    assert.equal(written.verification.status, 'ok');
+    assert.deepEqual(body('/git/commits'), { message: 'Record verification of example by @maint', tree: 'tree1', parents: ['abc123'] });
+    assert.deepEqual(body('/git/refs/heads/feat/x'), { sha: 'new1', force: false });
+
+    const withHash = await pushStamp({ ...args, data: await realData(), fetch });
+    assert.match(withHash.results[0].docHash, /^sha256:/);
+    await assert.rejects(pushStamp({ ...args, slugs: ['Bad'] }), /Invalid slug: Bad/);
+    assert.equal(fetch.calls.filter((c) => c.url.endsWith('/git/commits/abc123')).length, 2);
+    branchMoved = true;
+    await assert.rejects(pushStamp(args), /PATCH .* HTTP 422: Update is not a fast forward/);
   });
 
   test('forkInstructions names the files and fields', () => {

@@ -2,9 +2,12 @@
 # the verification: sets last_verified, verified_by, status "ok" and the current
 # documentation fingerprint, commits that to the PR branch, and re-runs CI.
 #
-# Safety: only the default branch's scripts run. The PR branch is checked out
-# as data (YAML files are read and edited), never executed. Fork PRs get a
-# comment with the values to set instead, because GITHUB_TOKEN can't push to forks.
+# Safety: only the default branch's scripts run, and the PR branch is never
+# checked out. The entries are read through the API at the head commit the plan
+# saw, and the stamp commit is a fast-forward from it, so a push made after the
+# plan makes the update fail instead of stamping unreviewed content. Fork PRs
+# get a comment with the values to set instead, because GITHUB_TOKEN can't
+# push to forks.
 name: Record verification
 
 on:
@@ -67,29 +70,15 @@ jobs:
           MESSAGE: ${{ steps.plan.outputs.message }}
         run: gh pr comment "${PR_NUMBER}" --repo "${GITHUB_REPOSITORY}" --body "${MESSAGE}"
 
-      - name: Checkout the pull request branch (as data)
-        if: steps.plan.outputs.ok == 'true' && steps.plan.outputs.same_repo == 'true'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ steps.plan.outputs.head_ref }}
-          path: pr
-          # Needed to push the stamp commit; no code from this checkout is run.
-          persist-credentials: true # zizmor: ignore[artipacked]
-
       - name: Stamp, commit and push
         if: steps.plan.outputs.ok == 'true' && steps.plan.outputs.same_repo == 'true'
         env:
           HEAD_REF: ${{ steps.plan.outputs.head_ref }}
+          HEAD_SHA: ${{ steps.plan.outputs.head_sha }}
           SLUGS: ${{ steps.plan.outputs.slugs }}
         run: |
           read -r -a slugs <<< "${SLUGS}"
-          node trusted/scripts/stamp-verified.mjs apply --root pr --login "${COMMENTER}" --fetch "${slugs[@]}"
-          cd pr
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add entries
-          git commit -m "Record verification of ${SLUGS} by @${COMMENTER}"
-          git push origin "HEAD:${HEAD_REF}"
+          node trusted/scripts/stamp-verified.mjs push --head-ref "${HEAD_REF}" --head-sha "${HEAD_SHA}" --login "${COMMENTER}" --fetch "${slugs[@]}"
           gh workflow run ci.yml --repo "${GITHUB_REPOSITORY}" --ref "${HEAD_REF}"
           gh workflow run validate.yml --repo "${GITHUB_REPOSITORY}" --ref "${HEAD_REF}"
           gh pr comment "${PR_NUMBER}" --repo "${GITHUB_REPOSITORY}" --body "Recorded the verification of ${SLUGS} by @${COMMENTER} and re-ran CI."
