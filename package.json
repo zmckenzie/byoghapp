@@ -1,0 +1,22 @@
+{
+  "name": "byoghapp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An open registry of GitHub App definitions that you create and own.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "test": "node --test \"test/scripts/**/*.test.mjs\" \"test/site/**/*.test.mjs\"",
+    "coverage": "node --test --experimental-test-coverage --test-coverage-lines=90 --test-coverage-branches=90 --test-coverage-functions=90 --test-coverage-include=\"scripts/**\" --test-coverage-include=\"site/lib/**\" \"test/scripts/**/*.test.mjs\" \"test/site/**/*.test.mjs\"",
+    "test:e2e": "node --test \"test/e2e/**/*.test.mjs\"",
+    "mutation": "node scripts/mutation.mjs",
+    "validate": "node scripts/validate.mjs",
+    "build": "node scripts/build.mjs",
+    "lint:site": "node scripts/lint-site.mjs",
+    "check": "node scripts/check-repo-hygiene.mjs && node scripts/validate.mjs && node scripts/build.mjs && node scripts/lint-site.mjs",
+    "serve": "node scripts/serve.mjs"
+  }
+}

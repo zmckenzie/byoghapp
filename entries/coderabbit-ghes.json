@@ -1,0 +1,88 @@
+{
+  "$schema": "../schema/entry.schema.json",
+  "slug": "coderabbit-ghes",
+  "name": "CodeRabbit (GitHub Enterprise Server)",
+  "vendor": "CodeRabbit",
+  "category": "ai-review",
+  "website": "https://coderabbit.ai",
+  "documentation_url": "https://docs.coderabbit.ai/platforms/github-enterprise-server",
+  "own_app": "ghes-only",
+  "supports": {
+    "user": false,
+    "org": true,
+    "enterprise": false,
+    "ghes": true
+  },
+  "install_scope": {
+    "repositories": "either",
+    "level": "org",
+    "notes": "Install on each organization CodeRabbit should review."
+  },
+  "credentials_needed": [
+    "app_id",
+    "client_id",
+    "client_secret",
+    "webhook_secret",
+    "private_key"
+  ],
+  "two_step_webhook": false,
+  "manual_steps": [
+    "Also create the OAuth App described in CodeRabbit's docs; CodeRabbit needs both.",
+    "Set a webhook secret, generate a client secret and a private key, and enter them with the app ID and client ID in CodeRabbit's onboarding form.",
+    "Install the app only after completing CodeRabbit's setup, or redeliver the failed installation event from the app's Advanced tab."
+  ],
+  "notes": "CodeRabbit's docs set the app to be installable on any account (public). Checks write is for the CodeRabbit Security check.",
+  "manifest": {
+    "name": "CodeRabbit",
+    "url": "https://coderabbit.ai",
+    "description": "GitHub App for CodeRabbit",
+    "hook_attributes": {
+      "url": "https://app.coderabbit.ai/githubHandler",
+      "active": true
+    },
+    "callback_urls": [
+      "https://app.coderabbit.ai/login"
+    ],
+    "request_oauth_on_install": true,
+    "public": true,
+    "default_permissions": {
+      "actions": "read",
+      "checks": "write",
+      "contents": "write",
+      "discussions": "read",
+      "issues": "write",
+      "members": "read",
+      "metadata": "read",
+      "pull_requests": "write",
+      "statuses": "write"
+    },
+    "default_events": [
+      "issue_comment",
+      "issues",
+      "label",
+      "meta",
+      "public",
+      "pull_request",
+      "pull_request_review",
+      "pull_request_review_comment",
+      "pull_request_review_thread",
+      "push",
+      "release"
+    ]
+  },
+  "last_verified": null,
+  "verified_by": null,
+  "verification": {
+    "status": "needs-review",
+    "method": "doc-hash",
+    "doc_hash": null
+  },
+  "changelog": [
+    {
+      "date": "2026-10-15",
+      "version": "1.0.0",
+      "author": "zmckenzie",
+      "summary": "Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer verification."
+    }
+  ]
+}

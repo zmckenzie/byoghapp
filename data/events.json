@@ -1,0 +1,376 @@
+{
+  "$comment": "Webhook events and the permission (any one of requires_any, at read level or higher) a GitHub App needs to subscribe. Source: https://docs.github.com/en/webhooks/webhook-events-and-payloads (GitHub docs data, fpt). Edit by hand; keep keys sorted.",
+  "events": {
+    "branch_protection_configuration": {
+      "requires_any": [
+        "administration"
+      ]
+    },
+    "branch_protection_rule": {
+      "requires_any": [
+        "administration"
+      ]
+    },
+    "check_run": {
+      "requires_any": [
+        "checks"
+      ],
+      "note": "Apps with write access to Checks are subscribed automatically."
+    },
+    "check_suite": {
+      "requires_any": [
+        "checks"
+      ],
+      "note": "Apps with write access to Checks are subscribed automatically."
+    },
+    "code_scanning_alert": {
+      "requires_any": [
+        "security_events"
+      ]
+    },
+    "commit_comment": {
+      "requires_any": [
+        "contents"
+      ]
+    },
+    "create": {
+      "requires_any": [
+        "contents"
+      ]
+    },
+    "custom_property": {
+      "requires_any": [
+        "organization_custom_properties"
+      ]
+    },
+    "custom_property_values": {
+      "requires_any": [
+        "organization_custom_properties"
+      ]
+    },
+    "delete": {
+      "requires_any": [
+        "contents"
+      ]
+    },
+    "dependabot_alert": {
+      "requires_any": [
+        "vulnerability_alerts"
+      ]
+    },
+    "deploy_key": {
+      "requires_any": [
+        "deployments"
+      ]
+    },
+    "deployment": {
+      "requires_any": [
+        "deployments"
+      ]
+    },
+    "deployment_protection_rule": {
+      "requires_any": [
+        "deployments"
+      ]
+    },
+    "deployment_review": {
+      "requires_any": [
+        "deployments"
+      ]
+    },
+    "deployment_status": {
+      "requires_any": [
+        "deployments"
+      ]
+    },
+    "discussion": {
+      "requires_any": [
+        "discussions"
+      ]
+    },
+    "discussion_comment": {
+      "requires_any": [
+        "discussions"
+      ]
+    },
+    "fork": {
+      "requires_any": [
+        "contents"
+      ]
+    },
+    "github_app_authorization": {
+      "subscribable": false,
+      "note": "Sent to every GitHub App automatically."
+    },
+    "gollum": {
+      "requires_any": [
+        "contents"
+      ]
+    },
+    "installation": {
+      "subscribable": false,
+      "note": "Sent to every GitHub App automatically."
+    },
+    "installation_repositories": {
+      "subscribable": false,
+      "note": "Sent to every GitHub App automatically."
+    },
+    "installation_target": {
+      "subscribable": false,
+      "note": "Sent to every GitHub App automatically."
+    },
+    "issue_comment": {
+      "requires_any": [
+        "issues"
+      ]
+    },
+    "issue_dependencies": {
+      "requires_any": [
+        "issues"
+      ]
+    },
+    "issue_relates_to": {
+      "requires_any": [
+        "issues"
+      ]
+    },
+    "issues": {
+      "requires_any": [
+        "issues"
+      ]
+    },
+    "label": {
+      "requires_any": [
+        "metadata"
+      ]
+    },
+    "marketplace_purchase": {
+      "subscribable": false,
+      "note": "Not available to GitHub Apps through webhooks settings."
+    },
+    "member": {
+      "requires_any": [
+        "members"
+      ]
+    },
+    "membership": {
+      "requires_any": [
+        "members"
+      ]
+    },
+    "merge_group": {
+      "requires_any": [
+        "merge_queues"
+      ]
+    },
+    "meta": {
+      "requires_any": [],
+      "note": "Sent when the app's webhook is deleted. GitHub lists it under the app's events; no permission needed."
+    },
+    "milestone": {
+      "requires_any": [
+        "issues",
+        "pull_requests"
+      ]
+    },
+    "org_block": {
+      "requires_any": [
+        "organization_administration"
+      ]
+    },
+    "organization": {
+      "requires_any": [
+        "members"
+      ]
+    },
+    "package": {
+      "subscribable": false,
+      "note": "Not available to GitHub Apps."
+    },
+    "page_build": {
+      "requires_any": [
+        "pages"
+      ]
+    },
+    "personal_access_token_request": {
+      "requires_any": [
+        "organization_personal_access_token_requests"
+      ]
+    },
+    "ping": {
+      "subscribable": false,
+      "note": "Sent automatically when a webhook is created."
+    },
+    "project": {
+      "requires_any": [
+        "repository_projects",
+        "organization_projects"
+      ]
+    },
+    "project_card": {
+      "requires_any": [
+        "repository_projects",
+        "organization_projects"
+      ]
+    },
+    "project_column": {
+      "requires_any": [
+        "repository_projects",
+        "organization_projects"
+      ]
+    },
+    "projects_v2": {
+      "subscribable": false,
+      "note": "Not available to GitHub Apps."
+    },
+    "projects_v2_item": {
+      "subscribable": false,
+      "note": "Not available to GitHub Apps."
+    },
+    "projects_v2_status_update": {
+      "subscribable": false,
+      "note": "Not available to GitHub Apps."
+    },
+    "public": {
+      "requires_any": [
+        "metadata"
+      ]
+    },
+    "pull_request": {
+      "requires_any": [
+        "pull_requests"
+      ]
+    },
+    "pull_request_review": {
+      "requires_any": [
+        "pull_requests"
+      ]
+    },
+    "pull_request_review_comment": {
+      "requires_any": [
+        "pull_requests"
+      ]
+    },
+    "pull_request_review_thread": {
+      "requires_any": [
+        "pull_requests"
+      ]
+    },
+    "push": {
+      "requires_any": [
+        "contents"
+      ]
+    },
+    "registry_package": {
+      "requires_any": [
+        "packages"
+      ]
+    },
+    "release": {
+      "requires_any": [
+        "contents"
+      ]
+    },
+    "repository": {
+      "requires_any": [
+        "metadata"
+      ]
+    },
+    "repository_advisory": {
+      "requires_any": [
+        "repository_advisories"
+      ]
+    },
+    "repository_dispatch": {
+      "requires_any": [
+        "contents"
+      ]
+    },
+    "repository_import": {
+      "subscribable": false,
+      "note": "Not available to GitHub Apps."
+    },
+    "repository_ruleset": {
+      "requires_any": [
+        "administration",
+        "organization_administration"
+      ]
+    },
+    "repository_vulnerability_alert": {
+      "subscribable": false,
+      "note": "Not available to GitHub Apps."
+    },
+    "secret_scanning_alert": {
+      "requires_any": [
+        "secret_scanning_alerts"
+      ]
+    },
+    "secret_scanning_alert_location": {
+      "requires_any": [
+        "secret_scanning_alerts"
+      ]
+    },
+    "secret_scanning_scan": {
+      "requires_any": [
+        "secret_scanning_alerts"
+      ]
+    },
+    "security_advisory": {
+      "requires_any": []
+    },
+    "security_and_analysis": {
+      "requires_any": [
+        "administration"
+      ]
+    },
+    "sponsorship": {
+      "subscribable": false,
+      "note": "Not available to GitHub Apps."
+    },
+    "star": {
+      "requires_any": [
+        "metadata"
+      ]
+    },
+    "status": {
+      "requires_any": [
+        "statuses"
+      ]
+    },
+    "sub_issues": {
+      "requires_any": [
+        "issues"
+      ]
+    },
+    "team": {
+      "requires_any": [
+        "members"
+      ]
+    },
+    "team_add": {
+      "requires_any": [
+        "members"
+      ]
+    },
+    "watch": {
+      "requires_any": [
+        "metadata"
+      ]
+    },
+    "workflow_dispatch": {
+      "requires_any": [
+        "contents"
+      ]
+    },
+    "workflow_job": {
+      "requires_any": [
+        "actions"
+      ]
+    },
+    "workflow_run": {
+      "requires_any": [
+        "actions"
+      ]
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema/entry.schema.json",
+  "slug": "claude-code-ghes",
+  "name": "Claude Code (GitHub Enterprise Server)",
+  "vendor": "Anthropic",
+  "category": "ai-coding",
+  "website": "https://code.claude.com",
+  "documentation_url": "https://code.claude.com/docs/en/github-enterprise-server",
+  "own_app": "ghes-only",
+  "supports": {
+    "user": true,
+    "org": true,
+    "enterprise": false,
+    "ghes": true
+  },
+  "install_scope": {
+    "repositories": "either",
+    "level": "org-or-user"
+  },
+  "credentials_needed": [
+    "app_id",
+    "client_id",
+    "client_secret",
+    "webhook_secret",
+    "private_key"
+  ],
+  "two_step_webhook": true,
+  "manual_steps": [
+    "Prefer the guided setup in Claude's Organization settings > Git providers, which creates the app from a manifest.",
+    "If you create the app by hand: enter the app ID, client ID, client secret, webhook secret and private key in Claude, then copy the webhook URL Claude generates into the app's webhook settings."
+  ],
+  "notes": "Claude's docs warn that GitHub applies a manifest only at creation: an app created from an earlier manifest keeps its old permissions and events, so compare it with this entry. Requires a Claude Team or Enterprise plan.",
+  "manifest": {
+    "name": "Claude",
+    "url": "https://code.claude.com",
+    "hook_attributes": {
+      "url": "https://example.invalid/replace-with-your-webhook-url",
+      "active": true
+    },
+    "public": false,
+    "default_permissions": {
+      "actions": "read",
+      "checks": "write",
+      "contents": "write",
+      "issues": "write",
+      "members": "read",
+      "metadata": "read",
+      "pull_requests": "write",
+      "repository_hooks": "write",
+      "statuses": "read"
+    },
+    "default_events": [
+      "check_run",
+      "issue_comment",
+      "pull_request",
+      "pull_request_review",
+      "pull_request_review_comment",
+      "status"
+    ]
+  },
+  "last_verified": null,
+  "verified_by": null,
+  "verification": {
+    "status": "needs-review",
+    "method": "doc-hash",
+    "doc_hash": null
+  },
+  "changelog": [
+    {
+      "date": "2026-10-15",
+      "version": "1.0.0",
+      "author": "zmckenzie",
+      "summary": "Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer verification."
+    }
+  ]
+}

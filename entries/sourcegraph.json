@@ -1,0 +1,89 @@
+{
+  "$schema": "../schema/entry.schema.json",
+  "slug": "sourcegraph",
+  "name": "Sourcegraph",
+  "vendor": "Sourcegraph",
+  "category": "code-search",
+  "website": "https://sourcegraph.com",
+  "documentation_url": "https://sourcegraph.com/docs/admin/code-hosts/github",
+  "own_app": "optional",
+  "supports": {
+    "user": true,
+    "org": true,
+    "enterprise": true,
+    "ghes": true
+  },
+  "install_scope": {
+    "repositories": "either",
+    "level": "org-or-user",
+    "notes": "Install on every organization or user account whose repositories Sourcegraph should sync."
+  },
+  "credentials_needed": [
+    "client_id",
+    "client_secret",
+    "private_key"
+  ],
+  "two_step_webhook": false,
+  "manual_steps": [
+    "Prefer Sourcegraph's Administration > Repositories > GitHub Apps > Create GitHub App, which also sets up the incoming webhook. Use 'Add an existing GitHub App' for enterprise-owned apps.",
+    "To enforce repository permissions, create a client secret and configure the app as an authentication provider in Sourcegraph."
+  ],
+  "notes": "Sourcegraph sets up a webhook when it creates the app, but its docs don't list the events, so this entry leaves the webhook off. Administration read-only is only needed for groups caching.",
+  "manifest": {
+    "name": "Sourcegraph",
+    "url": "https://sourcegraph.com",
+    "hook_attributes": {
+      "url": "https://example.invalid/webhook-not-used",
+      "active": false
+    },
+    "public": false,
+    "default_permissions": {
+      "contents": "read",
+      "emails": "read",
+      "members": "read",
+      "metadata": "read"
+    },
+    "default_events": []
+  },
+  "variants": [
+    {
+      "id": "sync",
+      "name": "Repository sync and permissions",
+      "default_permissions": {
+        "contents": "read",
+        "emails": "read",
+        "members": "read",
+        "metadata": "read"
+      },
+      "default_events": []
+    },
+    {
+      "id": "groups-caching",
+      "name": "With groups caching",
+      "description": "Adds Administration read-only for team and organization permission caching.",
+      "default_permissions": {
+        "administration": "read",
+        "contents": "read",
+        "emails": "read",
+        "members": "read",
+        "metadata": "read"
+      },
+      "default_events": []
+    }
+  ],
+  "last_verified": null,
+  "verified_by": null,
+  "verification": {
+    "status": "needs-review",
+    "method": "doc-hash",
+    "doc_hash": null
+  },
+  "changelog": [
+    {
+      "date": "2026-10-15",
+      "version": "1.0.0",
+      "author": "zmckenzie",
+      "summary": "Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer verification."
+    }
+  ]
+}

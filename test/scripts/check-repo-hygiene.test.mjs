@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { findViolations } from './check-repo-hygiene.mjs';
+import { findViolations } from '../../scripts/check-repo-hygiene.mjs';
 
 const flagged = (path) => findViolations([path]).length > 0;
 

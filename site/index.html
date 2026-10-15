@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; form-action https://github.com https://*.ghe.com; base-uri 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="byoghapp: an open registry of GitHub App definitions that you create and own, with permission risk summaries and pre-filled launch links.">
+  <title>byoghapp: GitHub App definitions you own</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#view">Skip to content</a>
+  <header class="site-header">
+    <p class="brand"><a href="#">byoghapp</a></p>
+    <p class="tagline">A registry of GitHub App definitions you own</p>
+  </header>
+  <main>
+    <form id="filters" class="filters" role="search" hidden>
+      <div class="field field-wide">
+        <label for="q">Search</label>
+        <input id="q" type="search" placeholder="Product, vendor or permission" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category"></select>
+      </div>
+      <div class="field">
+        <label for="tier">Highest risk</label>
+        <select id="tier"></select>
+      </div>
+      <div class="field">
+        <label for="owner-filter">Owner</label>
+        <select id="owner-filter">
+          <option value="">Any</option>
+          <option value="user">Personal account</option>
+          <option value="org">Organization</option>
+          <option value="enterprise">Enterprise</option>
+          <option value="ghes">GitHub Enterprise Server</option>
+        </select>
+      </div>
+    </form>
+    <div id="view" tabindex="-1" aria-live="polite"><p class="muted">Loading the registry…</p></div>
+  </main>
+  <footer class="site-footer">
+    <p id="generated" class="muted"></p>
+    <p>byoghapp is an independent community project, not affiliated with or endorsed by GitHub or any vendor listed. Entries are contributed and can be wrong: check them against the vendor's documentation.
+      <a href="https://github.com/zmckenzie/byoghapp">Source and contributing</a> · <a href="https://github.com/zmckenzie/byoghapp/blob/main/SECURITY.md">Security</a></p>
+  </footer>
+</body>
+</html>
