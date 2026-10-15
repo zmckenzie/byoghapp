@@ -123,6 +123,13 @@ export function checkEntry(entry, { slug, today, data }) {
   return errors;
 }
 
+/** Fields a maintainer's /verified stamp changes; re-verifying alone needs no changelog line. */
+const VERIFICATION_KEYS = ['last_verified', 'verified_by', 'verification'];
+
+function withoutVerification(entry) {
+  return Object.fromEntries(Object.entries(entry).filter(([k]) => !VERIFICATION_KEYS.includes(k)));
+}
+
 /** Keys whose change counts as a definition change (needs a version bump and review). */
 const DEFINITION_KEYS = ['manifest', 'variants'];
 
@@ -139,7 +146,8 @@ export function checkChange(before, after, { prAuthor, maintainers = [], today }
 
   const known = new Set((before?.changelog ?? []).map((c) => c.version));
   const added = after.changelog.filter((c) => !known.has(c.version));
-  if (before && added.length === 0) errors.push('the entry changed but changelog has no new line: add one at the top');
+  const onlyVerification = before && jsonEqual(withoutVerification(before), withoutVerification(after));
+  if (before && added.length === 0 && !onlyVerification) errors.push('the entry changed but changelog has no new line: add one at the top');
   if (before && added.length > 0 && after.changelog[0] !== added[0]) errors.push('new changelog lines must go at the top');
   if (before && !jsonEqual(before.changelog, after.changelog.slice(added.length))) {
     errors.push('existing changelog lines must not be edited or removed');

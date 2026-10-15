@@ -163,6 +163,12 @@ describe('checkChange', () => {
     assert.ok(checkChange(v1, bottom, ctx).includes('new changelog lines must go at the top'));
   });
 
+  test('re-verifying alone needs no changelog line', () => {
+    const stamped = { ...v1, last_verified: TODAY, verified_by: 'maint', verification: { status: 'ok', method: 'doc-hash', doc_hash: `sha256:${'a'.repeat(64)}` } };
+    assert.deepEqual(checkChange(v1, stamped, ctx), []);
+    assert.deepEqual(checkChange(v1, { ...stamped, notes: 'also changed' }, ctx), ['the entry changed but changelog has no new line: add one at the top']);
+  });
+
   test('old changelog lines are immutable', () => {
     const rewritten = { ...v1, changelog: [line('1.0.1'), { ...v1.changelog[0], summary: 'rewritten' }] };
     assert.ok(checkChange(v1, rewritten, ctx).includes('existing changelog lines must not be edited or removed'));
