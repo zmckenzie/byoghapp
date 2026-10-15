@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: port-ocean
+name: Port (GitHub Ocean)
+vendor: Port
+category: dev-portal
+website: https://port.io
+documentation_url: >-
+  https://docs.port.io/context-lake/ingestion/ingest-data-into-port/native-integrations/available-integrations/git/github-ocean/
+own_app: optional
+supports:
+  user: false
+  org: true
+  enterprise: true
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+  notes: >-
+    Install the app in every organization you want to sync; an enterprise-owned app still needs an
+    installation in each organization.
+credentials_needed:
+  - app_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - Leave the callback URL and setup URL empty.
+  - >-
+    Generate a private key, base64-encode it, and give it with the app ID to the integration. No
+    installation ID is needed.
+  - >-
+    Set OCEAN__BASE_URL so the integration creates the organization webhooks it needs.
+notes: >-
+  The docs walk through an enterprise-owned app; an org-owned app can be transferred to the
+  enterprise later. Port can also manage an app for you, or you can use a PAT. Port's key-changes
+  page still says GitHub App auth supports one organization at a time.
+manifest:
+  name: Port
+  url: https://port.io
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    actions: read
+    administration: read
+    checks: read
+    contents: read
+    deployments: read
+    environments: read
+    members: read
+    metadata: read
+    organization_administration: read
+    organization_hooks: write
+    pull_requests: read
+    security_events: read
+    vulnerability_alerts: read
+  default_events: []
+variants:
+  - id: read-only
+    name: Catalog sync
+    description: Ingest GitHub data into the catalog.
+    default_permissions:
+      actions: read
+      administration: read
+      checks: read
+      contents: read
+      deployments: read
+      environments: read
+      members: read
+      metadata: read
+      organization_administration: read
+      organization_hooks: write
+      pull_requests: read
+      security_events: read
+      vulnerability_alerts: read
+    default_events: []
+  - id: trigger-workflows
+    name: Catalog sync and workflow triggers
+    description: Actions read and write, if you also trigger GitHub Actions workflows from Port.
+    default_permissions:
+      actions: write
+      administration: read
+      checks: read
+      contents: read
+      deployments: read
+      environments: read
+      members: read
+      metadata: read
+      organization_administration: read
+      organization_hooks: write
+      pull_requests: read
+      security_events: read
+      vulnerability_alerts: read
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

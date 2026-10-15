@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: cloudbees-ci
+name: Jenkins / CloudBees CI
+vendor: CloudBees
+category: ci-cd
+website: https://www.cloudbees.com
+documentation_url: >-
+  https://docs.cloudbees.com/docs/cloudbees-ci/latest/cloud-admin-guide/github-app-auth
+own_app: optional
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+  notes: >-
+    Choose Any account to use one app across several organizations; CloudBees CI then needs one
+    credential per organization.
+credentials_needed:
+  - app_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the webhook URL to https://<jenkins-host>/github-webhook/ and choose a webhook secret.
+  - >-
+    Generate a private key and convert it with openssl pkcs8 -topk8 -inform PEM -outform PEM -in
+    <key>.pem -out converted-github-app.pem -nocrypt.
+  - >-
+    Add a GitHub App credential in CloudBees CI with the app ID and converted key, and select it in
+    the GitHub Organization job.
+  - >-
+    Add the webhook secret as a shared secret under Manage Jenkins > System > GitHub Servers.
+notes: >-
+  These are the minimum permissions for Multibranch Pipelines. Webhooks are optional but strongly
+  recommended. For GitHub Enterprise, set the API URL on both the credential and the job.
+manifest:
+  name: Jenkins
+  url: https://www.cloudbees.com
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    administration: read
+    checks: write
+    contents: read
+    metadata: read
+    pull_requests: read
+    statuses: write
+  default_events:
+    - check_run
+    - check_suite
+    - pull_request
+    - push
+    - repository
+variants:
+  - id: minimum
+    name: Multibranch Pipelines
+    description: The minimum permissions for general Multibranch Pipeline workflows.
+    default_permissions:
+      administration: read
+      checks: write
+      contents: read
+      metadata: read
+      pull_requests: read
+      statuses: write
+    default_events:
+      - check_run
+      - check_suite
+      - pull_request
+      - push
+      - repository
+  - id: manage-webhooks
+    name: Multibranch Pipelines with managed webhooks
+    description: >-
+      Adds Webhooks read and write so the plugin can manage repository webhooks for you.
+    default_permissions:
+      administration: read
+      checks: write
+      contents: read
+      metadata: read
+      pull_requests: read
+      repository_hooks: write
+      statuses: write
+    default_events:
+      - check_run
+      - check_suite
+      - pull_request
+      - push
+      - repository
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: opslevel-self-hosted
+name: OpsLevel (self-hosted)
+vendor: OpsLevel
+category: dev-portal
+website: https://www.opslevel.com
+documentation_url: https://docs.opslevel.com/docs/github-self-hosted-opslevel
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the setup URL to <Self-Hosted OpsLevel Domain>/integrations/github/finish_setup.
+  - >-
+    Set the webhook URL to <Self-Hosted OpsLevel Domain>/integrations/github/webhook and keep SSL
+    verification enabled.
+  - >-
+    Copy the webhook secret and the configuration options from the app settings page into the GitHub
+    Cloud settings in Replicated.
+notes: >-
+  The page covers GitHub Cloud only. It names only the webhook secret explicitly; the other
+  configuration values are shown in a screenshot.
+manifest:
+  name: OpsLevel
+  url: https://www.opslevel.com
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    administration: write
+    checks: write
+    contents: write
+    metadata: read
+    pull_requests: write
+  default_events:
+    - pull_request
+    - push
+    - repository
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

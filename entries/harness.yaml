@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: harness
+name: Harness
+vendor: Harness
+category: ci-cd
+website: https://harness.io
+documentation_url: >-
+  https://developer.harness.io/harness-platform/use-harness-platform/connectors/code-repositories/git-hub-app-support
+own_app: optional
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: selected
+  level: org-or-user
+  notes: >-
+    The docs say to choose "Only select repositories" and pick the repos the connector uses.
+credentials_needed:
+  - app_id
+  - installation_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Set "Where can this GitHub App be installed" to Any account: the docs say the app must be public
+    to use it with a GitHub connector.
+  - >-
+    Note the installation ID from the installed app URL and the app ID from the General tab.
+  - >-
+    Generate a private key, convert it as the docs show, and store it as a Harness encrypted file
+    secret.
+  - >-
+    In the GitHub connector, choose GitHub App for authentication or API access and enter the
+    installation ID, app ID and key secret.
+notes: >-
+  The docs require a public app, but this entry creates a private one; make it public after creating
+  it. Their install-time list (Metadata, Code, Commit statuses, Pull requests) leaves out Webhooks.
+  Pull requests write is needed for the Issue Comment trigger.
+manifest:
+  name: Harness
+  url: https://harness.io
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    contents: write
+    metadata: read
+    pull_requests: write
+    repository_hooks: write
+    statuses: write
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

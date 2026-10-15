@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: spotify-portal
+name: Spotify Portal for Backstage
+vendor: Spotify
+category: dev-portal
+website: https://backstage.spotify.com
+documentation_url: https://backstage.spotify.com/docs/portal/guides/auth/github/setup-auth
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    In Portal, open Admin > App Settings > Auth, select GitHub and enter the client ID and client
+    secret (and the Enterprise Instance URL for GitHub Enterprise Server).
+  - >-
+    Open Admin > App Settings > Integrations and enter the app ID, client ID, client secret and
+    private key.
+  - >-
+    Set up catalog ingestion for components and users/groups under Admin > Catalog Settings.
+notes: >-
+  The page does not mention a webhook. Its "How to find your Client ID and Secret" section talks
+  about an OAuth app, although the rest of the guide uses a GitHub App.
+manifest:
+  name: Spotify Portal
+  url: https://backstage.spotify.com
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    actions: write
+    administration: write
+    contents: write
+    deployments: read
+    issues: write
+    members: read
+    metadata: read
+    pull_requests: write
+    repository_advisories: read
+    secret_scanning_alerts: read
+    security_events: read
+    statuses: read
+    vulnerability_alerts: read
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.
