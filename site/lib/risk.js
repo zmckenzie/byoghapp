@@ -1,4 +1,4 @@
-// Permission risk model. Tiers come from data/permissions.json; this module only
+// Permission risk model. Tiers come from data/permissions.yaml; this module only
 // combines them, so no entry ever carries hand-written risk text.
 
 export const TIER_ORDER = ['low', 'medium', 'high', 'critical'];

@@ -8,7 +8,7 @@ By taking part you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 ## Ways to contribute
 
 - **Add or update a registry entry.** This is the most valuable contribution. Once the schema
-  lands, adding an entry means one JSON file and a pull request.
+  lands, adding an entry means one YAML file and a pull request.
 - **Report a problem with an entry.** For example, a vendor changed its documentation or a
   permission is wrong. Use the *Report a problem with an entry* issue form.
 - **Improve the site, validator or automation.** Look for issues labeled
@@ -60,8 +60,9 @@ it will be vendored and pinned, not installed from the registry at build time.
 
 1. Read the vendor's documentation for creating the GitHub App. Every permission, level and
    webhook event you add must appear there.
-2. Copy a similar file in `entries/` to `entries/<slug>.json`. `slug` is lowercase with
-   hyphens and must match the file name.
+2. Copy a similar file in `entries/` to `entries/<slug>.yaml`. `slug` is lowercase with
+   hyphens and must match the file name. Comments are welcome: quote the vendor's wording next
+   to a permission (`contents: read  # "Contents: Read-only" in step 3`) to help reviewers.
 3. Fill in `manifest` with GitHub's manifest fields. Use a placeholder webhook URL under
    `https://example.invalid/` with `two_step_webhook: true` when the URL is only known after
    the vendor side is set up. If the vendor documents different permission sets for different
@@ -72,6 +73,15 @@ it will be vendored and pinned, not installed from the registry at build time.
 5. Add a line at the top of `changelog` with today's date, a higher version and your GitHub
    login (it must match the pull request author).
 6. Run `npm run validate` and `npm run build`, and look at your entry with `npm run serve`.
+
+### The YAML subset
+
+Entries and data files use a strict subset of YAML, parsed by `scripts/lib/yaml.mjs` with no
+dependencies. Block mappings and lists, quoted and plain strings, `true`/`false`, `null`,
+integers, `|` and `>` block text, `[]`, `{}` and comments all work. Anchors, aliases, tags,
+`{...}`/`[...]` flow style, tabs and duplicate keys are rejected with a line number. So are
+values YAML tools disagree on, such as `yes`, `no`, `on`, `off` or `1.5`: quote them if you
+mean a string. Plain dates (`2026-10-15`) and versions (`1.0.0`) are strings.
 
 ## Pull requests
 

@@ -1,0 +1,122 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: axonius
+name: Axonius GitHub adapter
+vendor: Axonius
+category: asset-management
+website: https://www.axonius.com
+documentation_url: https://docs.axonius.com/docs/github
+documentation_urls:
+  - https://docs.axonius.com/docs/github-permissions
+own_app: optional
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+  notes: Install on every organization Axonius should fetch from.
+credentials_needed:
+  - app_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Generate a private key and upload it to Axonius with the app ID, then select 'Authenticate using
+    GitHub App'.
+  - >-
+    The docs also ask for read-only Gists, Profile and Codespaces secrets, but GitHub only offers
+    those as read and write. byoghapp leaves them out: add them by hand only if you need that data.
+notes: >-
+  Axonius's two pages disagree: the main page lists only Email addresses, Followers, Gists and
+  Profile; the linked permissions page lists many more, grouped by the data collected. This entry
+  uses the union of valid permissions. Account permissions such as Email addresses only apply to
+  user-to-server tokens. Webhooks aren't documented, so the webhook is off.
+manifest:
+  name: Axonius
+  url: https://www.axonius.com
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    administration: read
+    codespaces_metadata: read
+    contents: read
+    discussions: read
+    emails: read
+    followers: read
+    members: read
+    metadata: read
+    organization_administration: read
+    organization_custom_org_roles: read
+    organization_custom_properties: read
+    organization_custom_roles: read
+    organization_projects: read
+    pull_requests: read
+    statuses: read
+  default_events: []
+variants:
+  - id: assets
+    name: Assets
+    description: Repositories, users, organizations and application resources.
+    default_permissions:
+      administration: read
+      codespaces_metadata: read
+      contents: read
+      discussions: read
+      emails: read
+      followers: read
+      members: read
+      metadata: read
+      organization_administration: read
+      organization_custom_org_roles: read
+      organization_custom_properties: read
+      organization_custom_roles: read
+      organization_projects: read
+      pull_requests: read
+      statuses: read
+    default_events: []
+  - id: full
+    name: Assets, secrets, alerts and licenses
+    description: Adds the permissions Axonius lists for secrets, alerts and license data.
+    default_permissions:
+      administration: read
+      codespaces_metadata: read
+      contents: read
+      discussions: read
+      emails: read
+      followers: read
+      git_signing_ssh_public_keys: read
+      gpg_keys: read
+      keys: read
+      members: read
+      metadata: read
+      organization_administration: read
+      organization_custom_org_roles: read
+      organization_custom_properties: read
+      organization_custom_roles: read
+      organization_personal_access_tokens: read
+      organization_projects: read
+      organization_secrets: read
+      plan: read
+      pull_requests: read
+      secret_scanning_alerts: read
+      secrets: read
+      security_events: read
+      statuses: read
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

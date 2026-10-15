@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Want to add it yourself? See CONTRIBUTING.md; an entry is a single JSON file.
+        Want to add it yourself? See CONTRIBUTING.md; an entry is a single YAML file.
   - type: input
     id: product
     attributes:

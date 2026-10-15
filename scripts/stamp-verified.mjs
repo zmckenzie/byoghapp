@@ -12,7 +12,8 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { codeOwnersFor } from './lib/entry-rules.mjs';
 import { createClient } from './lib/github.mjs';
-import { ROOT, loadData, readEntry, todayUtc } from './lib/repo.mjs';
+import { ROOT, entryPath, loadData, readEntry, todayUtc } from './lib/repo.mjs';
+import { setTopLevel } from './lib/yaml.mjs';
 import { currentFingerprint } from './verify.mjs';
 
 const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -48,7 +49,7 @@ export async function planStamp({ client, prNumber, commenter, body, codeowners 
   const command = parseCommand(body);
   if (!command) return { ok: false, message: 'Not a /verified command.' };
   if (command.error) return { ok: false, message: command.error };
-  const maintainers = codeOwnersFor(codeowners, 'entries/x.json');
+  const maintainers = codeOwnersFor(codeowners, entryPath('x'));
   if (!maintainers.some((m) => m.toLowerCase() === commenter.toLowerCase())) {
     return { ok: false, message: `@${commenter} isn't a code owner of entries/, so the verification wasn't recorded.` };
   }
@@ -56,17 +57,21 @@ export async function planStamp({ client, prNumber, commenter, body, codeowners 
   if (pr.state !== 'open') return { ok: false, message: 'The pull request is not open.' };
   const files = await client.listPullFiles(prNumber);
   const changed = files
-    .filter((f) => f.status !== 'removed' && /^entries\/[a-z0-9-]+\.json$/.test(f.filename))
-    .map((f) => f.filename.slice('entries/'.length, -'.json'.length));
+    .filter((f) => f.status !== 'removed' && /^entries\/[a-z0-9-]+\.yaml$/.test(f.filename))
+    .map((f) => f.filename.slice('entries/'.length, -'.yaml'.length));
   const slugs = command.slugs.length > 0 ? command.slugs : changed;
   if (slugs.length === 0) return { ok: false, message: 'This pull request changes no entries: name them, as in `/verified renovate`.' };
   return { ok: true, sameRepo: pr.head.repo?.full_name === pr.base.repo.full_name, headRef: pr.head.ref, slugs };
 }
 
-/** Stamps entries under root. `fetch` enables recording the current doc_hash. */
+/**
+ * Stamps entries under root, editing only the verification keys so the rest of
+ * the file (comments included) is untouched. `fetch` enables recording the
+ * current doc_hash.
+ */
 export async function applyStamp({ root, slugs, login, date, fetch }) {
   const data = fetch ? loadData(root) : null;
-  const stamped = [];
+  const results = [];
   for (const slug of slugs) {
     if (!SLUG_RE.test(slug)) throw new Error(`Invalid slug: ${slug}`);
     const { entry, error } = readEntry(slug, root);
@@ -77,16 +82,22 @@ export async function applyStamp({ root, slugs, login, date, fetch }) {
       if (current.error) throw new Error(`${slug}: ${current.error}`);
       docHash = current.hash;
     }
-    writeFileSync(join(root, 'entries', `${slug}.json`), `${JSON.stringify(stampEntry(entry, { login, date, docHash }), null, 2)}\n`);
-    stamped.push({ slug, docHash: docHash ?? null });
+    const stamped = stampEntry(entry, { login, date, docHash });
+    const path = join(root, entryPath(slug));
+    writeFileSync(path, setTopLevel(readFileSync(path, 'utf8'), {
+      last_verified: stamped.last_verified,
+      verified_by: stamped.verified_by,
+      verification: stamped.verification,
+    }));
+    results.push({ slug, docHash: docHash ?? null });
   }
-  return stamped;
+  return results;
 }
 
 /** Instructions for fork pull requests, which the workflow can't push to. */
 export function forkInstructions(slugs, login, date) {
-  return [`Verified by @${login}. This pull request comes from a fork, so the bot can't push the change. Please set these fields in ${slugs.map((s) => `\`entries/${s}.json\``).join(', ')}:`,
-    '', '```json', JSON.stringify({ last_verified: date, verified_by: login, verification: { status: 'ok' } }, null, 2), '```',
+  return [`Verified by @${login}. This pull request comes from a fork, so the bot can't push the change. Please set these fields in ${slugs.map((s) => `\`${entryPath(s)}\``).join(', ')}:`,
+    '', '```yaml', `last_verified: ${date}`, `verified_by: ${login}`, 'verification:', '  status: ok', '```',
     '', 'A maintainer can also run `node scripts/stamp-verified.mjs apply --root . --login <login> --fetch <slug>` on a checkout of this branch.'].join('\n');
 }
 

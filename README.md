@@ -30,7 +30,7 @@ byoghapp collects those definitions in one place, in one format, with:
 
 ## How it works
 
-Each product is one JSON file in `entries/`. The static site renders each entry with two
+Each product is one YAML file in `entries/`. The static site renders each entry with two
 launchers:
 
 | Launcher | Works for | Secrets touch the page? |

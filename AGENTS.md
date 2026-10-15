@@ -8,7 +8,7 @@ and others) and for the people who use them. Human contributors should read
 
 byoghapp ("Bring Your Own GitHub App") is an open registry of GitHub App definitions that users
 create and own themselves. Each vendor that asks customers to register their own GitHub App gets
-one JSON entry. A static site renders each entry with a permission risk summary and launchers
+one YAML entry. A static site renders each entry with a permission risk summary and launchers
 that open GitHub's pre-filled "new app" form.
 
 **Status: pre-MVP.** The registry, validator, site and automation work; the seed entries are
@@ -36,15 +36,15 @@ when you change code under `scripts/` or `site/lib/`.
 ## Layout
 
 ```
-entries/<slug>.json         one product per file; GitHub's manifest shape kept intact under "manifest"
-data/permissions.json       permission key -> name, scope, levels with tier and blast radius, docs link
-data/events.json            webhook event -> permissions that allow subscribing to it
-data/categories.json        category key -> label
-schema/entry.schema.json    the entry schema (checked by scripts/lib/json-schema.mjs)
+entries/<slug>.yaml         one product per file; GitHub's manifest shape kept intact under "manifest"
+data/permissions.yaml       permission key -> name, scope, levels with tier and blast radius, docs link
+data/events.yaml            webhook event -> permissions that allow subscribing to it
+data/categories.yaml        category key -> label
+schema/entry.schema.json    the entry schema (checked by scripts/lib/json-schema.mjs; editors use it via the yaml-language-server comment)
 site/                       index.html, callback.html, app.js, callback.js, style.css
 site/lib/                   pure modules shared by the browser and Node: risk, launch, callback, search, render
 scripts/                    validate, build, lint-site, verify, verification-issues, stamp-verified, mutation, serve
-scripts/lib/                schema checker, entry rules, repo/git access, GitHub client, mutation core
+scripts/lib/                strict YAML subset, schema checker, entry rules, repo/git access, GitHub client, mutation core
 test/scripts, test/site     unit tests (node:test); test/helpers.mjs builds fixtures
 test/e2e/                   browser tests over the Chrome DevTools Protocol (test/e2e/cdp.mjs)
 ```
@@ -102,8 +102,8 @@ Verify these against GitHub's docs before you rely on them in code.
 - Manifests apply only when the app is created, so existing apps don't receive later permission
   changes. That's why entries carry a changelog.
 - GitHub always adds `metadata: read`. Webhook events need matching permissions
-  (`data/events.json`), and the validator rejects entries whose events exceed their permissions.
-- GitHub doesn't rank permissions by risk. byoghapp's tiers come from `data/permissions.json`.
+  (`data/events.yaml`), and the validator rejects entries whose events exceed their permissions.
+- GitHub doesn't rank permissions by risk. byoghapp's tiers come from `data/permissions.yaml`.
   Never hand-write risk text in an entry.
 
 ## Working rules for agents
@@ -113,6 +113,9 @@ Verify these against GitHub's docs before you rely on them in code.
   gitignored. Track work in GitHub Issues. CI fails if these files are committed.
 - **Keep diffs small and on topic.** Don't reformat unrelated files or make speculative
   refactors.
+- **YAML is a strict subset** (see CONTRIBUTING.md). Write entries with `scripts/lib/yaml.mjs`'s
+  `stringify`, or by hand in the same style; edit existing files with `setTopLevel` so comments
+  survive. Never add a YAML library.
 - **Don't invent registry data.** Every permission, event and URL in an entry must come from the
   vendor's documentation, and you must have read that page. If you can't verify a value, leave it
   out and say so in the pull request. Never set `last_verified`, `verified_by` or

@@ -19,10 +19,10 @@ describe('links', () => {
   });
 
   test('source and history links', () => {
-    assert.equal(entrySourceUrl(entry), `${REPO_URL}/blob/main/entries/renovate.json`);
-    assert.equal(entryHistoryUrl(entry), `${REPO_URL}/commits/main/entries/renovate.json`);
-    assert.equal(entrySourceUrl(entry, 'https://x'), 'https://x/blob/main/entries/renovate.json');
-    assert.equal(entryHistoryUrl(entry, 'https://x'), 'https://x/commits/main/entries/renovate.json');
+    assert.equal(entrySourceUrl(entry), `${REPO_URL}/blob/main/entries/renovate.yaml`);
+    assert.equal(entryHistoryUrl(entry), `${REPO_URL}/commits/main/entries/renovate.yaml`);
+    assert.equal(entrySourceUrl(entry, 'https://x'), 'https://x/blob/main/entries/renovate.yaml');
+    assert.equal(entryHistoryUrl(entry, 'https://x'), 'https://x/commits/main/entries/renovate.yaml');
   });
 
   test('site constants', () => {

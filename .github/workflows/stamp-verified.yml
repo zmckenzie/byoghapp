@@ -3,7 +3,7 @@
 # documentation fingerprint, commits that to the PR branch, and re-runs CI.
 #
 # Safety: only the default branch's scripts run. The PR branch is checked out
-# as data (JSON files are read and rewritten), never executed. Fork PRs get a
+# as data (YAML files are read and edited), never executed. Fork PRs get a
 # comment with the values to set instead, because GITHUB_TOKEN can't push to forks.
 name: Record verification
 

@@ -1,0 +1,1172 @@
+# Risk tiers are byoghapp's own model; GitHub does not rank permissions. Keys and levels come from
+# GitHub's REST OpenAPI description (app-permissions) and the 'Permissions required for GitHub
+# Apps' docs. Edit by hand; keep keys sorted.
+
+tiers:
+  critical:
+    rank: 4
+    label: Critical
+    summary: Can change who has access, read or set secrets, or run code through Actions.
+  high:
+    rank: 3
+    label: High
+    summary: Can change code, merge gates, deployments or security findings.
+  medium:
+    rank: 2
+    label: Medium
+    summary: Can read source code or sensitive security and organization data.
+  low:
+    rank: 1
+    label: Low
+    summary: Mostly public or structural data.
+permissions:
+  actions:
+    name: Actions
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read GitHub Actions workflow runs, artifacts and caches.
+      write:
+        tier: critical
+        blast_radius: Read and change GitHub Actions workflow runs, artifacts and caches.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-actions
+  actions_variables:
+    name: Variables
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read repository Actions variables.
+      write:
+        tier: high
+        blast_radius: Read and change repository Actions variables.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-variables
+    source: docs
+  administration:
+    name: Administration
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read repository settings, teams and collaborators.
+      write:
+        tier: critical
+        blast_radius: Read and change repository settings, teams and collaborators.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-administration
+  agent_secrets:
+    name: Agent secrets
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read repository agent secrets.
+      write:
+        tier: critical
+        blast_radius: Read and change repository agent secrets.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-agent-secrets
+    source: docs
+  agent_variables:
+    name: Agent variables
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read repository agent variables.
+      write:
+        tier: high
+        blast_radius: Read and change repository agent variables.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-agent-variables
+    source: docs
+  artifact_metadata:
+    name: Artifact metadata
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read build artifact metadata.
+      write:
+        tier: medium
+        blast_radius: Read and change build artifact metadata.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-artifact-metadata
+  attestations:
+    name: Attestations
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read artifact attestations (build provenance).
+      write:
+        tier: high
+        blast_radius: Read and change artifact attestations (build provenance).
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-attestations
+  blocking:
+    name: Block another user
+    scope: user
+    levels:
+      read:
+        tier: low
+        blast_radius: Read the user's blocked users.
+      write:
+        tier: medium
+        blast_radius: Read and change the user's blocked users.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-block-another-user
+    source: docs
+  checks:
+    name: Checks
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read check runs and check suites.
+      write:
+        tier: high
+        blast_radius: Read and change check runs and check suites.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-checks
+  code_quality:
+    name: Code quality
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read code quality findings.
+      write:
+        tier: medium
+        blast_radius: Read and change code quality findings.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-code-quality
+  codespaces:
+    name: Codespaces
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read codespaces for the repository.
+      write:
+        tier: high
+        blast_radius: Read and change codespaces for the repository.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-codespaces
+  codespaces_lifecycle_admin:
+    name: Codespaces lifecycle admin
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read codespace lifecycle (start, stop, export).
+      write:
+        tier: high
+        blast_radius: Read and change codespace lifecycle (start, stop, export).
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-codespaces-lifecycle-admin
+    source: docs
+  codespaces_metadata:
+    name: Codespaces metadata
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read codespace metadata.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-codespaces-metadata
+    source: docs
+  codespaces_secrets:
+    name: Codespaces secrets
+    scope: repository
+    levels:
+      write:
+        tier: critical
+        blast_radius: Read and change repository Codespaces secrets.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-codespaces-secrets
+    source: docs
+  codespaces_user_secrets:
+    name: Codespaces user secrets
+    scope: user
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read the user's Codespaces secrets.
+      write:
+        tier: high
+        blast_radius: Read and change the user's Codespaces secrets.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-codespaces-user-secrets
+    source: docs
+  contents:
+    name: Contents
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read repository code, commits, branches, tags and releases.
+      write:
+        tier: high
+        blast_radius: >-
+          Push code, create releases and change branches. On every repository this is critical: it
+          can rewrite code everywhere the app is installed.
+        tier_all_repositories: critical
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-contents
+  copilot_agent_settings:
+    name: Copilot agent settings
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read Copilot agent settings for the repository.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-copilot-agent-settings
+    source: docs
+  custom_properties_for_organizations:
+    name: Custom properties for organizations
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read custom properties for organizations.
+      write:
+        tier: medium
+        blast_radius: Read and change custom properties for organizations.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    source: openapi
+  dependabot_secrets:
+    name: Dependabot secrets
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read Dependabot secrets.
+      write:
+        tier: critical
+        blast_radius: Read and change Dependabot secrets.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-dependabot-secrets
+  deployments:
+    name: Deployments
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read deployments and deployment statuses.
+      write:
+        tier: high
+        blast_radius: Read and change deployments and deployment statuses.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-deployments
+  discussions:
+    name: Discussions
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read discussions and discussion comments.
+      write:
+        tier: medium
+        blast_radius: Read and change discussions and discussion comments.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    source: openapi
+  email_addresses:
+    name: Email addresses
+    scope: user
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read the user's email addresses.
+      write:
+        tier: high
+        blast_radius: Read and change the user's email addresses.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    alias_of: emails
+    source: openapi
+  emails:
+    name: Email addresses
+    scope: user
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read the user's email addresses.
+      write:
+        tier: high
+        blast_radius: Read and change the user's email addresses.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-email-addresses
+    source: docs
+  enterprise_copilot_metrics:
+    name: Enterprise Copilot metrics
+    scope: enterprise
+    levels:
+      read:
+        tier: low
+        blast_radius: Read enterprise Copilot usage metrics.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#enterprise-permissions-for-enterprise-copilot-metrics
+    manual_only: true
+    source: docs
+  enterprise_custom_properties_for_organizations:
+    name: Custom properties for organizations
+    scope: enterprise
+    levels:
+      read:
+        tier: low
+        blast_radius: Read enterprise custom properties for organizations.
+      write:
+        tier: medium
+        blast_radius: Read and change enterprise custom properties for organizations.
+      admin:
+        tier: high
+        blast_radius: Administer enterprise custom properties for organizations.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    manual_only: true
+    source: openapi
+  environments:
+    name: Environments
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read deployment environments, their protection rules, secrets and variables.
+      write:
+        tier: high
+        blast_radius: >-
+          Read and change deployment environments, their protection rules, secrets and variables.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-environments
+  followers:
+    name: Followers
+    scope: user
+    levels:
+      read:
+        tier: low
+        blast_radius: Read the user's followers.
+      write:
+        tier: low
+        blast_radius: Read and change the user's followers.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-followers
+  gists:
+    name: Gists
+    scope: user
+    levels:
+      write:
+        tier: high
+        blast_radius: Read and change the user's gists.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-gists
+    source: docs
+  git_signing_ssh_public_keys:
+    name: SSH signing keys
+    scope: user
+    levels:
+      read:
+        tier: low
+        blast_radius: Read the user's SSH signing keys.
+      write:
+        tier: high
+        blast_radius: Read and change the user's SSH signing keys.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-ssh-signing-keys
+    source: docs
+  git_ssh_keys:
+    name: Git SSH keys
+    scope: user
+    levels:
+      read:
+        tier: low
+        blast_radius: Read the user's SSH authentication keys.
+      write:
+        tier: critical
+        blast_radius: Read and change the user's SSH authentication keys.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    alias_of: keys
+    source: openapi
+  gpg_keys:
+    name: GPG keys
+    scope: user
+    levels:
+      read:
+        tier: low
+        blast_radius: Read the user's GPG keys.
+      write:
+        tier: high
+        blast_radius: Read and change the user's GPG keys.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-gpg-keys
+  installation_repositories:
+    name: GitHub App installation repository access
+    scope: repository
+    levels:
+      write:
+        tier: critical
+        blast_radius: Read and change which repositories the app installation can access.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-github-app-installation-repository-access
+    source: docs
+  interaction_limits:
+    name: Interaction limits
+    scope: user
+    levels:
+      read:
+        tier: low
+        blast_radius: Read interaction limits on the user's repositories.
+      write:
+        tier: medium
+        blast_radius: Read and change interaction limits on the user's repositories.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-interaction-limits
+  issue_fields:
+    name: Issue Fields
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read organization issue fields.
+      write:
+        tier: medium
+        blast_radius: Read and change organization issue fields.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-issue-fields
+    source: docs
+  issue_types:
+    name: Issue Types
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read organization issue types.
+      write:
+        tier: medium
+        blast_radius: Read and change organization issue types.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-issue-types
+    source: docs
+  issues:
+    name: Issues
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read issues, comments, labels and milestones.
+      write:
+        tier: high
+        blast_radius: Read and change issues, comments, labels and milestones.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-issues
+  keys:
+    name: Git SSH keys
+    scope: user
+    levels:
+      read:
+        tier: low
+        blast_radius: Read the user's SSH authentication keys.
+      write:
+        tier: critical
+        blast_radius: Read and change the user's SSH authentication keys.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-git-ssh-keys
+    source: docs
+  members:
+    name: Members
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read organization members and teams.
+      write:
+        tier: critical
+        blast_radius: Read and change organization members and teams.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-members
+  merge_queues:
+    name: Merge queues
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read merge queues.
+      write:
+        tier: high
+        blast_radius: Read and change merge queues.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    source: openapi
+  metadata:
+    name: Metadata
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read basic repository metadata (always granted).
+      write:
+        tier: low
+        blast_radius: Read and change basic repository metadata (always granted).
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-metadata
+    always_granted: true
+  org_copilot_content_exclusion:
+    name: Copilot content exclusion
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read Copilot content exclusion rules.
+      write:
+        tier: high
+        blast_radius: Read and change Copilot content exclusion rules.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-copilot-content-exclusion
+    source: docs
+  organization_actions_variables:
+    name: Variables
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read organization Actions variables.
+      write:
+        tier: high
+        blast_radius: Read and change organization Actions variables.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-variables
+    source: docs
+  organization_administration:
+    name: Administration
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read organization settings.
+      write:
+        tier: critical
+        blast_radius: Read and change organization settings.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-administration
+  organization_agent_secrets:
+    name: Agent secrets
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read organization agent secrets.
+      write:
+        tier: critical
+        blast_radius: Read and change organization agent secrets.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-agent-secrets
+    source: docs
+  organization_agent_variables:
+    name: Agent variables
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read organization agent variables.
+      write:
+        tier: high
+        blast_radius: Read and change organization agent variables.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-agent-variables
+    source: docs
+  organization_announcement_banners:
+    name: Announcement banners
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read organization announcement banners.
+      write:
+        tier: medium
+        blast_radius: Read and change organization announcement banners.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    source: openapi
+  organization_api_insights:
+    name: API Insights
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read organization API usage insights.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-api-insights
+    source: docs
+  organization_campaigns:
+    name: Campaigns
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read security campaigns.
+      write:
+        tier: medium
+        blast_radius: Read and change security campaigns.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-campaigns
+    source: docs
+  organization_codespaces:
+    name: Organization codespaces
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read organization codespaces.
+      write:
+        tier: high
+        blast_radius: Read and change organization codespaces.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-organization-codespaces
+    source: docs
+  organization_codespaces_secrets:
+    name: Organization codespaces secrets
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read organization Codespaces secrets.
+      write:
+        tier: critical
+        blast_radius: Read and change organization Codespaces secrets.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-organization-codespaces-secrets
+    source: docs
+  organization_codespaces_settings:
+    name: Organization codespaces settings
+    scope: organization
+    levels:
+      write:
+        tier: high
+        blast_radius: Read and change organization Codespaces settings.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-organization-codespaces-settings
+    source: docs
+  organization_copilot_agent_settings:
+    name: Copilot agent settings
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read Copilot cloud agent settings.
+      write:
+        tier: high
+        blast_radius: Read and change Copilot cloud agent settings.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-copilot-agent-settings
+  organization_copilot_metrics:
+    name: Organization Copilot metrics
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read organization Copilot usage metrics.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-organization-copilot-metrics
+    source: docs
+  organization_copilot_requests:
+    name: Copilot requests
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read Copilot requests billed to the organization.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    source: openapi
+  organization_copilot_seat_management:
+    name: GitHub Copilot Business
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read Copilot Business seats.
+      write:
+        tier: high
+        blast_radius: Read and change Copilot Business seats.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-github-copilot-business
+  organization_copilot_spaces:
+    name: Copilot Spaces
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read Copilot Spaces.
+      write:
+        tier: medium
+        blast_radius: Read and change Copilot Spaces.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-copilot-spaces
+    source: docs
+  organization_custom_org_roles:
+    name: Custom organization roles
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read custom organization roles.
+      write:
+        tier: critical
+        blast_radius: Read and change custom organization roles.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-custom-organization-roles
+  organization_custom_properties:
+    name: Custom properties
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read custom property definitions for repositories.
+      write:
+        tier: medium
+        blast_radius: Read and change custom property definitions for repositories.
+      admin:
+        tier: high
+        blast_radius: Administer custom property definitions for repositories.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-custom-properties
+  organization_custom_roles:
+    name: Custom repository roles
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read custom repository roles.
+      write:
+        tier: critical
+        blast_radius: Read and change custom repository roles.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    source: openapi
+  organization_dependabot_secrets:
+    name: Organization dependabot secrets
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read organization Dependabot secrets.
+      write:
+        tier: critical
+        blast_radius: Read and change organization Dependabot secrets.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-organization-dependabot-secrets
+    source: docs
+  organization_events:
+    name: Events
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read organization activity events.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-events
+  organization_external_properties_for_repos:
+    name: External custom properties for repositories
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read external custom properties for repositories.
+      write:
+        tier: medium
+        blast_radius: Read and change external custom properties for repositories.
+      admin:
+        tier: high
+        blast_radius: Administer external custom properties for repositories.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-external-custom-properties-for-repositories
+  organization_hooks:
+    name: Webhooks
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read organization webhooks.
+      write:
+        tier: critical
+        blast_radius: Read and change organization webhooks.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-webhooks
+  organization_network_configurations:
+    name: Network configurations
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read hosted compute network configurations.
+      write:
+        tier: high
+        blast_radius: Read and change hosted compute network configurations.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-network-configurations
+    source: docs
+  organization_packages:
+    name: Packages
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read organization packages.
+      write:
+        tier: high
+        blast_radius: Read and change organization packages.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    source: openapi
+  organization_personal_access_token_requests:
+    name: Personal access token requests
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read requests for fine-grained personal access tokens.
+      write:
+        tier: high
+        blast_radius: Read and change requests for fine-grained personal access tokens.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-personal-access-token-requests
+  organization_personal_access_tokens:
+    name: Personal access tokens
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read fine-grained personal access tokens with organization access.
+      write:
+        tier: critical
+        blast_radius: Read and change fine-grained personal access tokens with organization access.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-personal-access-tokens
+  organization_plan:
+    name: Plan
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read the organization's plan.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    source: openapi
+  organization_private_registries:
+    name: Organization private registries
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read private registry configurations and credentials.
+      write:
+        tier: critical
+        blast_radius: Read and change private registry configurations and credentials.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-organization-private-registries
+    source: docs
+  organization_projects:
+    name: Projects
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read organization projects.
+      write:
+        tier: medium
+        blast_radius: Read and change organization projects.
+      admin:
+        tier: high
+        blast_radius: Administer organization projects.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-projects
+  organization_runner_custom_images:
+    name: Hosted runner custom images
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read hosted runner custom images.
+      write:
+        tier: high
+        blast_radius: Read and change hosted runner custom images.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-hosted-runner-custom-images
+    source: docs
+  organization_secrets:
+    name: Secrets
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read organization Actions secrets.
+      write:
+        tier: critical
+        blast_radius: Read and change organization Actions secrets.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-secrets
+  organization_self_hosted_runners:
+    name: Self-hosted runners
+    scope: organization
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read self-hosted runners and runner groups.
+      write:
+        tier: critical
+        blast_radius: Read and change self-hosted runners and runner groups.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-self-hosted-runners
+  organization_user_blocking:
+    name: Blocking users
+    scope: organization
+    levels:
+      read:
+        tier: low
+        blast_radius: Read users blocked by the organization.
+      write:
+        tier: medium
+        blast_radius: Read and change users blocked by the organization.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#organization-permissions-for-blocking-users
+  packages:
+    name: Packages
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read packages published to GitHub Packages.
+      write:
+        tier: high
+        blast_radius: Read and change packages published to GitHub Packages.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    source: openapi
+  pages:
+    name: Pages
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read GitHub Pages sites and builds.
+      write:
+        tier: high
+        blast_radius: Read and change GitHub Pages sites and builds.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-pages
+  plan:
+    name: Plan
+    scope: user
+    levels:
+      read:
+        tier: low
+        blast_radius: Read the user's plan.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-plan
+    source: docs
+  private_repository_invitations:
+    name: Private repository invitations
+    scope: user
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read the user's private repository invitations.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-private-repository-invitations
+    source: docs
+  profile:
+    name: Profile
+    scope: user
+    levels:
+      write:
+        tier: medium
+        blast_radius: Read and change the user's profile.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-profile
+  pull_requests:
+    name: Pull requests
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read pull requests, reviews and review comments.
+      write:
+        tier: high
+        blast_radius: Read and change pull requests, reviews and review comments.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-pull-requests
+  repository_advisories:
+    name: Repository security advisories
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read repository security advisories, including unpublished ones.
+      write:
+        tier: high
+        blast_radius: Read and change repository security advisories, including unpublished ones.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-repository-security-advisories
+    source: docs
+  repository_creation:
+    name: Repository creation
+    scope: repository
+    levels:
+      write:
+        tier: high
+        blast_radius: Read and change creating new repositories.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-repository-creation
+    source: docs
+  repository_custom_properties:
+    name: Custom properties
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read custom property values on the repository.
+      write:
+        tier: medium
+        blast_radius: Read and change custom property values on the repository.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-custom-properties
+  repository_hooks:
+    name: Webhooks
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read repository webhooks.
+      write:
+        tier: critical
+        blast_radius: Read and change repository webhooks.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-webhooks
+  repository_projects:
+    name: Projects
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read classic repository projects.
+      write:
+        tier: medium
+        blast_radius: Read and change classic repository projects.
+      admin:
+        tier: medium
+        blast_radius: Administer classic repository projects.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    source: openapi
+  secret_scanning_alerts:
+    name: Secret scanning alerts
+    scope: repository
+    levels:
+      read:
+        tier: high
+        blast_radius: Read secret scanning alerts, which include the leaked secret values.
+      write:
+        tier: high
+        blast_radius: Read and change secret scanning alerts, which include the leaked secret values.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-secret-scanning-alerts
+  secrets:
+    name: Secrets
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read repository Actions secrets (names on read; values can be set on write).
+      write:
+        tier: critical
+        blast_radius: >-
+          Read and change repository Actions secrets (names on read; values can be set on write).
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-secrets
+  security_events:
+    name: Code scanning alerts
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read code scanning alerts.
+      write:
+        tier: high
+        blast_radius: Read and change code scanning alerts.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-code-scanning-alerts
+  single_file:
+    name: Single file
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read a single named file in each repository.
+      write:
+        tier: high
+        blast_radius: Read and change a single named file in each repository.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps
+    source: openapi
+  starring:
+    name: Starring
+    scope: user
+    levels:
+      read:
+        tier: low
+        blast_radius: Read the user's starred repositories.
+      write:
+        tier: low
+        blast_radius: Read and change the user's starred repositories.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-starring
+  statuses:
+    name: Commit statuses
+    scope: repository
+    levels:
+      read:
+        tier: low
+        blast_radius: Read commit statuses.
+      write:
+        tier: high
+        blast_radius: Read and change commit statuses.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-commit-statuses
+  vulnerability_alerts:
+    name: Dependabot alerts
+    scope: repository
+    levels:
+      read:
+        tier: medium
+        blast_radius: Read Dependabot alerts.
+      write:
+        tier: high
+        blast_radius: Read and change Dependabot alerts.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-dependabot-alerts
+  watching:
+    name: Watching
+    scope: user
+    levels:
+      read:
+        tier: low
+        blast_radius: Read the user's watched repositories.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#user-permissions-for-watching
+    source: docs
+  workflows:
+    name: Workflows
+    scope: repository
+    levels:
+      write:
+        tier: critical
+        blast_radius: Read and change GitHub Actions workflow files.
+    docs_url: >-
+      https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-workflows

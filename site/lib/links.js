@@ -14,11 +14,11 @@ export function reportProblemUrl(entry, repoUrl = REPO_URL) {
   return `${repoUrl}/issues/new?${params}`;
 }
 
-/** Link to an entry's JSON file and its history on GitHub. */
+/** Link to an entry's YAML file and its history on GitHub. */
 export function entrySourceUrl(entry, repoUrl = REPO_URL) {
-  return `${repoUrl}/blob/main/entries/${encodeURIComponent(entry.slug)}.json`;
+  return `${repoUrl}/blob/main/entries/${encodeURIComponent(entry.slug)}.yaml`;
 }
 
 export function entryHistoryUrl(entry, repoUrl = REPO_URL) {
-  return `${repoUrl}/commits/main/entries/${encodeURIComponent(entry.slug)}.json`;
+  return `${repoUrl}/commits/main/entries/${encodeURIComponent(entry.slug)}.yaml`;
 }

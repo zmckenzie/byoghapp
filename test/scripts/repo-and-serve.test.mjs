@@ -2,7 +2,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import {
-  changedEntrySlugs, contributorsOf, entryAtRef, git, listEntrySlugs, loadData, readEntry, readJson, todayUtc, ROOT,
+  changedEntrySlugs, contributorsOf, entryAtRef, entryPath, git, listEntrySlugs, loadData, readEntry, readJson, readYaml, todayUtc, ROOT,
 } from '../../scripts/lib/repo.mjs';
 import { resolvePath, startServer } from '../../scripts/serve.mjs';
 import { spawn } from 'node:child_process';
@@ -20,20 +20,22 @@ describe('repo helpers', () => {
       repo.write('entries/notes.txt', 'ignored');
       assert.deepEqual(listEntrySlugs(repo.root), ['a', 'b']);
       assert.equal(readEntry('a', repo.root).entry.slug, 'a');
-      assert.match(readEntry('zzz', repo.root).error, /could not read entries\/zzz\.json/);
-      assert.equal(readJson(join(repo.root, 'entries/a.json')).slug, 'a');
+      assert.match(readEntry('zzz', repo.root).error, /could not read entries\/zzz\.yaml/);
+      assert.equal(readYaml(join(repo.root, 'entries/a.yaml')).slug, 'a');
+      assert.equal(readJson(join(repo.root, 'schema/entry.schema.json')).type, 'object');
+      assert.equal(entryPath('a'), 'entries/a.yaml');
       assert.deepEqual(Object.keys(loadData(repo.root)), ['schema', 'permissions', 'events', 'categories']);
       assert.equal(git(['no-such-command'], repo.root), null);
       assert.equal(entryAtRef('main', 'a', repo.root).slug, 'a');
       assert.equal(entryAtRef('main', 'missing', repo.root), null);
-      repo.write('entries/c.json', makeEntry({ slug: 'c' }));
-      repo.write('entries/a.json', makeEntry({ slug: 'a', notes: 'n' }));
+      repo.write('entries/c.yaml', makeEntry({ slug: 'c' }));
+      repo.write('entries/a.yaml', makeEntry({ slug: 'a', notes: 'n' }));
       repo.write('README.md', 'x');
       repo.commit('second');
       assert.deepEqual(changedEntrySlugs('main~1', repo.root), ['a', 'c']);
       assert.throws(() => changedEntrySlugs('nope', repo.root), /fetch the base branch first/);
-      assert.deepEqual(contributorsOf('entries/a.json', repo.root), ['Test Author']);
-      assert.deepEqual(contributorsOf('entries/never.json', repo.root), []);
+      assert.deepEqual(contributorsOf('entries/a.yaml', repo.root), ['Test Author']);
+      assert.deepEqual(contributorsOf('entries/never.yaml', repo.root), []);
     } finally {
       repo.cleanup();
     }

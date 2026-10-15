@@ -40,7 +40,7 @@ describe('checkPermissionSet', () => {
   });
 
   test('rejects unknown permissions and levels', () => {
-    assert.deepEqual(set({ nope: 'read' }), ['manifest: unknown permission "nope" (not in data/permissions.json)']);
+    assert.deepEqual(set({ nope: 'read' }), ['manifest: unknown permission "nope" (not in data/permissions.yaml)']);
     assert.match(set({ workflows: 'read' })[0], /permission "workflows" has no "read" level \(allowed: write\)/);
   });
 
@@ -67,11 +67,11 @@ describe('checkEntry', () => {
   });
 
   test('slug must match the file name', () => {
-    assert.deepEqual(check(makeEntry(), 'other'), ['slug "example" must match the file name "other.json"']);
+    assert.deepEqual(check(makeEntry(), 'other'), ['slug "example" must match the file name "other.yaml"']);
   });
 
   test('category must exist', () => {
-    assert.deepEqual(check(makeEntry({ category: 'not-a-category' })), ['category "not-a-category" is not in data/categories.json']);
+    assert.deepEqual(check(makeEntry({ category: 'not-a-category' })), ['category "not-a-category" is not in data/categories.yaml']);
   });
 
   test('checks variants and requires variant 0 to match the manifest', () => {
@@ -83,7 +83,7 @@ describe('checkEntry', () => {
     const dup = makeEntry({ variants: [v('a', { contents: 'read', metadata: 'read' }), v('a', { contents: 'read' })] });
     assert.deepEqual(check(dup), ['variant ids must be unique']);
     const badVariant = makeEntry({ variants: [v('a', { contents: 'read', metadata: 'read' }), v('b', { nope: 'read' })] });
-    assert.deepEqual(check(badVariant), ['variants[b]: unknown permission "nope" (not in data/permissions.json)']);
+    assert.deepEqual(check(badVariant), ['variants[b]: unknown permission "nope" (not in data/permissions.yaml)']);
   });
 
   test('manual-only permissions need manual steps', () => {
@@ -219,7 +219,7 @@ describe('codeOwnersFor', () => {
   ].join('\n');
 
   test('last matching rule wins and teams are skipped', () => {
-    assert.deepEqual(codeOwnersFor(file, 'entries/x.json'), ['maint', 'other']);
+    assert.deepEqual(codeOwnersFor(file, 'entries/x.yaml'), ['maint', 'other']);
     assert.deepEqual(codeOwnersFor(file, 'README.md'), ['everyone']);
     assert.deepEqual(codeOwnersFor(file, 'docs/a.md'), ['writer']);
     assert.deepEqual(codeOwnersFor(file, 'SECURITY.md'), ['sec']);

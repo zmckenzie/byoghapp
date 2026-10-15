@@ -168,7 +168,7 @@ export function renderEntryDetail(entry, { table, categories, variantId, target,
   ${entry.verification.status !== 'ok' ? '<p class="warning">A maintainer has not yet confirmed this entry against the vendor\'s documentation. Check the permissions against the linked docs before you create the app.</p>' : ''}
   ${entry.notes ? `<p>${esc(entry.notes)}</p>` : ''}
   <h2>Vendor documentation</h2><ul class="links">${docs}</ul>
-  <p class="links-inline"><a href="${safeUrl(entry.website)}" rel="noreferrer">Website</a> · <a href="${safeUrl(entrySourceUrl(entry))}">Entry JSON</a> · <a href="${safeUrl(entryHistoryUrl(entry))}">History</a> · <a id="report-link" href="${safeUrl(reportProblemUrl(entry))}">Report a problem</a></p>
+  <p class="links-inline"><a href="${safeUrl(entry.website)}" rel="noreferrer">Website</a> · <a href="${safeUrl(entrySourceUrl(entry))}">Entry YAML</a> · <a href="${safeUrl(entryHistoryUrl(entry))}">History</a> · <a id="report-link" href="${safeUrl(reportProblemUrl(entry))}">Report a problem</a></p>
   <h2>Permissions and risk</h2>
   ${variantPicker}
   <div id="risk">${renderRisk(entry, table, variantId)}</div>

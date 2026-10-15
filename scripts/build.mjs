@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-// Concatenates entries/*.json and the shared tables into site/registry.json.
+// Converts entries/*.yaml and the shared tables into one site/registry.json.
 // Node built-ins only. Run `node scripts/validate.mjs` first; the build refuses
 // invalid entries too, so a broken entry can never be published.
 
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { checkEntry } from './lib/entry-rules.mjs';
-import { ROOT, contributorsOf, listEntrySlugs, loadData, readEntry, todayUtc } from './lib/repo.mjs';
+import { ROOT, contributorsOf, entryPath, listEntrySlugs, loadData, readEntry, todayUtc } from './lib/repo.mjs';
 
 /** Builds the registry object. `contributors` is injectable for tests. */
-export function buildRegistry({ root = ROOT, now = new Date(), contributors = (slug) => contributorsOf(`entries/${slug}.json`, root) } = {}) {
+export function buildRegistry({ root = ROOT, now = new Date(), contributors = (slug) => contributorsOf(entryPath(slug), root) } = {}) {
   const data = loadData(root);
   const entries = [];
   const problems = [];

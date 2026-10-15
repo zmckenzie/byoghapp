@@ -42,7 +42,7 @@ export function checkPermissionSet({ label, permissions, events }, data) {
   for (const [key, level] of Object.entries(permissions)) {
     const def = data.permissions.permissions[key];
     if (!def) {
-      errors.push(`${label}: unknown permission "${key}" (not in data/permissions.json)`);
+      errors.push(`${label}: unknown permission "${key}" (not in data/permissions.yaml)`);
     } else if (!def.levels[level]) {
       errors.push(`${label}: permission "${key}" has no "${level}" level (allowed: ${Object.keys(def.levels).join(', ')})`);
     }
@@ -50,7 +50,7 @@ export function checkPermissionSet({ label, permissions, events }, data) {
   for (const event of events) {
     const def = data.events.events[event];
     if (!def) {
-      errors.push(`${label}: unknown webhook event "${event}" (not in data/events.json)`);
+      errors.push(`${label}: unknown webhook event "${event}" (not in data/events.yaml)`);
     } else if (def.subscribable === false) {
       errors.push(`${label}: webhook event "${event}" can't be subscribed to by a GitHub App (${def.note})`);
     } else if (def.requires_any.length > 0 && !def.requires_any.some((key) => LEVEL_RANK[permissions[key]] >= LEVEL_RANK.read)) {
@@ -72,9 +72,9 @@ export function checkEntry(entry, { slug, today, data }) {
   if (schemaErrors.length > 0) return schemaErrors.map((e) => `${e.path} ${e.message}`);
 
   const errors = [];
-  if (entry.slug !== slug) errors.push(`slug "${entry.slug}" must match the file name "${slug}.json"`);
+  if (entry.slug !== slug) errors.push(`slug "${entry.slug}" must match the file name "${slug}.yaml"`);
   if (!Object.hasOwn(data.categories.categories, entry.category)) {
-    errors.push(`category "${entry.category}" is not in data/categories.json`);
+    errors.push(`category "${entry.category}" is not in data/categories.yaml`);
   }
 
   for (const set of permissionSets(entry)) errors.push(...checkPermissionSet(set, data));

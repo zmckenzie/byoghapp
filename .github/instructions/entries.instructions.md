@@ -4,7 +4,7 @@ applyTo: "entries/**"
 
 # Reviewing registry entries
 
-An entry is one JSON file describing the GitHub App a vendor asks customers to create.
+An entry is one YAML file describing the GitHub App a vendor asks customers to create.
 People use it to grant permissions to a third party, so accuracy matters more than
 completeness. CI (`scripts/validate.mjs`) enforces the schema and cross-checks. When
 reviewing, focus on what CI can't judge:

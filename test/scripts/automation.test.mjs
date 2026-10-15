@@ -6,6 +6,7 @@ import { createClient, GitHubError } from '../../scripts/lib/github.mjs';
 import { issueBody, issueTitle, LABEL, marker, syncIssues } from '../../scripts/verification-issues.mjs';
 import { applyStamp, forkInstructions, parseCommand, planStamp, stampEntry } from '../../scripts/stamp-verified.mjs';
 import { fakeFetch, fixtureRepo, makeEntry } from '../helpers.mjs';
+import { parse } from '../../scripts/lib/yaml.mjs';
 
 describe('GitHub client', () => {
   test('sends authenticated requests and parses JSON', async () => {
@@ -126,8 +127,8 @@ describe('stamp-verified', () => {
   const fakeClient = (pr, files) => ({ getPull: async () => pr, listPullFiles: async () => files });
   const pr = { state: 'open', head: { ref: 'feature', repo: { full_name: 'o/r' } }, base: { repo: { full_name: 'o/r' } } };
   const files = [
-    { filename: 'entries/renovate.json', status: 'modified' },
-    { filename: 'entries/gone.json', status: 'removed' },
+    { filename: 'entries/renovate.yaml', status: 'modified' },
+    { filename: 'entries/gone.yaml', status: 'removed' },
     { filename: 'README.md', status: 'modified' },
     { filename: 'entries/sub/x.json', status: 'added' },
   ];
@@ -153,7 +154,7 @@ describe('stamp-verified', () => {
     const repo = fixtureRepo({ example: makeEntry() }, { gitInit: false });
     try {
       assert.deepEqual(await applyStamp({ root: repo.root, slugs: ['example'], login: 'maint', date: '2026-06-01' }), [{ slug: 'example', docHash: null }]);
-      const written = JSON.parse(readFileSync(join(repo.root, 'entries/example.json'), 'utf8'));
+      const written = parse(readFileSync(join(repo.root, 'entries/example.yaml'), 'utf8'));
       assert.equal(written.verified_by, 'maint');
       assert.equal(written.verification.status, 'ok');
       const fetch = fakeFetch({ 'https://example.com/docs/github-app': { body: '<p>Contents: read</p>' } });
@@ -161,7 +162,7 @@ describe('stamp-verified', () => {
       assert.match(stamped.docHash, /^sha256:/);
       await assert.rejects(applyStamp({ root: repo.root, slugs: ['example'], login: 'm', date: 'd', fetch: fakeFetch({}) }), /example: .*HTTP 404/);
       await assert.rejects(applyStamp({ root: repo.root, slugs: ['Bad'], login: 'm', date: 'd' }), /Invalid slug: Bad/);
-      await assert.rejects(applyStamp({ root: repo.root, slugs: ['missing'], login: 'm', date: 'd' }), /could not read entries\/missing\.json/);
+      await assert.rejects(applyStamp({ root: repo.root, slugs: ['missing'], login: 'm', date: 'd' }), /could not read entries\/missing\.yaml/);
     } finally {
       repo.cleanup();
     }
@@ -170,8 +171,7 @@ describe('stamp-verified', () => {
   test('forkInstructions names the files and fields', () => {
     const text = forkInstructions(['a', 'b'], 'maint', '2026-06-01');
     assert.ok(text.startsWith('Verified by @maint.'));
-    assert.ok(text.includes('`entries/a.json`, `entries/b.json`'));
-    assert.ok(text.includes('"last_verified": "2026-06-01"'));
-    assert.ok(text.includes('"status": "ok"'));
+    assert.ok(text.includes('`entries/a.yaml`, `entries/b.yaml`'));
+    assert.ok(text.includes('```yaml\nlast_verified: 2026-06-01\nverified_by: maint\nverification:\n  status: ok\n```'));
   });
 });

@@ -81,7 +81,7 @@ describe('verifyEntries', () => {
       down: withHash('down', null),
       empty: withHash('empty', null),
     });
-    repo.write('entries/broken.json', '{');
+    repo.write('entries/broken.yaml', '{');
     try {
       const fetch = fakeFetch({
         'https://docs.example/same': { body: PAGE },

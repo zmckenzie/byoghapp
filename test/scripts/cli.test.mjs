@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fakeServer, fixtureRepo, makeEntry, runScript, runScriptAsync } from '../helpers.mjs';
+import { parse, stringify } from '../../scripts/lib/yaml.mjs';
 
 const DOC_PAGE = '<p>Contents: read-only</p>';
 
@@ -60,7 +61,7 @@ describe('stamp-verified.mjs CLI', () => {
   test('plan writes step outputs for a same-repo PR', async () => {
     const server = await fakeServer({
       'GET /repos/o/r/pulls/5': { json: pr },
-      'GET /repos/o/r/pulls/5/files': { json: [{ filename: 'entries/example.json', status: 'modified' }] },
+      'GET /repos/o/r/pulls/5/files': { json: [{ filename: 'entries/example.yaml', status: 'modified' }] },
     });
     const repo = fixtureRepo({}, { gitInit: false });
     try {
@@ -83,7 +84,7 @@ describe('stamp-verified.mjs CLI', () => {
     const fork = { ...pr, head: { ref: 'f', repo: { full_name: 'x/r' } } };
     const server = await fakeServer({
       'GET /repos/o/r/pulls/6': { json: fork },
-      'GET /repos/o/r/pulls/6/files': { json: [{ filename: 'entries/example.json', status: 'added' }] },
+      'GET /repos/o/r/pulls/6/files': { json: [{ filename: 'entries/example.yaml', status: 'added' }] },
     });
     const repo = fixtureRepo({}, { gitInit: false });
     try {
@@ -93,7 +94,7 @@ describe('stamp-verified.mjs CLI', () => {
       const r = await runScriptAsync('scripts/stamp-verified.mjs', ['plan', '--pr', '6', '--commenter', 'zmckenzie', '--body-file', bodyFile, '--date', '2026-06-01'], { env });
       assert.equal(r.code, 0, r.stderr);
       assert.match(r.stdout, /^ok=true\nsame_repo=false\nhead_ref=f\nslugs=example\nmessage<<EOF_STAMP\nVerified by @zmckenzie/);
-      assert.match(r.stdout, /"last_verified": "2026-06-01"/);
+      assert.match(r.stdout, /last_verified: 2026-06-01/);
       const refused = await runScriptAsync('scripts/stamp-verified.mjs', ['plan', '--pr', '6', '--commenter', 'mallory', '--body-file', bodyFile], { env });
       assert.match(refused.stdout, /^ok=false\nsame_repo=false\nhead_ref=\nslugs=\nmessage=@mallory isn't a code owner/);
     } finally {
@@ -108,11 +109,11 @@ describe('stamp-verified.mjs CLI', () => {
       const r = runScript('scripts/stamp-verified.mjs', ['apply', '--root', repo.root, '--login', 'maint', '--date', '2026-06-01', 'example']);
       assert.equal(r.code, 0, r.stderr);
       assert.equal(r.stdout.trim(), 'Stamped example');
-      assert.equal(JSON.parse(readFileSync(join(repo.root, 'entries/example.json'), 'utf8')).last_verified, '2026-06-01');
+      assert.equal(parse(readFileSync(join(repo.root, 'entries/example.yaml'), 'utf8')).last_verified, '2026-06-01');
       const fetched = await (async () => {
         const server = await fakeServer({ 'GET /d': { body: DOC_PAGE } });
         try {
-          writeFileSync(join(repo.root, 'entries/example.json'), JSON.stringify(makeEntry({ documentation_url: `${server.url}/d` })));
+          writeFileSync(join(repo.root, 'entries/example.yaml'), stringify(makeEntry({ documentation_url: `${server.url}/d` })));
           return await runScriptAsync('scripts/stamp-verified.mjs', ['apply', '--root', repo.root, '--login', 'maint', '--fetch', 'example']);
         } finally {
           await server.close();

@@ -10,7 +10,7 @@ import { parseArgs } from 'node:util';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { checkChange, checkEntry, codeOwnersFor } from './lib/entry-rules.mjs';
-import { ROOT, changedEntrySlugs, entryAtRef, listEntrySlugs, loadData, readEntry, todayUtc } from './lib/repo.mjs';
+import { ROOT, changedEntrySlugs, entryAtRef, entryPath, listEntrySlugs, loadData, readEntry, todayUtc } from './lib/repo.mjs';
 import { checkDocumentation } from './lib/online.mjs';
 
 /**
@@ -34,7 +34,7 @@ export async function run({ root = ROOT, base, prAuthor, online = false, today =
 
   const changed = base ? changedEntrySlugs(base, root) : null;
   if (base) {
-    const maintainers = codeOwnersFor(readFileSync(join(root, '.github/CODEOWNERS'), 'utf8'), 'entries/x.json');
+    const maintainers = codeOwnersFor(readFileSync(join(root, '.github/CODEOWNERS'), 'utf8'), entryPath('x'));
     for (const slug of changed) {
       if (!entries.has(slug)) continue;
       const before = entryAtRef(base, slug, root);
@@ -59,7 +59,7 @@ async function main() {
     options: { base: { type: 'string' }, 'pr-author': { type: 'string' }, online: { type: 'boolean' } },
   });
   const { errors, checked } = await run({ base: values.base, prAuthor: values['pr-author'], online: values.online });
-  for (const { slug, message } of errors) console.error(`::error file=entries/${slug}.json::${slug}: ${message}`);
+  for (const { slug, message } of errors) console.error(`::error file=${entryPath(slug)}::${slug}: ${message}`);
   if (errors.length > 0) {
     console.error(`\n${errors.length} problem(s) in ${checked} entries.`);
     process.exitCode = 1;

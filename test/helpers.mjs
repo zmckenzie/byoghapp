@@ -8,6 +8,7 @@ import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { stringify } from '../scripts/lib/yaml.mjs';
 
 export const REPO = resolve(fileURLToPath(new URL('..', import.meta.url)));
 
@@ -77,9 +78,10 @@ export function fixtureRepo(entries = {}, { gitInit = true } = {}) {
   mkdirSync(join(root, 'entries'));
   const write = (path, content) => {
     mkdirSync(dirname(join(root, path)), { recursive: true });
-    writeFileSync(join(root, path), typeof content === 'string' ? content : `${JSON.stringify(content, null, 2)}\n`);
+    const text = typeof content === 'string' ? content : path.endsWith('.yaml') ? stringify(content) : `${JSON.stringify(content, null, 2)}\n`;
+    writeFileSync(join(root, path), text);
   };
-  for (const [slug, entry] of Object.entries(entries)) write(`entries/${slug}.json`, entry);
+  for (const [slug, entry] of Object.entries(entries)) write(`entries/${slug}.yaml`, entry);
   const commit = (message = 'change') => {
     git(root, 'add', '-A');
     git(root, 'commit', '-q', '-m', message);

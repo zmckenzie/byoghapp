@@ -35,7 +35,7 @@ describe('buildRegistry', () => {
 
   test('refuses invalid entries', () => {
     const repo = fixtureRepo({ example: makeEntry({ category: 'nope' }) });
-    repo.write('entries/broken.json', '{');
+    repo.write('entries/broken.yaml', '{');
     try {
       assert.throws(() => buildRegistry({ root: repo.root, now: new Date('2026-06-01'), contributors: () => [] }), (err) => {
         assert.match(err.message, /Refusing to build with invalid entries/);
