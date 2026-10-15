@@ -152,6 +152,20 @@ jobs:
           name: release-assets
           path: .
 
+      # The release creates its own tag. A v<version> tag that already exists was
+      # made by someone else (tag creation can't be limited to this workflow) and
+      # may point at a different commit than the one built, so stop.
+      - name: Check the tag is free
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          existing="$(gh api "repos/${GITHUB_REPOSITORY}/git/matching-refs/tags/v${VERSION}" --jq '.[].ref')"
+          if grep -Fqx "refs/tags/v${VERSION}" <<< "${existing}"; then
+            echo "::error::Tag v${VERSION} already exists, but only this workflow should create it. Nothing was published; find out who created the tag before releasing."
+            exit 1
+          fi
+
       - name: Sign build provenance
         id: attest
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -172,3 +186,15 @@ jobs:
             --repo "${GITHUB_REPOSITORY}" --target "${GITHUB_SHA}" --draft \
             --title "byoghapp ${VERSION}" --notes-file release-notes.md
           gh release edit "v${VERSION}" --repo "${GITHUB_REPOSITORY}" --draft=false
+
+      - name: Check the tag points at the built commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          tagged="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/v${VERSION}" --jq '.object.sha')"
+          if [ "${tagged}" != "${GITHUB_SHA}" ]; then
+            echo "::error::v${VERSION} points at ${tagged}, not the built commit ${GITHUB_SHA}. Investigate before anyone uses this release."
+            exit 1
+          fi
+          echo "v${VERSION} -> ${tagged}"
