@@ -9,14 +9,19 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "test": "node --test \"test/scripts/**/*.test.mjs\" \"test/site/**/*.test.mjs\"",
-    "coverage": "node --test --experimental-test-coverage --test-coverage-lines=90 --test-coverage-branches=90 --test-coverage-functions=90 --test-coverage-include=\"scripts/**\" --test-coverage-include=\"site/lib/**\" \"test/scripts/**/*.test.mjs\" \"test/site/**/*.test.mjs\"",
+    "test": "node --test \"test/scripts/**/*.test.mjs\" \"test/site/**/*.test.mjs\" \"test/fuzz/**/*.test.mjs\"",
+    "coverage": "node --test --experimental-test-coverage --test-coverage-lines=90 --test-coverage-branches=90 --test-coverage-functions=90 --test-coverage-include=\"scripts/**\" --test-coverage-include=\"site/lib/**\" --test-coverage-include=\"fuzz/**\" \"test/scripts/**/*.test.mjs\" \"test/site/**/*.test.mjs\" \"test/fuzz/**/*.test.mjs\"",
     "test:e2e": "node --test \"test/e2e/**/*.test.mjs\"",
     "mutation": "node scripts/mutation.mjs",
     "validate": "node scripts/validate.mjs",
     "build": "node scripts/build.mjs",
     "lint:site": "node scripts/lint-site.mjs",
     "check": "node scripts/check-repo-hygiene.mjs && node scripts/validate.mjs && node scripts/build.mjs && node scripts/lint-site.mjs",
-    "serve": "node scripts/serve.mjs"
+    "serve": "node scripts/serve.mjs",
+    "fuzz:yaml": "jazzer fuzz/fuzz_yaml.js --sync -- .fuzz/yaml entries data -create_missing_dirs=1 -artifact_prefix=.fuzz/ -max_total_time=300",
+    "fuzz:render": "jazzer fuzz/fuzz_render.js --sync -- .fuzz/render entries -create_missing_dirs=1 -artifact_prefix=.fuzz/ -max_total_time=300"
+  },
+  "devDependencies": {
+    "@jazzer.js/core": "4.0.0"
   }
 }

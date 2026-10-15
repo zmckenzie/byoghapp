@@ -55,10 +55,12 @@ AGENTS.local.md
 /_site/
 /coverage/
 
-# Node (the project ships with zero npm dependencies; this guards against
-# accidental installs)
+# Node (dev dependencies only; package-lock.json is committed)
 node_modules/
 npm-debug.log*
+
+# Fuzzing corpora and crash inputs from npm run fuzz:*
+/.fuzz/
 
 # OS and editor files
 .DS_Store

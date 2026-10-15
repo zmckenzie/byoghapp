@@ -71,8 +71,13 @@ code back to the site. Only after you click does your browser exchange that code
 to download. They are never stored, logged or sent anywhere else, and they are cleared when you
 leave the page.
 
-**Zero dependencies.** The site and tooling use only the web platform and Node.js built-ins.
-There is no npm supply chain to compromise.
+**Zero runtime dependencies.** The site and tooling use only the web platform and Node.js
+built-ins, so nothing from npm reaches the site or runs in its build. The only npm package is the
+fuzzing engine (Jazzer.js), a dev dependency pinned in `package-lock.json`, reviewed by
+dependency review and updated by Dependabot.
+
+**Fuzzing.** ClusterFuzzLite fuzzes the YAML parser and the entry renderer on every pull request
+and weekly (`fuzz/`, `.clusterfuzzlite/`).
 
 **Pinned automation.** Every GitHub Action is pinned to a full commit SHA and kept up to date by
 Dependabot. The repository is monitored by

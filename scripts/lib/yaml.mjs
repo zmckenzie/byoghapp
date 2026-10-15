@@ -5,9 +5,9 @@
 // literal (|) and folded (>) block text with clip or strip (-) chomping, the
 // empty collections [] and {}, and # comments.
 //
-// Rejected with a line number: tabs in indentation, duplicate keys, anchors,
-// aliases, tags, directives, document markers, flow collections, keys with no
-// value, and plain scalars whose type YAML tools disagree on (yes/no/on/off,
+// Rejected with a line number: tabs in indentation, control characters,
+// duplicate keys, the key __proto__, anchors, aliases, tags, directives,
+// document markers, flow collections, keys with no value, and plain scalars whose type YAML tools disagree on (yes/no/on/off,
 // True, 1.5, 1e3, 0x1f, ...). Quote those to make them strings.
 //
 // Plain scalars that aren't true/false/null/an integer are strings, so dates
@@ -28,6 +28,9 @@ const PLAIN_KEY = /^[A-Za-z_$][\w$.-]*$/;
 const SPECIAL_START = /^[[\]{}&*!|>%@`"'#?,:]|^-(\s|$)/;
 const DOUBLE_ESCAPES = /\\(["\\/bfnrt]|u[0-9a-fA-F]{4})/g;
 
+/** C0 control characters other than tab and newline, and DEL. */
+const CONTROL_CHAR = /[\u0000-\u0008\u000b-\u001f\u007f]/;
+
 /** Splits text into line records: {n, indent, text, blank}. */
 function splitLines(src) {
   return src.replace(/^﻿/, '').replace(/\r\n?/g, '\n').split('\n').map((raw, k) => {
@@ -35,6 +38,8 @@ function splitLines(src) {
     const indentMatch = raw.match(/^[ \t]*/)[0];
     const trimmed = raw.trim();
     const blank = trimmed === '' || trimmed.startsWith('#');
+    const control = raw.match(CONTROL_CHAR);
+    if (control) throw new YAMLError(n, `control character U+${control[0].charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')} is not allowed; write it as \\uXXXX in a double-quoted string`);
     if (!blank && indentMatch.includes('\t')) throw new YAMLError(n, 'tabs are not allowed in indentation; use spaces');
     return { n, raw, indent: indentMatch.length, text: raw.slice(indentMatch.length), blank };
   });
@@ -49,7 +54,8 @@ function readQuoted(s, n) {
     if (j >= s.length) throw new YAMLError(n, 'unterminated double-quoted string');
     const body = s.slice(1, j);
     if (body.replace(DOUBLE_ESCAPES, '').includes('\\')) throw new YAMLError(n, 'unsupported escape in double-quoted string (use \\" \\\\ \\n \\t \\uXXXX)');
-    return { value: JSON.parse(`"${body}"`), rest: s.slice(j + 1) };
+    // YAML allows a literal tab in a double-quoted string; JSON needs it escaped.
+    return { value: JSON.parse(`"${body.replaceAll('\t', '\\t')}"`), rest: s.slice(j + 1) };
   }
   let j = 1;
   let value = '';
@@ -96,7 +102,7 @@ export function parseScalar(s, n = 1) {
   if (INTEGER.test(plain)) {
     const num = Number(plain);
     if (!Number.isSafeInteger(num)) throw new YAMLError(n, `integer ${plain} is too large; quote it`);
-    return num;
+    return num === 0 ? 0 : num; // -0 is the integer 0
   }
   if (AMBIGUOUS_WORD.test(plain)) throw new YAMLError(n, `"${plain}" is ambiguous in YAML; use true, false or null, or quote it`);
   if (NUMBER_LIKE.test(plain)) throw new YAMLError(n, `"${plain}" looks like a number; only integers are supported, so quote it`);
@@ -124,7 +130,14 @@ class Parser {
     const first = this.peek();
     if (!first) throw new YAMLError(1, 'the document is empty');
     if (first.indent !== 0) throw new YAMLError(first.n, 'the document must start at column 1');
-    const value = this.parseBlock(0);
+    let value;
+    if (/^(\{\}|\[\])(\s+#.*)?$/.test(first.text)) {
+      // A document that is only an empty collection, as stringify writes one.
+      value = first.text.startsWith('{') ? {} : [];
+      this.i += 1;
+    } else {
+      value = this.parseBlock(0);
+    }
     // Every block stops at the first line it can't use; anything left over is misplaced.
     const extra = this.peek();
     if (extra) {
@@ -144,6 +157,8 @@ class Parser {
     for (let line = this.peek(); line && line.indent === indent && !isSeqItem(line.text); line = this.peek()) {
       const { key, rest } = splitKey(line.text, line.n);
       if (Object.hasOwn(map, key)) throw new YAMLError(line.n, `duplicate key "${key}"`);
+      // Assigning it would set the mapping's prototype instead of adding a key.
+      if (key === '__proto__') throw new YAMLError(line.n, 'the key __proto__ is not allowed');
       this.i += 1;
       map[key] = this.parseValue(rest, indent, line.n, true);
     }

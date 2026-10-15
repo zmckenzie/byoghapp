@@ -18,12 +18,18 @@ export function permissionSet(entry, variantId) {
   return { permissions: source.default_permissions, events: source.default_events, variant: variant ?? null };
 }
 
+/** A permission's table entry; inherited names such as "constructor" aren't permissions. */
+function permissionDef(table, key) {
+  return Object.hasOwn(table.permissions, key) ? table.permissions[key] : undefined;
+}
+
 /**
  * Tier for one permission at one level, given the install scope.
  * Returns null when the key or level is not in the table.
  */
 export function permissionTier(table, key, level, repositories = 'selected') { // mutation-ignore: only 'all' changes the result
-  const def = table.permissions[key]?.levels?.[level];
+  const levels = permissionDef(table, key)?.levels;
+  const def = levels && Object.hasOwn(levels, level) ? levels[level] : undefined;
   if (!def) return null;
   if (repositories === 'all' && def.tier_all_repositories) return def.tier_all_repositories;
   return def.tier;
@@ -43,7 +49,7 @@ export function summarize(entry, table, variantId) {
   const histogram = Object.fromEntries(TIER_ORDER.map((t) => [t, 0]));
   const items = [];
   for (const [key, level] of Object.entries(permissions)) {
-    const def = table.permissions[key];
+    const def = permissionDef(table, key);
     const tier = permissionTier(table, key, level, repositories);
     if (tier) histogram[tier] += 1;
     items.push({

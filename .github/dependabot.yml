@@ -1,5 +1,6 @@
-# The project has zero npm dependencies; GitHub Actions are its only external
-# dependencies. Dependabot keeps the SHA pins (and version comments) current.
+# Dependabot keeps the GitHub Actions SHA pins (and version comments), the npm
+# dev dependencies (package-lock.json) and the ClusterFuzzLite base image digest
+# current. The site and scripts have no runtime dependencies.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -12,6 +13,29 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+    commit-message:
+      prefix: "chore(deps)"
+    labels: ["dependencies"]
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    groups:
+      npm-dev:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore(deps)"
+    labels: ["dependencies"]
+  - package-ecosystem: docker
+    directory: /.clusterfuzzlite
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "chore(deps)"
     labels: ["dependencies"]

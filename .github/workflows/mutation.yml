@@ -9,6 +9,8 @@ on:
       - "site/lib/**"
       - "test/scripts/**"
       - "test/site/**"
+      - "fuzz/**"
+      - "test/fuzz/**"
       - ".github/workflows/mutation.yml"
   schedule:
     - cron: "17 4 * * 0"

@@ -44,6 +44,9 @@ describe('checkPermissionSet', () => {
     assert.deepEqual(set({ nope: 'read' }), ['manifest: unknown permission "nope" (not in data/permissions.yaml)']);
     assert.match(set({ workflows: 'read' })[0], /permission "workflows" has no "read" level \(allowed: write\)/);
     assert.equal(set({ contents: 'admin' })[0], 'manifest: permission "contents" has no "admin" level (allowed: read, write)');
+    // Found by fuzz/fuzz_render.js: inherited Object properties are not table entries.
+    assert.deepEqual(set({ constructor: 'read' }), ['manifest: unknown permission "constructor" (not in data/permissions.yaml)']);
+    assert.match(set({ contents: 'toString' })[0], /permission "contents" has no "toString" level/);
   });
 
   test('rejects events without their permission', () => {
@@ -53,6 +56,7 @@ describe('checkPermissionSet', () => {
 
   test('rejects unknown and unsubscribable events', () => {
     assert.match(set({}, ['made_up'])[0], /unknown webhook event "made_up"/);
+    assert.match(set({}, ['constructor'])[0], /unknown webhook event "constructor"/);
     assert.match(set({}, ['installation'])[0], /can't be subscribed to by a GitHub App/);
   });
 });
