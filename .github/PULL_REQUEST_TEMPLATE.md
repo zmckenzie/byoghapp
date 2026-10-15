@@ -1,3 +1,6 @@
+<!-- Title: a Conventional Commit, such as "feat(entries): add Renovate" or "fix(site): …".
+     It becomes the commit on main and decides the next release (see CONTRIBUTING.md). -->
+
 ## Summary
 
 <!-- What does this change, and why? Link the issue it resolves. -->

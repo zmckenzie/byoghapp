@@ -1,6 +1,17 @@
-# Release: when a maintainer pushes a version tag (v1.2.3) that matches
-# package.json, this builds the site reproducibly, packages it, signs SLSA build
-# provenance for every asset with Sigstore, and publishes a GitHub Release.
+# Release: publishes a version once a maintainer has approved it twice.
+#
+#   1. Merging the release pull request (see release-pr.yml) changes the version
+#      in package.json on main. That push runs this workflow.
+#   2. The build job runs the checks and tests, builds the site reproducibly and
+#      packages it, and shows the version and release notes in its summary.
+#   3. The publish job runs in the "release" environment, which waits for a
+#      maintainer to approve it. Only then does it sign SLSA build provenance
+#      with Sigstore and publish the release; the v<version> tag is created at
+#      the commit that was built.
+#
+# Any other push to main plans "none" or "pending" and stops after planning. Run
+# this workflow by hand on main to publish a version that has no release yet
+# (the first release, or one whose approval expired).
 #
 # Release assets:
 #   byoghapp-site-<version>.tar.gz     the site, ready to serve (registry.json included)
@@ -13,23 +24,22 @@ name: Release
 
 on:
   push:
-    tags: ["v*.*.*"]
+    branches: [main]
+  workflow_dispatch:
 
 permissions: {}
 
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   build:
-    name: Build release assets
+    name: Plan and build
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: read
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      action: ${{ steps.plan.outputs.action }}
+      version: ${{ steps.plan.outputs.version }}
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
@@ -40,8 +50,9 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          # Full history: contributors are read from git log.
+          # History and tags: contributors, release notes and the previous release.
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Set up Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -50,19 +61,16 @@ jobs:
           # A release never reads a cache other workflows can write.
           package-manager-cache: false
 
-      - name: Check the tag matches package.json
-        id: version
+      - name: Plan
+        id: plan
         env:
-          TAG: ${{ github.ref_name }}
+          MANUAL: ${{ github.event_name == 'workflow_dispatch' && '--manual' || '' }}
         run: |
-          version="$(node -p 'require("./package.json").version')"
-          if [ "${TAG}" != "v${version}" ]; then
-            echo "::error::Tag ${TAG} does not match package.json version ${version}"
-            exit 1
-          fi
-          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+          # shellcheck disable=SC2086 # MANUAL is empty or one flag
+          node scripts/release.mjs plan ${MANUAL} --notes release-notes.md
 
       - name: Check, test and build
+        if: steps.plan.outputs.action == 'publish'
         run: |
           # The commit time fixes generated_at, so the build is reproducible.
           SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
@@ -71,8 +79,9 @@ jobs:
           npm test
 
       - name: Package
+        if: steps.plan.outputs.action == 'publish'
         env:
-          VERSION: ${{ steps.version.outputs.version }}
+          VERSION: ${{ steps.plan.outputs.version }}
         run: |
           SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
           name="byoghapp-site-${VERSION}"
@@ -87,23 +96,45 @@ jobs:
             -C dist/stage -cf - "${name}" | gzip -9 -n > "dist/${name}.tar.gz"
           cp site/registry.json "dist/byoghapp-registry-${VERSION}.json"
           rm -rf dist/stage
-          (cd dist && sha256sum byoghapp-* > SHA256SUMS && cat SHA256SUMS)
+          (cd dist && sha256sum byoghapp-* > SHA256SUMS)
+          {
+            echo "## Release v${VERSION} is waiting for approval"
+            echo
+            echo "Approve the \`release\` environment to sign and publish it."
+            echo
+            echo '```'
+            cat dist/SHA256SUMS
+            echo '```'
+            echo
+            cat release-notes.md
+          } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Upload release assets
+        if: steps.plan.outputs.action == 'publish'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-assets
-          path: dist/
+          path: |
+            dist/
+            release-notes.md
           if-no-files-found: error
           retention-days: 7
 
-  release:
+  publish:
     name: Sign and publish
     needs: build
+    if: needs.build.outputs.action == 'publish'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Waits here until a maintainer approves the environment.
+    environment:
+      name: release
+      url: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.build.outputs.version }}
+    concurrency:
+      group: release-publish
+      cancel-in-progress: false
     permissions:
-      # Creates the release and uploads its assets.
+      # Creates the release, its assets and its tag.
       contents: write
       # Sigstore signing with the workflow's OIDC identity.
       id-token: write
@@ -119,7 +150,7 @@ jobs:
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release-assets
-          path: dist
+          path: .
 
       - name: Sign build provenance
         id: attest
@@ -135,8 +166,9 @@ jobs:
         run: |
           cp "${BUNDLE}" "dist/byoghapp-${VERSION}.sigstore.json"
           # Draft first so every asset is attached before the release goes public
-          # (required when immutable releases are enabled).
+          # (required with immutable releases). Publishing the draft creates the
+          # tag at the commit that was built.
           gh release create "v${VERSION}" dist/* \
-            --repo "${GITHUB_REPOSITORY}" --verify-tag --draft \
-            --title "byoghapp ${VERSION}" --generate-notes
+            --repo "${GITHUB_REPOSITORY}" --target "${GITHUB_SHA}" --draft \
+            --title "byoghapp ${VERSION}" --notes-file release-notes.md
           gh release edit "v${VERSION}" --repo "${GITHUB_REPOSITORY}" --draft=false

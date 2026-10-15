@@ -46,5 +46,19 @@ export function createClient({ fetch, token, repo, apiUrl = 'https://api.github.
     createCommit: (commit) => request('POST', `${base}/git/commits`, commit),
     /** Moves a branch to sha; GitHub refuses unless it is a fast-forward. */
     fastForward: (branch, sha) => request('PATCH', `${base}/git/refs/heads/${branch}`, { sha, force: false }),
+    /** Points a bot-owned branch at sha, creating it or replacing its history. */
+    setBranch: async (branch, sha) => {
+      try {
+        return await request('PATCH', `${base}/git/refs/heads/${branch}`, { sha, force: true });
+      } catch (err) {
+        if (!(err instanceof GitHubError) || err.status !== 422) throw err;
+        return request('POST', `${base}/git/refs`, { ref: `refs/heads/${branch}`, sha });
+      }
+    },
+    listPulls: ({ head, base: into }) => request('GET', `${base}/pulls?state=open&head=${encodeURIComponent(head)}&base=${encodeURIComponent(into)}`),
+    createPull: (pull) => request('POST', `${base}/pulls`, pull),
+    updatePull: (number, fields) => request('PATCH', `${base}/pulls/${number}`, fields),
+    /** Starts a workflow_dispatch run on ref (allowed with GITHUB_TOKEN, unlike other events). */
+    dispatchWorkflow: (workflow, ref, inputs) => request('POST', `${base}/actions/workflows/${workflow}/dispatches`, { ref, ...(inputs ? { inputs } : {}) }),
   };
 }

@@ -5,6 +5,9 @@ name: Dependency review
 
 on:
   pull_request:
+  # The Release PR workflow starts this on its own pull request, which gets no
+  # pull_request events because a workflow opened it.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -30,3 +33,5 @@ jobs:
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: moderate
+          base-ref: ${{ github.event.pull_request.base.sha || github.event.repository.default_branch }}
+          head-ref: ${{ github.event.pull_request.head.sha || github.sha }}

@@ -106,11 +106,30 @@ mean a string. Plain dates (`2026-10-15`) and versions (`1.0.0`) are strings.
 5. A maintainer review is required before merge. Automated reviewers, such as Copilot code
    review, may comment, but they never replace a human approval.
 
+### Pull request titles
+
+Pull requests are squash-merged, so the title becomes the commit on `main` and decides the next
+release. Titles must be [Conventional Commits](https://www.conventionalcommits.org/), and a check
+enforces it:
+
+```
+type(optional scope): description
+```
+
+| Type | Use it for | Release |
+| --- | --- | --- |
+| `feat` | A new entry, field or site feature (`feat(entries): add Renovate`) | minor |
+| `fix` | A wrong permission, a bug (`fix(site): escape vendor names`) | patch |
+| `perf`, `revert` | Faster code; undoing an earlier change | patch |
+| `docs`, `test`, `refactor`, `style`, `build`, `ci`, `chore` | Everything else | none |
+
+Add `!` after the type or scope (`feat(schema)!: rename install_scope`), or a `BREAKING CHANGE:`
+footer in the description, for a change that breaks consumers of the registry.
+
 ### Commit messages
 
-Write clear, imperative commit messages, for example "Add Atlantis entry" or "Validate event
-permissions". [Conventional Commits](https://www.conventionalcommits.org/) prefixes
-(`feat:`, `fix:`, `docs:`, `chore:`) are welcome but not required.
+Commits inside a pull request are squashed away, so write them however helps your review: clear
+and imperative, for example "Add Atlantis entry" or "Validate event permissions".
 
 ### Developer Certificate of Origin (DCO)
 
@@ -126,21 +145,26 @@ certification. An AI tool cannot sign off on your behalf (see below).
 
 ## Releases
 
-Maintainers cut releases; the workflow does the rest.
+Releases are automated, but nothing is published until a maintainer approves it twice.
 
-1. Open a pull request that sets the new version in `package.json` (semantic versioning: a new
-   entry or field is a minor release, a fix is a patch).
-2. After it merges, tag the merge commit and push the tag:
+1. Every merge to `main` runs the **Release PR** workflow. It reads the
+   [pull request titles](#pull-request-titles) merged since the last release and, if any of them
+   is a `feat`, `fix`, `perf`, `revert` or breaking change, keeps one pull request open, titled
+   `chore(release): vX.Y.Z`, that sets the next version in `package.json` and
+   `package-lock.json` and lists the release notes. It is rewritten on every merge; don't edit
+   it.
+2. **First approval:** a maintainer reviews and merges the release pull request.
+3. The merge runs the **Release** workflow. It runs the checks and tests on that commit, builds
+   the site reproducibly, packages it, and shows the version, checksums and notes in its summary.
+4. **Second approval:** a maintainer approves the `release` environment on that run. Only then
+   does the workflow sign the build provenance with Sigstore and publish the release, creating
+   the `vX.Y.Z` tag at the commit it built.
 
-   ```sh
-   git switch main && git pull
-   git tag -a v0.2.0 -m "byoghapp 0.2.0"
-   git push origin v0.2.0
-   ```
-
-3. `.github/workflows/release.yml` checks that the tag matches `package.json`, runs the checks and
-   tests, builds the site reproducibly, signs its build provenance with Sigstore and publishes the
-   release. Don't create the release in the GitHub UI: the workflow creates it.
+Versions follow [semantic versioning](https://semver.org/): a breaking change bumps the major
+version, a `feat` the minor version and a `fix`, `perf` or `revert` the patch version. Before 1.0.0,
+breaking changes and features both bump the minor version. To publish a version that has no
+release yet (the first one, or one whose approval expired), run the Release workflow by hand on
+`main`. Never push `v*` tags or create releases in the GitHub UI.
 
 [SECURITY.md](SECURITY.md#verifying-a-release) explains how to verify a release.
 
