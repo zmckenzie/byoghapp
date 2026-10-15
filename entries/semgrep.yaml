@@ -1,0 +1,112 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: semgrep
+name: Semgrep (private GitHub App)
+vendor: Semgrep
+category: security
+website: https://semgrep.dev
+documentation_url: https://docs.semgrep.dev/deployment/prepare/scm-permissions
+documentation_urls:
+  - https://docs.semgrep.dev/deployment/connect-scm
+own_app: optional
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed: []
+two_step_webhook: false
+manual_steps:
+  - >-
+    Start in Semgrep: Settings > Source code managers > Add, choose the features and whether to
+    grant code access, review the permissions and click Register GitHub App. Semgrep sends you to
+    GitHub to create the app from its template.
+  - >-
+    Name the app (Semgrep suggests "Semgrep Code - YOUR_ORG_NAME") and install it on the
+    organization that owns it.
+  - Single file access covers .github/workflows/semgrep.yml and .semgrepignore.
+notes: >-
+  Semgrep normally creates this app from its own template; a personal access token is the
+  alternative. The docs list no webhook events. Managed Scans and Multimodal need Contents read;
+  Autofix needs Contents read and write. The docs call file access "Reading and writing 2 files",
+  mapped here to Single file.
+manifest:
+  name: Semgrep Code
+  url: https://semgrep.dev
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    actions: write
+    checks: read
+    contents: read
+    members: read
+    metadata: read
+    pull_requests: write
+    secrets: write
+    security_events: write
+    single_file: write
+    workflows: write
+  default_events: []
+variants:
+  - id: code-access
+    name: With code access
+    description: Contents read for Managed Scans and Semgrep Multimodal.
+    default_permissions:
+      actions: write
+      checks: read
+      contents: read
+      members: read
+      metadata: read
+      pull_requests: write
+      secrets: write
+      security_events: write
+      single_file: write
+      workflows: write
+    default_events: []
+  - id: no-code-access
+    name: Without code access
+    description: PR comments only; the docs say this does not require code access.
+    default_permissions:
+      actions: write
+      checks: read
+      members: read
+      metadata: read
+      pull_requests: write
+      secrets: write
+      security_events: write
+      single_file: write
+      workflows: write
+    default_events: []
+  - id: autofix
+    name: With Autofix
+    description: >-
+      Contents read and write so Autofix can push branches and open draft pull requests.
+    default_permissions:
+      actions: write
+      checks: read
+      contents: write
+      members: read
+      metadata: read
+      pull_requests: write
+      secrets: write
+      security_events: write
+      single_file: write
+      workflows: write
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

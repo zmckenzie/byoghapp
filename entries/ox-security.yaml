@@ -1,0 +1,100 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: ox-security
+name: OX Security (self-hosted GitHub App)
+vendor: OX Security
+category: security
+website: https://www.ox.security/
+documentation_url: >-
+  https://docs.ox.security/get-started/onboarding-to-ox/source-control/github/github-app/creating-a-self-hosted-ox-github-app
+own_app: ghes-only
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+  notes: The docs set 'Where can this GitHub App be installed?' to Only on this account.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Get the OX instance URL, customer name and appId from your OX Customer Success contact first.
+  - >-
+    Generate a 40-character webhook secret, for example: tr -dc a-z0-9 </dev/urandom | head -c 40
+  - >-
+    Set the callback URL to
+    <ox-instance-url>/github-app-installation-configure?appId=<customer-name>. Select Request user
+    authorization (OAuth) during installation and Redirect on update; clear Expire user
+    authorization tokens.
+  - Set the webhook URL to <ox-instance-url>/api/githubapp/<customer-name>/webhooks.
+  - >-
+    Generate a private key and a client secret. Share them, the webhook secret, app ID, client ID,
+    URL slug and GHES URL with OX through a secure channel.
+  - >-
+    After OX confirms registration, install the app on your organization, then in OX open Connectors
+    > GitHub > GITHUB APP and pick repositories.
+notes: >-
+  The page is titled as the older version of the self-hosted app setup. If GitHub Enterprise Server
+  is not reachable from the internet, deploy the OX Broker first.
+manifest:
+  name: OX GitHub App
+  url: https://www.ox.security/
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    actions: write
+    administration: write
+    checks: write
+    contents: write
+    deployments: read
+    issues: write
+    members: write
+    merge_queues: read
+    metadata: read
+    organization_administration: read
+    organization_custom_roles: read
+    organization_events: read
+    organization_hooks: read
+    organization_projects: read
+    organization_self_hosted_runners: read
+    organization_user_blocking: read
+    packages: read
+    pages: read
+    pull_requests: write
+    repository_hooks: read
+    repository_projects: read
+    secret_scanning_alerts: read
+    security_events: read
+    statuses: read
+    vulnerability_alerts: read
+    workflows: write
+  default_events:
+    - check_run
+    - check_suite
+    - merge_group
+    - meta
+    - pull_request
+    - push
+    - repository
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

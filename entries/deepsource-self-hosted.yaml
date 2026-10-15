@@ -1,0 +1,135 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: deepsource-self-hosted
+name: DeepSource (self-hosted)
+vendor: DeepSource
+category: code-quality
+website: https://deepsource.com
+documentation_url: https://deepsource.com/docs/self-hosted/vcs-integrations/gh
+documentation_urls:
+  - >-
+    https://raw.githubusercontent.com/DeepSourceCorp/enterprise-assets/master/integrations/create_github_app.py
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    DeepSource's quick setup script (create_github_app.py) opens GitHub's new-app page for your
+    organization with the fields pre-filled.
+  - >-
+    Set the webhook URL to https://<deepsource-host>/services/webhooks/github/ (GitHub Enterprise
+    Server: /services/webhooks/github-enterprise/), check Active and enter a random webhook secret.
+  - Set the single file path to .deepsource.toml.
+  - >-
+    Generate a private key and a client secret. In the Admin Console, open Application > Config,
+    select Github and enter the app ID, slug, client ID, client secret, webhook secret and private
+    key.
+notes: >-
+  The page's permission table and the quick setup script differ: the script also asks for
+  Administration, Deployments, Issues, Members and organization Webhooks read and subscribes to
+  events; the table lists no events. The script asks for Metadata write, which GitHub only offers as
+  read.
+manifest:
+  name: DeepSource
+  url: https://deepsource.com
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    administration: read
+    checks: write
+    contents: write
+    deployments: read
+    emails: read
+    issues: read
+    keys: read
+    members: read
+    metadata: read
+    organization_hooks: read
+    pull_requests: write
+    repository_hooks: read
+    single_file: write
+    statuses: write
+  default_events:
+    - issue_comment
+    - member
+    - organization
+    - public
+    - pull_request
+    - push
+    - repository
+variants:
+  - id: quick-setup
+    name: Quick setup script
+    description: >-
+      The permissions and events DeepSource's setup script pre-fills, plus the user permissions its
+      instructions add.
+    default_permissions:
+      administration: read
+      checks: write
+      contents: write
+      deployments: read
+      emails: read
+      issues: read
+      keys: read
+      members: read
+      metadata: read
+      organization_hooks: read
+      pull_requests: write
+      repository_hooks: read
+      single_file: write
+      statuses: write
+    default_events:
+      - issue_comment
+      - member
+      - organization
+      - public
+      - pull_request
+      - push
+      - repository
+  - id: docs-table
+    name: Documented permission table
+    description: >-
+      Only the permissions in the docs' table. Events limited to the script's events these
+      permissions allow.
+    default_permissions:
+      checks: write
+      contents: write
+      emails: read
+      keys: read
+      metadata: read
+      pull_requests: write
+      repository_hooks: read
+      single_file: write
+      statuses: write
+    default_events:
+      - public
+      - pull_request
+      - push
+      - repository
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

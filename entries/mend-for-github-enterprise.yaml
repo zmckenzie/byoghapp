@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: mend-for-github-enterprise
+name: Mend for GitHub Enterprise
+vendor: Mend.io
+category: security
+website: https://www.mend.io/
+documentation_url: >-
+  https://docs.mend.io/integrations/latest/create-the-mend-for-github-enterprise-app
+own_app: ghes-only
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+  notes: >-
+    The docs recommend 'Any account' so any organization on the instance can install the app; you
+    can limit it to your own organization.
+credentials_needed:
+  - app_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Create the app under your organization settings. Enter a temporary webhook URL; you change it
+    later in the installation.
+  - Generate a webhook secret, enter it and keep a copy.
+  - Generate a private key.
+  - >-
+    In the Mend platform, open Integrations > GitHub Enterprise and enter the GitHub URL, the API
+    URL (<GitHub URL>/api/v3), the app ID, the webhook secret and the private key, then click Get
+    Activation Key.
+  - >-
+    Do not remove the WS-prefixed service user Mend creates; keep it in the Admin group.
+notes: >-
+  The permission list still shows Pages, Projects, Webhooks and Workflows, then says they (and
+  Deployments) are not required; this entry leaves them out. Administration read & write is only
+  needed if Mend should manage branch protection. Members read-only is marked GHE only.
+manifest:
+  name: Mend App
+  url: https://mend.io
+  description: Mend for GitHub Enterprise
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    administration: read
+    checks: write
+    contents: write
+    issues: write
+    members: read
+    metadata: read
+    organization_custom_properties: read
+    pull_requests: write
+    repository_custom_properties: read
+    statuses: write
+  default_events:
+    - check_run
+    - create
+    - custom_property
+    - custom_property_values
+    - issue_comment
+    - issues
+    - organization
+    - pull_request
+    - pull_request_review_comment
+    - push
+    - release
+    - repository
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.
