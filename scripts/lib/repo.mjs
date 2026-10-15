@@ -6,7 +6,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+// BYOGHAPP_ROOT lets tests point the command-line scripts at a fixture repository.
+export const ROOT = resolve(process.env.BYOGHAPP_ROOT ?? fileURLToPath(new URL('../..', import.meta.url)));
 
 export function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));

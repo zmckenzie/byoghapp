@@ -14,7 +14,8 @@ Closes #
 ## Checklist
 
 - [ ] I have read [CONTRIBUTING.md](../CONTRIBUTING.md), and my commits are signed off (`git commit -s`).
-- [ ] The change is focused, and CI passes locally (`node scripts/check-repo-hygiene.mjs`, `node --test`).
+- [ ] The change is focused, and `npm run check` and `npm run coverage` pass locally.
+- [ ] Code changes keep the mutation score at or above 80% (`npm run mutation -- --changed origin/main`).
 - [ ] No new dependencies, network origins, secrets or broader workflow permissions (or an approved issue is linked).
 - [ ] No planning, notes or research files are included (`TASKS.md`, `TODO.md`, `PLAN.md` and so on).
 
@@ -22,7 +23,7 @@ Closes #
 
 - [ ] Every permission, event and URL comes from the vendor's documentation, linked in `documentation_url`.
 - [ ] Every webhook event has the permission it needs.
-- [ ] `last_verified` is today or earlier, and the `changelog` has a new line for this change.
+- [ ] `verification.status` is `needs-review` (a maintainer records verification with `/verified`), and the `changelog` has a new line at the top with my login.
 
 ## AI disclosure
 

@@ -109,7 +109,19 @@ export class Page {
     throw new Error(`Timed out waiting for: ${expression}`);
   }
 
-  async screenshot(path, { width = 1280, height = 900, fullPage = true } = {}) {
+  /** Starts V8 block coverage; call before the first navigation. */
+  async startCoverage() {
+    await this.send('Profiler.enable');
+    await this.send('Profiler.startPreciseCoverage', { callCount: true, detailed: true });
+  }
+
+  /** Coverage of the scripts loaded in the current document. */
+  async takeCoverage() {
+    const { result } = await this.send('Profiler.takePreciseCoverage');
+    return result;
+  }
+
+  async screenshot(path,{ width = 1280, height = 900, fullPage = true } = {}) {
     await this.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width < 600 });
     let clip;
     if (fullPage) {

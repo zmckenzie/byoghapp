@@ -33,14 +33,45 @@ pull request description, or user-facing docs under `docs/`.
 
 ## Development
 
-The project deliberately has **zero npm dependencies**, at runtime and at build time.
+The project deliberately has **zero npm dependencies**, at runtime, build and test time.
 
-- **Requirements:** Node.js 22 LTS or newer (see `.nvmrc`) and Git.
-- **Checks:** `node scripts/check-repo-hygiene.mjs` runs locally the same repository checks that
-  CI runs. Further commands will be documented here as the validator and site are built.
+- **Requirements:** Node.js 22.12 or newer (see `.nvmrc`), Git, and Chrome or Chromium for the
+  browser tests.
+- **Checks:** `npm run check` (repository hygiene, entry validation, build, site lint) and
+  `npm run coverage` (unit tests with the coverage gate). [AGENTS.md](AGENTS.md#commands) lists
+  every command.
+- **Run the site:** `npm run build && npm run serve`, then open http://127.0.0.1:8000.
 
 Please don't add a dependency without discussing it in an issue first. If one is ever justified,
 it will be vendored and pinned, not installed from the registry at build time.
+
+### Testing standards
+
+- Unit tests use `node:test`. Coverage must stay at or above **90%** for lines, branches and
+  functions (`npm run coverage`). The browser tests (`npm run test:e2e`) hold the browser-only
+  code to the same bar.
+- **Mutation testing** checks that the tests would catch real bugs: `npm run mutation` makes
+  small changes to the code (flipping `<` to `<=`, `&&` to `||`, emptying strings and so on) and
+  expects a test to fail for each. The score must stay at or above **80%**. Run it on what you
+  changed with `npm run mutation -- --changed origin/main`; a surviving mutant names the file,
+  line and change that no test noticed.
+
+## Adding or updating an entry
+
+1. Read the vendor's documentation for creating the GitHub App. Every permission, level and
+   webhook event you add must appear there.
+2. Copy a similar file in `entries/` to `entries/<slug>.json`. `slug` is lowercase with
+   hyphens and must match the file name.
+3. Fill in `manifest` with GitHub's manifest fields. Use a placeholder webhook URL under
+   `https://example.invalid/` with `two_step_webhook: true` when the URL is only known after
+   the vendor side is set up. If the vendor documents different permission sets for different
+   features, add `variants` (the first must equal `manifest`).
+4. Leave `last_verified` and `verified_by` as `null` and `verification.status` as
+   `"needs-review"`. A maintainer verifies the entry and records it by commenting `/verified`
+   on your pull request.
+5. Add a line at the top of `changelog` with today's date, a higher version and your GitHub
+   login (it must match the pull request author).
+6. Run `npm run validate` and `npm run build`, and look at your entry with `npm run serve`.
 
 ## Pull requests
 

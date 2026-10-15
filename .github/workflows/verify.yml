@@ -1,0 +1,45 @@
+# Weekly check of every entry's vendor documentation. Opens or updates one
+# "verification-failed" issue per entry whose permission text changed or whose
+# docs didn't load. It never edits entries: a person reviews each change.
+name: Verify documentation
+
+on:
+  schedule:
+    - cron: "41 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify vendor documentation
+    if: github.repository == 'zmckenzie/byoghapp'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Fetch documentation and compare fingerprints
+        run: node scripts/verify.mjs --report "${RUNNER_TEMP}/report.json" >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Open or update issues
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/verification-issues.mjs "${RUNNER_TEMP}/report.json"

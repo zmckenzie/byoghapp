@@ -32,9 +32,10 @@ export async function run({ root = ROOT, base, prAuthor, online = false, today =
     for (const message of checkEntry(entry, { slug, today, data })) errors.push({ slug, message });
   }
 
+  const changed = base ? changedEntrySlugs(base, root) : null;
   if (base) {
     const maintainers = codeOwnersFor(readFileSync(join(root, '.github/CODEOWNERS'), 'utf8'), 'entries/x.json');
-    for (const slug of changedEntrySlugs(base, root)) {
+    for (const slug of changed) {
       if (!entries.has(slug)) continue;
       const before = entryAtRef(base, slug, root);
       for (const message of checkChange(before, entries.get(slug), { prAuthor, maintainers, today })) {
@@ -44,7 +45,9 @@ export async function run({ root = ROOT, base, prAuthor, online = false, today =
   }
 
   if (online) {
+    // With a base branch, only the entries this change touches are fetched.
     for (const [slug, entry] of entries) {
+      if (changed && !changed.includes(slug)) continue;
       for (const message of await checkDocumentation(entry, fetch)) errors.push({ slug, message });
     }
   }

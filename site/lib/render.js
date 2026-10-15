@@ -133,7 +133,7 @@ function renderLauncher(entry, { target, appName }) {
     <input id="app-name" name="appName" autocomplete="off" maxlength="34" value="${esc(appName)}">
     <p id="target-error" class="error" role="alert" hidden></p>
   </form>
-  <p><a id="launch-link" class="button" href="#" rel="noreferrer">Open in GitHub</a></p>
+  <p class="launch-actions"><a id="launch-link" class="button" href="#" rel="noreferrer">Open in GitHub</a></p>
   <p class="muted">Opens GitHub's own registration form with these values filled in. Review them there, set a webhook secret if the webhook is on, and generate the private key in GitHub. Nothing secret passes through this site.</p>
   <details class="manifest">
     <summary>Create from manifest instead (opt-in)</summary>

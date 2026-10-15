@@ -42,19 +42,23 @@ deployed from it are supported.
 
 ## Security posture
 
-The commitments below are design requirements. As the project is pre-MVP, they describe what the
-code must do once it is written, and pull requests that break them won't be merged.
+The commitments below are design requirements, enforced in CI where possible
+(`scripts/lint-site.mjs` checks the CSP and URL allowlist on every pull request). Pull requests
+that break them won't be merged.
 
 **The repository holds no secrets.** Every workflow runs on the built-in `GITHUB_TOKEN` with
-least-privilege permissions. No API keys, deploy keys or personal access tokens are stored.
+least-privilege permissions. No API keys, deploy keys or personal access tokens are stored. The
+`/verified` comment workflow only runs for code owners, executes the default branch's scripts,
+and treats the pull request's files as data.
 
 **No third-party requests from the site.** The site loads no CDN scripts, fonts, analytics or
 trackers, and doesn't fetch vendor logos live. All assets are served from the same origin.
 
-**A strict Content Security Policy** is set in a `<meta>` tag, because GitHub Pages can't set
-response headers. It allows scripts, styles and images from the same origin only. Network
-access is limited to the same origin and `api.github.com`, and forms may post only to
-`github.com`.
+**A strict Content Security Policy** is set in a `<meta>` tag on each page, because GitHub Pages
+can't set response headers. It allows scripts, styles and images from the same origin only. The
+registry page may only fetch from its own origin and post forms to `github.com` or `*.ghe.com`;
+the manifest callback page may only call `api.github.com` or `api.*.ghe.com` and posts no forms.
+Both pages send no referrer.
 
 **The default launcher never handles credentials.** "Open in GitHub" is a plain link to GitHub's
 own registration form. You review every value, set your own webhook secret, and generate the

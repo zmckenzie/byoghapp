@@ -2,8 +2,8 @@
 // Fails if tracked files include planning or scratch documents, credentials, or npm artifacts.
 // Uses Node.js built-ins only. Runs in CI and locally: `node scripts/check-repo-hygiene.mjs`.
 
-import { execFileSync } from 'node:child_process';
 import { basename } from 'node:path';
+import { git } from './lib/repo.mjs';
 
 /** Each rule: a test on a repo-relative path and the reason it is rejected. */
 export const RULES = [
@@ -46,8 +46,7 @@ export function findViolations(paths) {
 }
 
 function trackedFiles() {
-  const out = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' });
-  return out.split('\0').filter(Boolean);
+  return (git(['ls-files', '-z']) ?? '').split('\0').filter(Boolean);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

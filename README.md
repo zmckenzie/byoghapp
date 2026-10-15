@@ -7,8 +7,9 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 > [!NOTE]
-> **Status: pre-MVP.** The repository is being set up in the open. The registry, site and
-> validator are not built yet, and nothing here is ready to use.
+> **Status: pre-MVP.** The registry, site and automation work, and the first 11 entries are in.
+> No entry has been verified by a maintainer yet: check permissions against the vendor's docs
+> before you create an app.
 
 ## Why
 
@@ -27,7 +28,7 @@ byoghapp collects those definitions in one place, in one format, with:
   date, and a changelog, so you can compare an app you created months ago with the current
   definition.
 
-## How it will work
+## How it works
 
 Each product is one JSON file in `entries/`. The static site renders each entry with two
 launchers:
@@ -41,6 +42,26 @@ The site is plain HTML, CSS and JavaScript with **zero runtime or build dependen
 from GitHub Pages under a strict Content Security Policy. It makes no third-party requests, uses
 no analytics, and the repository holds no secrets. See [SECURITY.md](SECURITY.md) for the full
 security posture.
+
+Each entry page shows:
+
+- the permissions with their risk tier (critical, high, medium, low), what each one allows, and
+  a link to GitHub's reference;
+- the webhook posture, the install scope, the credentials the vendor needs, and the steps
+  GitHub's form can't do;
+- a changelog, a "Report a problem" link, and whether a maintainer has verified the entry.
+
+A weekly job re-reads every vendor's documentation and opens an issue when the permission text
+changes. A maintainer reviews it and records the verification with `/verified`.
+
+## Try it locally
+
+You need Node.js 22.12 or newer and nothing else.
+
+```sh
+npm run build    # writes site/registry.json from entries/
+npm run serve    # http://127.0.0.1:8000
+```
 
 ## Contributing
 

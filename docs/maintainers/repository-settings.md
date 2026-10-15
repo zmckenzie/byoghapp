@@ -30,7 +30,7 @@ whenever a setting changes.
 | Restrict deletions and block force pushes | On | Branch-Protection |
 | Require a pull request before merging | 1 approval. Dismiss stale approvals. Require Code Owners review. Require approval of the most recent push | Branch-Protection, Code-Review |
 | Require conversation resolution | On | |
-| Required status checks | `Repository checks and tests` and `Workflow security (zizmor)`, plus `Analyze (actions)`, `Analyze (javascript-typescript)` and `Dependency review` once the repository is public | Branch-Protection, CI-Tests |
+| Required status checks | `Repository checks and tests`, `Browser tests`, `Workflow security (zizmor)` and `Validate changed entries`, plus `Analyze (actions)`, `Analyze (javascript-typescript)` and `Dependency review` once the repository is public. `Mutation testing` only runs when code changes, so leave it optional | Branch-Protection, CI-Tests |
 | Copilot code review | On, with "Review new pushes" | Comment only. It never counts as an approval |
 | Bypass list | Empty. Repository admins aren't exempt | Branch-Protection |
 
@@ -44,7 +44,7 @@ checks and Copilot review. Record which option was chosen here.
 | Setting | Value |
 | --- | --- |
 | Workflow permissions | Read repository contents (read-only `GITHUB_TOKEN` by default) |
-| Allow GitHub Actions to create and approve pull requests | Off |
+| Allow GitHub Actions to create and approve pull requests | Off (the `/verified` workflow pushes commits and comments; it never opens or approves pull requests) |
 | Require approval for workflows from outside collaborators | All outside collaborators |
 | Allowed actions | GitHub-created actions, plus `ossf/*`, `step-security/*` and `zizmorcore/*` |
 
@@ -52,6 +52,11 @@ checks and Copilot review. Record which option was chosen here.
 
 The issue forms and Dependabot use these labels: `bug`, `enhancement`, `triage`, `new-entry`,
 `entry-problem`, `verification-failed`, `dependencies`, `good first issue`, `help wanted`.
+
+## Pages
+
+Settings → Pages → Source: **GitHub Actions**. `.github/workflows/pages.yml` deploys `site/` on
+every push to `main` once the repository is public.
 
 ## Making the repository public
 
