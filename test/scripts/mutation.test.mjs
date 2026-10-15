@@ -114,23 +114,24 @@ describe('scoring and reporting', () => {
 
   test('summarize counts timeouts as killed and lists survivors', () => {
     const results = [
-      { source: 'b.js', line: 2, operator: 'o', original: 'x', replacement: 'y', status: 'killed' },
+      { source: 'b.js', line: 2, operator: 'o', original: 'x', replacement: 'y', status: 'killed', ms: 1500 },
       { source: 'b.js', line: 1, operator: 'o', original: 'x', replacement: 'y', status: 'survived' },
       { source: 'a.js', line: 5, operator: 'o', original: 'x', replacement: 'y', status: 'timeout' },
       { source: 'a.js', line: 3, operator: 'o', original: 'x', replacement: 'y', status: 'no-coverage' },
     ];
     const s = summarize(['a.js', 'b.js', 'c.js'], results);
     assert.deepEqual(s.files, [
-      { source: 'a.js', total: 2, killed: 1, survived: 1, score: 50 },
-      { source: 'b.js', total: 2, killed: 1, survived: 1, score: 50 },
-      { source: 'c.js', total: 0, killed: 0, survived: 0, score: 100 },
+      { source: 'a.js', total: 2, killed: 1, survived: 1, score: 50, ms: 0 },
+      { source: 'b.js', total: 2, killed: 1, survived: 1, score: 50, ms: 1500 },
+      { source: 'c.js', total: 0, killed: 0, survived: 0, score: 100, ms: 0 },
     ]);
     assert.equal(s.killed, 2);
     assert.equal(s.survived, 2);
     assert.equal(s.score, 50);
     assert.deepEqual(s.survivors.map((r) => `${r.source}:${r.line}`), ['a.js:3', 'b.js:1']);
     const report = formatReport(s, 80);
-    assert.ok(report.includes(' 50.0%       1/2      a.js'));
+    assert.ok(report.includes(' 50.0%       1/2           0.0s  a.js'));
+    assert.ok(report.includes(' 50.0%       1/2           1.5s  b.js'));
     assert.ok(report.includes('Overall: 50.0% (2 killed, 2 survived), threshold 80%'));
     assert.ok(report.includes('a.js:3  o  "x" -> "y"  (no test runs this code)'));
     assert.ok(report.includes('b.js:1  o  "x" -> "y"\n') || report.endsWith('b.js:1  o  "x" -> "y"'));

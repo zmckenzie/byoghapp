@@ -180,6 +180,7 @@ export async function runMutation({ root = ROOT, files, concurrency = availableP
     log(`Testing ${mutants.length} mutants in ${sandboxes.length} sandboxes…`);
     const results = [];
     await pool(sandboxes, mutants, async (dir, mutant) => {
+      const started = Date.now();
       const { file } = mutant;
       const runs = planRuns(testsCovering(profiles, file.source, mutant.start));
       let status = runs.length === 0 ? 'no-coverage' : 'survived';
@@ -197,7 +198,7 @@ export async function runMutation({ root = ROOT, files, concurrency = availableP
           writeFileSync(target, file.src);
         }
       }
-      results.push({ source: file.source, line: mutant.line, operator: mutant.operator, original: mutant.original, replacement: mutant.replacement, status });
+      results.push({ source: file.source, line: mutant.line, operator: mutant.operator, original: mutant.original, replacement: mutant.replacement, status, ms: Date.now() - started });
       if (results.length % 100 === 0) log(`${results.length}/${mutants.length} mutants tested`);
     });
     return summarize(plan.map((p) => p.source), results);
@@ -212,7 +213,8 @@ export function summarize(sources, results) {
     const rs = results.filter((r) => r.source === source);
     const killed = rs.filter((r) => r.status === 'killed' || r.status === 'timeout').length;
     const survived = rs.length - killed;
-    return { source, total: rs.length, killed, survived, score: mutationScore({ killed, survived }) };
+    const ms = rs.reduce((n, r) => n + (r.ms ?? 0), 0);
+    return { source, total: rs.length, killed, survived, score: mutationScore({ killed, survived }), ms };
   });
   const killed = files.reduce((n, f) => n + f.killed, 0);
   const survived = files.reduce((n, f) => n + f.survived, 0);
@@ -223,8 +225,10 @@ export function summarize(sources, results) {
 
 /** Human-readable report. */
 export function formatReport(summary, threshold) {
-  const lines = ['', 'Mutation testing', '', 'score   killed/total  file'];
-  for (const f of summary.files) lines.push(`${f.score.toFixed(1).padStart(5)}%  ${String(f.killed).padStart(6)}/${String(f.total).padEnd(5)}  ${f.source}`);
+  const lines = ['', 'Mutation testing', '', 'score   killed/total  test time  file'];
+  for (const f of summary.files) {
+    lines.push(`${f.score.toFixed(1).padStart(5)}%  ${String(f.killed).padStart(6)}/${String(f.total).padEnd(5)}  ${`${(f.ms / 1000).toFixed(1)}s`.padStart(9)}  ${f.source}`);
+  }
   lines.push('', `Overall: ${summary.score.toFixed(1)}% (${summary.killed} killed, ${summary.survived} survived), threshold ${threshold}%`);
   if (summary.survivors.length > 0) {
     lines.push('', 'Surviving mutants (no test failed):');
