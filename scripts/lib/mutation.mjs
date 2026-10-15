@@ -1,10 +1,7 @@
-// Mutation testing core: a small JavaScript tokenizer, the mutation operators
-// and the import graph used to pick tests. No parser dependency: the tokenizer
-// understands comments, strings, template literals (including ${} code) and
-// regular-expression literals, which is all the operators need.
-
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+// Mutation testing core: a small JavaScript tokenizer and the mutation operators.
+// No parser dependency: the tokenizer understands comments, strings, template
+// literals (including ${} code) and regular-expression literals, which is all
+// the operators need.
 
 const PUNCTUATORS = [
   '>>>=', '...', '===', '!==', '**=', '<<=', '>>=', '>>>', '&&=', '||=', '??=',
@@ -250,34 +247,6 @@ export function generateMutants(src) {
 /** Applies a mutant to the source. */
 export function applyMutant(src, mutant) {
   return src.slice(0, mutant.start) + mutant.replacement + src.slice(mutant.end);
-}
-
-/** Relative module specifiers a file imports (static and dynamic). */
-export function importsOf(src) {
-  const specs = [];
-  for (const m of src.matchAll(/\b(?:import|export)\s[^'"`;]*?\bfrom\s*(['"])([^'"]+)\1|\bimport\s*\(\s*(['"])([^'"]+)\3\s*\)|\bimport\s+(['"])([^'"]+)\5/g)) {
-    const spec = m[2] ?? m[4] ?? m[6];
-    if (spec.startsWith('.')) specs.push(spec);
-  }
-  return specs;
-}
-
-/** Every file a module reaches through relative imports, including itself. */
-export function importClosure(file, read = (p) => readFileSync(p, 'utf8')) {
-  const seen = new Set();
-  const visit = (path) => {
-    if (seen.has(path)) return;
-    seen.add(path);
-    let src;
-    try {
-      src = read(path);
-    } catch {
-      return;
-    }
-    for (const spec of importsOf(src)) visit(resolve(dirname(path), spec));
-  };
-  visit(resolve(file));
-  return seen;
 }
 
 /** Mutation score as a percentage; 100 when there are no mutants. */

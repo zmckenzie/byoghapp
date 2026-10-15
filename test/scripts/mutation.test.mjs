@@ -2,8 +2,8 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { applyMutant, generateMutants, importClosure, importsOf, mutationScore, tokenize } from '../../scripts/lib/mutation.mjs';
-import { DEFAULT_THRESHOLD, formatReport, runMutation, scriptsRunBy, sourceFiles, summarize, testFiles, testsFor } from '../../scripts/mutation.mjs';
+import { applyMutant, generateMutants, mutationScore, tokenize } from '../../scripts/lib/mutation.mjs';
+import { DEFAULT_THRESHOLD, formatReport, profileTests, runMutation, runTests, sourceFiles, summarize, testFiles, testsCovering } from '../../scripts/mutation.mjs';
 import { REPO, fixtureRepo, runScriptAsync } from '../helpers.mjs';
 
 const values = (src) => tokenize(src).tokens.map((t) => `${t.type}:${t.value}`);
@@ -105,22 +105,6 @@ describe('generateMutants', () => {
   });
 });
 
-describe('imports', () => {
-  test('finds static, re-export, side-effect and dynamic relative imports', () => {
-    const src = "import a from './a.js';\nimport { b } from \"../b.mjs\";\nexport * from './c.js';\nimport './d.js';\nconst e = await import('./e.js');\nimport fs from 'node:fs';";
-    assert.deepEqual(importsOf(src), ['./a.js', '../b.mjs', './c.js', './d.js', './e.js']);
-  });
-
-  test('importClosure follows relative imports and tolerates missing files', () => {
-    const files = { '/p/a.js': "import './b.js';", '/p/b.js': "import './c.js'; import './a.js';", '/p/c.js': "import './missing.js';" };
-    const read = (p) => {
-      if (!(p in files)) throw new Error('ENOENT');
-      return files[p];
-    };
-    assert.deepEqual([...importClosure('/p/a.js', read)].sort(), ['/p/a.js', '/p/b.js', '/p/c.js', '/p/missing.js']);
-  });
-});
-
 describe('scoring and reporting', () => {
   test('mutationScore', () => {
     assert.equal(mutationScore({ killed: 3, survived: 1 }), 75);
@@ -132,7 +116,7 @@ describe('scoring and reporting', () => {
       { source: 'b.js', line: 2, operator: 'o', original: 'x', replacement: 'y', status: 'killed' },
       { source: 'b.js', line: 1, operator: 'o', original: 'x', replacement: 'y', status: 'survived' },
       { source: 'a.js', line: 5, operator: 'o', original: 'x', replacement: 'y', status: 'timeout' },
-      { source: 'a.js', line: 3, operator: 'o', original: 'x', replacement: 'y', status: 'no-tests' },
+      { source: 'a.js', line: 3, operator: 'o', original: 'x', replacement: 'y', status: 'no-coverage' },
     ];
     const s = summarize(['a.js', 'b.js', 'c.js'], results);
     assert.deepEqual(s.files, [
@@ -147,15 +131,10 @@ describe('scoring and reporting', () => {
     const report = formatReport(s, 80);
     assert.ok(report.includes(' 50.0%       1/2      a.js'));
     assert.ok(report.includes('Overall: 50.0% (2 killed, 2 survived), threshold 80%'));
-    assert.ok(report.includes('a.js:3  o  "x" -> "y"  (no tests import this file)'));
+    assert.ok(report.includes('a.js:3  o  "x" -> "y"  (no test runs this code)'));
     assert.ok(report.includes('b.js:1  o  "x" -> "y"\n') || report.endsWith('b.js:1  o  "x" -> "y"'));
     assert.ok(!formatReport(summarize(['c.js'], []), 80).includes('Surviving'));
     assert.equal(DEFAULT_THRESHOLD, 80);
-  });
-
-  test('scriptsRunBy finds scripts tests launch', () => {
-    const src = "runScript('scripts/a.mjs', []); await runScriptAsync( 'scripts/b.mjs'); spawn(x, [join(REPO, 'scripts/c.mjs')]); join(REPO, 'site'); other('scripts/d.mjs');";
-    assert.deepEqual(scriptsRunBy(src), ['scripts/a.mjs', 'scripts/b.mjs', 'scripts/c.mjs']);
   });
 
   test('source and test discovery', () => {
@@ -167,11 +146,60 @@ describe('scoring and reporting', () => {
     const tests = testFiles(REPO);
     assert.ok(tests.includes('test/site/risk.test.mjs'));
     assert.ok(tests.every((t) => t.endsWith('.test.mjs')));
-    assert.ok(testsFor('site/lib/risk.js', tests, REPO).includes('test/site/render.test.mjs'));
-    assert.ok(testsFor('scripts/verify.mjs', tests, REPO).includes('test/scripts/cli.test.mjs'));
-    // Mentioning a path in a string is not running it.
-    assert.ok(!testsFor('site/lib/risk.js', tests, REPO).includes('test/scripts/mutation.test.mjs'));
+    assert.ok(!tests.some((t) => t.startsWith('test/e2e/')));
     assert.deepEqual(sourceFiles(join(REPO, 'no-such-dir')), []);
+  });
+
+  test('testsCovering picks profiled tests that execute an offset, in profile order', () => {
+    const mask = (bits) => Uint8Array.from(bits);
+    const profiles = [
+      { test: 'fast', ms: 1, masks: new Map([['a.js', mask([1, 0, 1])]]) },
+      { test: 'slow', ms: 9, masks: new Map([['a.js', mask([1, 1, 0])], ['b.js', mask([1])]]) },
+    ];
+    assert.deepEqual(testsCovering(profiles, 'a.js', 0).map((p) => p.test), ['fast', 'slow']);
+    assert.deepEqual(testsCovering(profiles, 'a.js', 1).map((p) => p.test), ['slow']);
+    assert.deepEqual(testsCovering(profiles, 'a.js', 2).map((p) => p.test), ['fast']);
+    assert.deepEqual(testsCovering(profiles, 'b.js', 0).map((p) => p.test), ['slow']);
+    assert.deepEqual(testsCovering(profiles, 'c.js', 0), []);
+  });
+});
+
+describe('profiling', () => {
+  test('profileTests records coverage per test, fastest first, including child processes', async () => {
+    const repo = fixtureRepo({}, { gitInit: false });
+    repo.write('site/lib/a.js', 'export function a(x) {\n  if (x) return 1;\n  return 2;\n}\n');
+    repo.write('test/site/a.test.mjs', "import { test } from 'node:test';\nimport { a } from '../../site/lib/a.js';\ntest('a', () => a(true));\n");
+    repo.write('test/site/child.test.mjs', "import { test } from 'node:test';\nimport { execFileSync } from 'node:child_process';\ntest('child', () => { execFileSync(process.execPath, ['-e', \"import('./site/lib/a.js').then((m) => m.a(false))\"]); });\n");
+    const src = readFileSync(join(repo.root, 'site/lib/a.js'), 'utf8');
+    try {
+      const profiles = await profileTests([repo.root], ['test/site/a.test.mjs', 'test/site/child.test.mjs'], new Map([['site/lib/a.js', src]]));
+      assert.equal(profiles.length, 2);
+      assert.ok(profiles[0].ms <= profiles[1].ms);
+      const byTest = Object.fromEntries(profiles.map((p) => [p.test, p.masks.get('site/lib/a.js')]));
+      const at = (text) => src.indexOf(text);
+      assert.equal(byTest['test/site/a.test.mjs'][at('return 1')], 1);
+      assert.equal(byTest['test/site/a.test.mjs'][at('return 2')], 0);
+      assert.equal(byTest['test/site/child.test.mjs'][at('return 2')], 1, 'coverage from a child process counts');
+    } finally {
+      repo.cleanup();
+    }
+  });
+
+  test('runTests reports pass, failure and timeout', async () => {
+    const repo = fixtureRepo({}, { gitInit: false });
+    repo.write('test/site/pass.test.mjs', "import { test } from 'node:test';\ntest('ok', () => {});\n");
+    repo.write('test/site/fail.test.mjs', "import { test } from 'node:test';\ntest('no', () => { throw new Error('x'); });\n");
+    repo.write('test/site/hang.test.mjs', "import { test } from 'node:test';\ntest('hang', () => { for (;;); });\n");
+    try {
+      const pass = await runTests(repo.root, ['test/site/pass.test.mjs'], 30_000);
+      assert.deepEqual([pass.passed, pass.timedOut], [true, false]);
+      const fail = await runTests(repo.root, ['test/site/fail.test.mjs'], 30_000);
+      assert.deepEqual([fail.passed, fail.timedOut], [false, false]);
+      const hang = await runTests(repo.root, ['test/site/hang.test.mjs'], 1_000);
+      assert.deepEqual([hang.passed, hang.timedOut], [false, true]);
+    } finally {
+      repo.cleanup();
+    }
   });
 });
 
@@ -197,7 +225,9 @@ describe('runMutation', () => {
       const weakResult = await runMutation({ root: poor.root, files: ['site/lib/calc.js', 'site/lib/untested.js'], concurrency: 1 });
       assert.ok(weakResult.files[0].survived > 0);
       assert.equal(weakResult.files[1].score, 0);
-      assert.ok(weakResult.survivors.some((s) => s.status === 'no-tests' && s.source === 'site/lib/untested.js'));
+      assert.ok(weakResult.survivors.some((s) => s.status === 'no-coverage' && s.source === 'site/lib/untested.js'));
+      assert.ok(logs.some((m) => /Profiling \d+ test files/.test(m)));
+      assert.ok(logs.some((m) => /Testing \d+ mutants in 2 sandboxes/.test(m)));
     } finally {
       good.cleanup();
       poor.cleanup();
@@ -207,7 +237,7 @@ describe('runMutation', () => {
   test('refuses to run when the tests already fail', async () => {
     const broken = project("import { test } from 'node:test';\nimport '../../site/lib/calc.js';\ntest('x', () => { throw new Error('red'); });\n");
     try {
-      await assert.rejects(runMutation({ root: broken.root, files: ['site/lib/calc.js'], concurrency: 1 }), /Tests for site\/lib\/calc\.js fail without any mutation/);
+      await assert.rejects(runMutation({ root: broken.root, files: ['site/lib/calc.js'], concurrency: 1 }), /test\/site\/calc\.test\.mjs fails without any mutation/);
     } finally {
       broken.cleanup();
     }

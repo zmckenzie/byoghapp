@@ -54,7 +54,11 @@ it will be vendored and pinned, not installed from the registry at build time.
   small changes to the code (flipping `<` to `<=`, `&&` to `||`, emptying strings and so on) and
   expects a test to fail for each. The score must stay at or above **80%**. Run it on what you
   changed with `npm run mutation -- --changed origin/main`; a surviving mutant names the file,
-  line and change that no test noticed.
+  line and change that no test noticed, and "no coverage" means no test runs that code at all.
+  To stay fast, it first runs each test file once with coverage, then gives each mutant only
+  the tests that execute it, fastest first, stopping at the first failure. If a mutant is truly
+  equivalent (no test could ever tell the difference), end its line with
+  `// mutation-ignore: <why>`.
 
 ## Adding or updating an entry
 

@@ -10,7 +10,7 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Browser, findChrome } from './cdp.mjs';
-import { CoverageCollector } from './coverage.mjs';
+import { CoverageCollector } from '../../scripts/lib/coverage.mjs';
 import { buildRegistry } from '../../scripts/build.mjs';
 import { startServer } from '../../scripts/serve.mjs';
 import { REPO } from '../helpers.mjs';

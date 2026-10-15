@@ -22,7 +22,7 @@ export function permissionSet(entry, variantId) {
  * Tier for one permission at one level, given the install scope.
  * Returns null when the key or level is not in the table.
  */
-export function permissionTier(table, key, level, repositories = 'selected') {
+export function permissionTier(table, key, level, repositories = 'selected') { // mutation-ignore: only 'all' changes the result
   const def = table.permissions[key]?.levels?.[level];
   if (!def) return null;
   if (repositories === 'all' && def.tier_all_repositories) return def.tier_all_repositories;
@@ -39,7 +39,7 @@ export function permissionTier(table, key, level, repositories = 'selected') {
  */
 export function summarize(entry, table, variantId) {
   const { permissions, events } = permissionSet(entry, variantId);
-  const repositories = entry.install_scope?.repositories ?? 'selected';
+  const repositories = entry.install_scope?.repositories ?? 'selected'; // mutation-ignore: as above
   const histogram = Object.fromEntries(TIER_ORDER.map((t) => [t, 0]));
   const items = [];
   for (const [key, level] of Object.entries(permissions)) {
@@ -76,7 +76,7 @@ export function highestTier(entry, table) {
   let best = null;
   for (const id of ids) {
     const { highest } = summarize(entry, table, id);
-    if (tierRank(highest) > tierRank(best)) best = highest;
+    if (tierRank(highest) > tierRank(best)) best = highest; // mutation-ignore: >= picks an equal tier, same result
   }
   return best;
 }

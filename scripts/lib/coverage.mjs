@@ -1,6 +1,11 @@
-// Turns Chrome's precise (block) coverage into line coverage for chosen files.
-// Snapshots from several page loads are merged: a character counts as covered
-// if any snapshot executed it.
+// V8 block coverage, as produced by Chrome's DevTools Profiler and by Node's
+// NODE_V8_COVERAGE: which characters of a file ran, and line coverage from that.
+// Used by the browser tests (coverage of site/app.js and site/callback.js) and
+// by mutation testing (which tests execute each mutant).
+
+import { readdirSync, readFileSync } from 'node:fs';
+import { relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Executed-character mask for one script from V8 block coverage. Ranges are
@@ -54,6 +59,33 @@ export function lineCoverage(source, mask) {
     offset += line.length + 1;
   });
   return { total, covered: total - uncovered.length, percent: total === 0 ? 100 : ((total - uncovered.length) / total) * 100, uncovered };
+}
+
+/**
+ * Reads a NODE_V8_COVERAGE directory and returns executed-character masks for
+ * the given sources: Map<repo-relative path, Uint8Array>. Every process that
+ * wrote coverage (child processes included) is merged.
+ * @param {string} dir coverage directory
+ * @param {string} root directory the paths are relative to
+ * @param {Map<string, string>} sources repo-relative path -> source text
+ */
+export function readCoverageDir(dir, root, sources) {
+  const masks = new Map();
+  for (const name of readdirSync(dir)) {
+    if (!name.endsWith('.json')) continue;
+    const { result } = JSON.parse(readFileSync(`${dir}/${name}`, 'utf8'));
+    for (const script of result) {
+      if (!script.url.startsWith('file://')) continue;
+      const path = relative(root, fileURLToPath(script.url)).split(sep).join('/');
+      const source = sources.get(path);
+      if (source === undefined) continue;
+      const mask = executedMask(source, script.functions);
+      const merged = masks.get(path) ?? new Uint8Array(source.length);
+      for (let i = 0; i < mask.length; i += 1) merged[i] |= mask[i];
+      masks.set(path, merged);
+    }
+  }
+  return masks;
 }
 
 /** Accumulates coverage snapshots for URLs ending with the given paths. */

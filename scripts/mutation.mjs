@@ -3,16 +3,21 @@
 // checks that the unit tests fail for each one. A surviving mutant means a
 // behaviour no test pins down. Zero dependencies; see scripts/lib/mutation.mjs.
 //
+// Each test file runs once with V8 coverage first; every mutant then runs only
+// the test files that execute its position, fastest first, stopping at the
+// first failure.
+//
 //   node scripts/mutation.mjs                        all files, fails below the threshold
 //   node scripts/mutation.mjs --changed origin/main  only files changed since a ref
 //   node scripts/mutation.mjs --file site/lib/risk.js --threshold 90 --report mutation.json
 
 import { spawn } from 'node:child_process';
-import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { availableParallelism, tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { applyMutant, generateMutants, importClosure, mutationScore } from './lib/mutation.mjs';
+import { readCoverageDir } from './lib/coverage.mjs';
+import { applyMutant, generateMutants, mutationScore } from './lib/mutation.mjs';
 import { ROOT, git } from './lib/repo.mjs';
 
 export const DEFAULT_THRESHOLD = 80;
@@ -40,33 +45,18 @@ export function testFiles(root = ROOT) {
   return TEST_DIRS.flatMap((d) => listFiles(root, d, /\.test\.mjs$/)).sort();
 }
 
-/** Script paths a test runs as child processes: runScript('x'), runScriptAsync('x') or join(REPO, 'x'). */
-export function scriptsRunBy(testSource) {
-  return [...testSource.matchAll(/\b(?:runScript|runScriptAsync)\(\s*'([^']+)'|\bjoin\(REPO,\s*'([^']+\.m?js)'\)/g)].map((m) => m[1] ?? m[2]);
-}
-
 /**
- * Tests that exercise a source file: those that import it (directly or
- * transitively) or run it, or a script that imports it, as a child process.
+ * Runs node --test on one or more files as a top-level process in its own
+ * process group (so a timeout also kills the test files it started).
+ * @returns {Promise<{passed: boolean, timedOut: boolean, ms: number}>}
  */
-export function testsFor(source, tests, root = ROOT, read = (p) => readFileSync(p, 'utf8')) {
-  const abs = resolve(root, source);
-  return tests.filter((t) => {
-    const path = resolve(root, t);
-    if (importClosure(path, read).has(abs)) return true;
-    return scriptsRunBy(read(path)).some((script) => importClosure(resolve(root, script), read).has(abs));
-  });
-}
-
-/** Runs node --test on the given files; resolves to {passed, timedOut, ms}. */
-function runTests(cwd, tests, timeoutMs) {
+export function runTests(cwd, tests, timeoutMs, extraEnv = {}) {
   return new Promise((resolvePromise) => {
     const started = Date.now();
     const env = { ...process.env };
-    // Run as a top-level test process even when started from inside node --test.
     delete env.NODE_V8_COVERAGE;
     delete env.NODE_TEST_CONTEXT;
-    // Own process group, so a timeout also kills the test files node --test started.
+    Object.assign(env, extraEnv);
     const child = spawn(process.execPath, ['--test', '--test-reporter=dot', ...tests], { cwd, env, stdio: 'ignore', detached: true });
     const timer = setTimeout(() => {
       try {
@@ -85,51 +75,78 @@ function runTests(cwd, tests, timeoutMs) {
 function makeSandbox(root) {
   const dir = mkdtempSync(join(tmpdir(), 'byoghapp-mutation-'));
   cpSync(root, dir, { recursive: true, filter: (src) => !/[/\\](\.git|node_modules|coverage)$/.test(src) });
-  return dir;
+  return realpathSync(dir);
+}
+
+/** Runs async jobs with one sandbox each, `sandboxes.length` at a time. */
+async function pool(sandboxes, jobs, worker) {
+  const queue = [...jobs];
+  await Promise.all(sandboxes.map(async (dir) => {
+    while (queue.length > 0) await worker(dir, queue.shift());
+  }));
 }
 
 /**
- * Runs mutation testing.
+ * Runs every test file once, unmutated, with V8 coverage (child processes
+ * included). Returns, fastest first, each test's duration and which characters
+ * of each source it executed.
+ */
+export async function profileTests(sandboxes, tests, sources) {
+  const profiles = [];
+  await pool(sandboxes, tests, async (dir, test) => {
+    const covDir = mkdtempSync(join(tmpdir(), 'byoghapp-cov-'));
+    try {
+      const run = await runTests(dir, [test], 300_000, { NODE_V8_COVERAGE: covDir });
+      if (!run.passed) throw new Error(`${test} fails without any mutation: fix it first`);
+      profiles.push({ test, ms: run.ms, masks: readCoverageDir(covDir, dir, sources) });
+    } finally {
+      rmSync(covDir, { recursive: true, force: true });
+    }
+  });
+  return profiles.sort((a, b) => a.ms - b.ms || a.test.localeCompare(b.test));
+}
+
+/** The profiled tests that execute a mutant's position, fastest first. */
+export function testsCovering(profiles, source, offset) {
+  return profiles.filter((p) => p.masks.get(source)?.[offset] === 1);
+}
+
+/**
+ * Runs mutation testing. Each mutant runs only the tests whose coverage
+ * includes it, fastest first, stopping at the first failure.
  * @returns {Promise<{files: object[], killed: number, survived: number, score: number, survivors: object[]}>}
  */
 export async function runMutation({ root = ROOT, files, concurrency = Math.max(1, availableParallelism() - 1), log = () => {} } = {}) {
-  const tests = testFiles(root);
-  const plan = (files ?? sourceFiles(root)).map((source) => ({ source, tests: testsFor(source, tests, root), src: readFileSync(join(root, source), 'utf8') }));
+  const plan = (files ?? sourceFiles(root)).map((source) => ({ source, src: readFileSync(join(root, source), 'utf8') }));
+  const sources = new Map(plan.map((p) => [p.source, p.src]));
   const sandboxes = Array.from({ length: concurrency }, () => makeSandbox(root));
   try {
-    // Baseline: every test set must pass unmutated, and sets the per-file timeout.
-    for (const p of plan) {
-      if (p.tests.length === 0) continue;
-      const base = await runTests(sandboxes[0], p.tests, 120_000);
-      if (!base.passed) throw new Error(`Tests for ${p.source} fail without any mutation: fix them first (${p.tests.join(', ')})`);
-      p.timeoutMs = Math.max(10_000, base.ms * 3 + 5_000);
-    }
-    const queue = plan.flatMap((p) => generateMutants(p.src).map((m) => ({ ...m, file: p })));
+    log(`Profiling ${testFiles(root).length} test files with coverage…`);
+    const profiles = await profileTests(sandboxes, testFiles(root), sources);
+    const mutants = plan.flatMap((p) => generateMutants(p.src).map((m) => ({ ...m, file: p })));
+    log(`Testing ${mutants.length} mutants in ${sandboxes.length} sandboxes…`);
     const results = [];
-    let done = 0;
-    await Promise.all(sandboxes.map(async (dir) => {
-      while (queue.length > 0) {
-        const mutant = queue.shift();
-        const { file } = mutant;
-        let status = 'survived';
-        if (file.tests.length > 0) {
-          const target = join(dir, file.source);
-          writeFileSync(target, applyMutant(file.src, mutant));
-          try {
-            const r = await runTests(dir, file.tests, file.timeoutMs);
-            if (r.timedOut) status = 'timeout';
-            else if (!r.passed) status = 'killed';
-          } finally {
-            writeFileSync(target, file.src);
+    await pool(sandboxes, mutants, async (dir, mutant) => {
+      const { file } = mutant;
+      const covering = testsCovering(profiles, file.source, mutant.start);
+      let status = covering.length === 0 ? 'no-coverage' : 'survived';
+      if (covering.length > 0) {
+        const target = join(dir, file.source);
+        writeFileSync(target, applyMutant(file.src, mutant));
+        try {
+          for (const profile of covering) {
+            const run = await runTests(dir, [profile.test], Math.max(5_000, profile.ms * 3 + 3_000));
+            if (run.timedOut) status = 'timeout';
+            else if (!run.passed) status = 'killed';
+            if (status !== 'survived') break;
           }
-        } else {
-          status = 'no-tests';
+        } finally {
+          writeFileSync(target, file.src);
         }
-        results.push({ source: file.source, line: mutant.line, operator: mutant.operator, original: mutant.original, replacement: mutant.replacement, status });
-        done += 1;
-        if (done % 25 === 0) log(`${done} mutants tested, ${queue.length} left`);
       }
-    }));
+      results.push({ source: file.source, line: mutant.line, operator: mutant.operator, original: mutant.original, replacement: mutant.replacement, status });
+      if (results.length % 50 === 0) log(`${results.length}/${mutants.length} mutants tested`);
+    });
     return summarize(plan.map((p) => p.source), results);
   } finally {
     for (const dir of sandboxes) rmSync(dir, { recursive: true, force: true });
@@ -146,7 +163,7 @@ export function summarize(sources, results) {
   });
   const killed = files.reduce((n, f) => n + f.killed, 0);
   const survived = files.reduce((n, f) => n + f.survived, 0);
-  const survivors = results.filter((r) => r.status === 'survived' || r.status === 'no-tests')
+  const survivors = results.filter((r) => r.status === 'survived' || r.status === 'no-coverage')
     .sort((a, b) => a.source.localeCompare(b.source) || a.line - b.line);
   return { files, killed, survived, score: mutationScore({ killed, survived }), survivors };
 }
@@ -159,7 +176,7 @@ export function formatReport(summary, threshold) {
   if (summary.survivors.length > 0) {
     lines.push('', 'Surviving mutants (no test failed):');
     for (const s of summary.survivors) {
-      lines.push(`  ${s.source}:${s.line}  ${s.operator}  ${JSON.stringify(s.original)} -> ${JSON.stringify(s.replacement)}${s.status === 'no-tests' ? '  (no tests import this file)' : ''}`);
+      lines.push(`  ${s.source}:${s.line}  ${s.operator}  ${JSON.stringify(s.original)} -> ${JSON.stringify(s.replacement)}${s.status === 'no-coverage' ? '  (no test runs this code)' : ''}`);
     }
   }
   return lines.join('\n');
