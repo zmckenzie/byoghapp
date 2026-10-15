@@ -1,0 +1,71 @@
+# ---------------------------------------------------------------------------
+# Private working notes: never committed.
+#
+# Planning, task tracking and research live outside the repository. Work is
+# tracked in GitHub Issues and Projects; personal notes stay on your machine.
+# `scripts/check-repo-hygiene.mjs` enforces the same list in CI, so `git add -f`
+# will not get these files merged either.
+# ---------------------------------------------------------------------------
+/.scratch/
+/.notes/
+/notes/
+/research/
+/docs/research/
+/plans/
+TASKS.md
+tasks.md
+TODO.md
+todo.md
+PLAN.md
+plan.md
+NOTES.md
+notes.md
+*.research.md
+*-research.md
+*.notes.md
+*.plan.md
+
+# AI agent local state (shared agent config such as AGENTS.md, CLAUDE.md and
+# .claude/settings.json IS committed; personal overrides are not)
+CLAUDE.local.md
+AGENTS.local.md
+.claude/settings.local.json
+.claude/todos/
+.claude/worktrees/
+.aider*
+.cursor/
+.windsurf/
+.continue/
+
+# Secrets and credentials. The manifest flow produces GitHub App private keys:
+# keep them out of the tree.
+.env
+.env.*
+!.env.example
+.dev.vars*
+*.pem
+*.key
+*.p12
+*.pfx
+*.private-key.*
+
+# Build output (registry.json is generated from entries/)
+/site/registry.json
+/dist/
+/_site/
+/coverage/
+
+# Node (the project ships with zero npm dependencies; this guards against
+# accidental installs)
+node_modules/
+npm-debug.log*
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

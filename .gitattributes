@@ -1,0 +1,4 @@
+* text=auto eol=lf
+
+# Generated files: collapse in diffs, exclude from language stats
+site/registry.json linguist-generated=true -diff

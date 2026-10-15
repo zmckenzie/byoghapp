@@ -1,0 +1,14 @@
+# Every change needs a maintainer's review. Paths with tighter ownership are listed
+# separately so ownership can be delegated later without touching the rest.
+*                     @zmckenzie
+
+# Registry data: the trust root for users
+/entries/             @zmckenzie
+/data/                @zmckenzie
+/schema/              @zmckenzie
+
+# Security-sensitive: automation, policy and agent instructions
+/.github/             @zmckenzie
+/SECURITY.md          @zmckenzie
+/AGENTS.md            @zmckenzie
+/CLAUDE.md            @zmckenzie
