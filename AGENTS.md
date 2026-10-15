@@ -50,7 +50,7 @@ scripts/lib/                strict YAML subset, schema checker, entry rules, rep
 test/scripts, test/site     unit tests (node:test); test/helpers.mjs builds fixtures
 test/e2e/                   browser tests over the Chrome DevTools Protocol (test/e2e/cdp.mjs)
 fuzz/                       Jazzer.js fuzz targets; test/fuzz runs them over their seeds
-.clusterfuzzlite/           ClusterFuzzLite build for the fuzz targets (CI)
+.clusterfuzzlite/           ClusterFuzzLite / OSS-Fuzz build of the fuzz targets (CI runs Jazzer.js directly)
 ```
 
 Keep logic in `site/lib/` and `scripts/lib/` as pure functions; keep `site/app.js`,

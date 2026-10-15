@@ -46,7 +46,7 @@ the fuzzing engine, [Jazzer.js](https://github.com/CodeIntelligenceTesting/jazze
 - **Run the site:** `npm run build && npm run serve`, then open http://127.0.0.1:8000.
 - **Fuzz:** `npm ci`, then `npm run fuzz:yaml` or `npm run fuzz:render` (5 minutes each). The
   targets live in `fuzz/`. If one finds a crash, add the input to `test/fuzz/targets.test.mjs`
-  and fix the bug. ClusterFuzzLite also fuzzes every pull request.
+  and fix the bug. CI fuzzes every pull request the same way (`.github/workflows/fuzz.yml`).
 
 Please don't add a dependency without discussing it in an issue first. An approved one is a
 `devDependency`, pinned exactly in `package-lock.json` and updated by Dependabot; the site and

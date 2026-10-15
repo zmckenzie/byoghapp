@@ -1,8 +1,9 @@
 #!/bin/bash -eu
-# Builds the fuzz targets in fuzz/ for ClusterFuzzLite. Jazzer.js comes from
-# package-lock.json (npm ci), the same pinned version npm run fuzz:* uses.
+# Builds the fuzz targets in fuzz/ with the OSS-Fuzz images, for ClusterFuzzLite
+# or OSS-Fuzz tooling (sanitizer "none"). Jazzer.js comes from package-lock.json,
+# the same pinned version npm run fuzz:* and the Fuzzing workflow use.
 
-npm ci --no-audit --no-fund
+npm ci --ignore-scripts --no-audit --no-fund
 # npm can exit 0 after an internal error; make sure Jazzer.js is really there.
 test -f node_modules/@jazzer.js/core/dist/cli.js
 

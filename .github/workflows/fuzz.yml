@@ -1,0 +1,70 @@
+# Fuzzing: runs the Jazzer.js targets in fuzz/ for 5 minutes each on every pull
+# request, and for 30 minutes each on main every week. Inputs that crash a target
+# fail the job and are uploaded as an artifact; add them to
+# test/fuzz/targets.test.mjs when you fix the bug.
+#
+# This runs Jazzer.js directly: ClusterFuzzLite's GitHub action can't build
+# JavaScript projects yet (its sanitizer options and OSS-Fuzz's JavaScript build
+# rule each other out). .clusterfuzzlite/ builds the same targets with the
+# OSS-Fuzz images for local runs.
+name: Fuzzing
+
+on:
+  pull_request:
+  schedule:
+    - cron: "23 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fuzz:
+    name: Fuzzing (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [yaml, render]
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      # Jazzer.js ships its native module prebuilt, so no install scripts run.
+      - name: Install Jazzer.js
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Fuzz
+        env:
+          TARGET: ${{ matrix.target }}
+          SECONDS_TO_FUZZ: ${{ github.event_name == 'pull_request' && '300' || '1800' }}
+        run: npm run "fuzz:${TARGET}" -- "-max_total_time=${SECONDS_TO_FUZZ}"
+
+      - name: Upload crashing inputs
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fuzz-crashes-${{ matrix.target }}
+          path: |
+            .fuzz/crash-*
+            .fuzz/timeout-*
+            .fuzz/oom-*
+          if-no-files-found: ignore
+          retention-days: 30

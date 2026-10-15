@@ -76,8 +76,9 @@ built-ins, so nothing from npm reaches the site or runs in its build. The only n
 fuzzing engine (Jazzer.js), a dev dependency pinned in `package-lock.json`, reviewed by
 dependency review and updated by Dependabot.
 
-**Fuzzing.** ClusterFuzzLite fuzzes the YAML parser and the entry renderer on every pull request
-and weekly (`fuzz/`, `.clusterfuzzlite/`).
+**Fuzzing.** Jazzer.js fuzzes the YAML parser and the entry renderer on every pull request and
+weekly (`fuzz/`, `.github/workflows/fuzz.yml`); `.clusterfuzzlite/` builds the same targets with
+the OSS-Fuzz images.
 
 **Pinned automation.** Every GitHub Action is pinned to a full commit SHA and kept up to date by
 Dependabot. The repository is monitored by
