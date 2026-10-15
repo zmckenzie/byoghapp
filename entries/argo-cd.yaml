@@ -43,12 +43,12 @@ manifest:
     contents: read
     metadata: read
   default_events: []
-last_verified: null
-verified_by: null
+last_verified: 2026-10-15
+verified_by: zmckenzie
 verification:
-  status: needs-review
+  status: ok
   method: doc-hash
-  doc_hash: null
+  doc_hash: sha256:953c5b4e148f21ed837b0b9fe2efcba39654b459bc1fb2b49740dab19b53f3b6
 changelog:
   - date: 2026-10-15
     version: 1.0.1
