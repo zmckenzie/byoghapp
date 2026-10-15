@@ -142,24 +142,30 @@ export function testsCovering(profiles, source, offset) {
   return profiles.filter((p) => p.masks.get(source)?.[offset] === 1);
 }
 
+/** Test cases slower than this run on their own, after every faster one. */
+export const SLOW_CASE_MS = 500;
+
 /**
  * The runs that test one mutant, in order: the single fastest covering case
- * first (it kills most mutants), then the remaining cases grouped by file,
- * fastest file first. Each run is {file, patterns, timeoutMs}.
+ * first (it kills most mutants), then the remaining fast cases grouped by
+ * file, fastest file first, then each slow case alone, fastest first. Each run
+ * is {file, patterns, timeoutMs}.
  */
 export function planRuns(covering, { minTimeoutMs = 5_000 } = {}) {
   if (covering.length === 0) return [];
   const timeout = (ms) => Math.max(minTimeoutMs, ms * 3 + 2_000);
   const [first, ...rest] = covering;
   const runs = [{ file: first.file, patterns: [namePattern(first.path)], timeoutMs: timeout(first.ms) }];
+  const slow = rest.filter((c) => c.ms >= SLOW_CASE_MS).sort((a, b) => a.ms - b.ms);
   const byFile = new Map();
-  for (const c of rest) {
+  for (const c of rest.filter((r) => r.ms < SLOW_CASE_MS)) {
     const group = byFile.get(c.file) ?? { file: c.file, patterns: [], ms: 0 };
     group.patterns.push(namePattern(c.path));
     group.ms += c.ms;
     byFile.set(c.file, group);
   }
   for (const g of [...byFile.values()].sort((a, b) => a.ms - b.ms)) runs.push({ file: g.file, patterns: g.patterns, timeoutMs: timeout(g.ms) });
+  for (const c of slow) runs.push({ file: c.file, patterns: [namePattern(c.path)], timeoutMs: timeout(c.ms) });
   return runs;
 }
 

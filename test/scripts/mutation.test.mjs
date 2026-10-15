@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { applyMutant, generateMutants, mutationScore, tokenize } from '../../scripts/lib/mutation.mjs';
-import { DEFAULT_THRESHOLD, formatReport, listTestCases, namePattern, planRuns, profileTests, runMutation, runTests, sourceFiles, summarize, testFiles, testsCovering } from '../../scripts/mutation.mjs';
+import { DEFAULT_THRESHOLD, SLOW_CASE_MS, formatReport, listTestCases, namePattern, planRuns, profileTests, runMutation, runTests, sourceFiles, summarize, testFiles, testsCovering } from '../../scripts/mutation.mjs';
 import testListReporter from '../../scripts/lib/test-list-reporter.mjs';
 import { REPO, fixtureRepo, runScriptAsync } from '../helpers.mjs';
 
@@ -190,6 +190,10 @@ describe('scoring and reporting', () => {
       { file: 'a.mjs', patterns: ['^three$'], timeoutMs: 5000 },
       { file: 'c.mjs', patterns: ['^five$'], timeoutMs: 8000 },
     ]);
+    // Slow cases (>= SLOW_CASE_MS) run alone, after every fast group, fastest first.
+    const mixed = planRuns([c('a.mjs', 'f1', 1), c('a.mjs', 's2', 900), c('a.mjs', 'f2', 2), c('a.mjs', 's1', 600)]);
+    assert.deepEqual(mixed.map((r) => r.patterns), [['^f1$'], ['^f2$'], ['^s1$'], ['^s2$']]);
+    assert.equal(SLOW_CASE_MS, 500);
     assert.equal(planRuns([c('a.mjs', 'one', 10)], { minTimeoutMs: 100 })[0].timeoutMs, 2030);
   });
 
