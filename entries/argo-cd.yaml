@@ -24,6 +24,10 @@ manual_steps:
     Generate a private key and add it to Argo CD with the app ID (CLI: argocd repo add …
     --github-app-id … --github-app-private-key-path …).
   - >-
+    Or, in the web UI, open Settings > Repositories, choose Connect Repo using GitHub App, pick
+    GitHub or GitHub Enterprise, and enter the repository URL, app ID, optional installation ID and
+    private key.
+  - >-
     The installation ID is optional: Argo CD discovers it from the repository's organization.
 notes: >-
   The docs give Contents read-only as the minimum. For GitHub Enterprise, also pass the enterprise
@@ -46,6 +50,12 @@ verification:
   method: doc-hash
   doc_hash: null
 changelog:
+  - date: 2026-10-15
+    version: 1.0.1
+    author: zmckenzie
+    summary: >-
+      Add the web UI path for connecting a repository with the GitHub App, from the same
+      documentation page.
   - date: 2026-10-15
     version: 1.0.0
     author: zmckenzie
