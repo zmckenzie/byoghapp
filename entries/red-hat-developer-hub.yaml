@@ -5,10 +5,7 @@ vendor: Red Hat
 category: dev-portal
 website: https://developers.redhat.com/rhdh
 documentation_url: >-
-  https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html-single/integrating_red_hat_developer_hub_with_github/index
-documentation_urls:
-  - >-
-    https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/authentication_in_red_hat_developer_hub/enabling-authentication-with-github
+  https://raw.githubusercontent.com/redhat-developer/red-hat-developers-documentation-rhdh/release-1.8/modules/integrating-with-github/proc-enabling-github-repository-discovery.adoc
 own_app: required
 supports:
   user: false
@@ -38,7 +35,8 @@ manual_steps:
 notes: >-
   The docs say to adapt permissions to your needs; the template permissions apply only if you use
   the same app for software templates. The unmaintained 1.4 docs listed a different set with an
-  active webhook.
+  active webhook. The link is the source of the 1.8 "Integrating Red Hat Developer Hub with GitHub"
+  guide, because docs.redhat.com blocks automated link checks.
 manifest:
   name: Red Hat Developer Hub
   url: https://developers.redhat.com/rhdh
