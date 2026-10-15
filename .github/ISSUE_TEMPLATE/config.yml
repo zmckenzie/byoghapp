@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/zmckenzie/byoghapp/security/advisories/new
+    about: Please report security issues privately. Don't open a public issue.
+  - name: GitHub Apps documentation
+    url: https://docs.github.com/en/apps
+    about: General questions about GitHub Apps belong with GitHub, not this project.

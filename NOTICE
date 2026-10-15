@@ -1,0 +1,24 @@
+byoghapp
+Copyright 2026 The byoghapp contributors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+byoghapp is an independent community project. It is not affiliated with,
+endorsed by, or sponsored by GitHub, Inc. or any vendor listed in the registry.
+"GitHub" is a trademark of GitHub, Inc. Vendor and product names are the
+trademarks of their respective owners and are used only to identify the
+products an entry describes.
+
+Third-party data
+----------------
+
+data/permissions.yaml and data/events.yaml are derived from:
+
+- GitHub Docs (https://github.com/github/docs), whose content is licensed
+  under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
+- GitHub's REST API OpenAPI description
+  (https://github.com/github/rest-api-description), licensed under the
+  MIT License. Copyright GitHub, Inc.
+
+byoghapp adds its own risk tiers and blast-radius text; GitHub does not rank
+permissions by risk.

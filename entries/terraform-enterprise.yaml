@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: terraform-enterprise
+name: Terraform Enterprise
+vendor: HashiCorp
+category: iac
+website: https://developer.hashicorp.com/terraform/enterprise
+documentation_url: >-
+  https://developer.hashicorp.com/terraform/enterprise/application-administration/github-app-integration
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: selected
+  level: org-or-user
+  notes: >-
+    Only the repositories selected at install time are available to workspaces, policy sets and
+    registry modules.
+credentials_needed: []
+two_step_webhook: true
+manual_steps:
+  - >-
+    Prefer Terraform Enterprise's own Admin > VCS Integrations > Create global GitHub App: it
+    creates the app from a manifest with the webhook and callback URLs for your instance and stores
+    the credentials.
+  - >-
+    If you create the app another way, use the webhook and callback URLs of your Terraform
+    Enterprise instance.
+notes: >-
+  Terraform Enterprise doesn't support rotating the app's client secret, private key or webhook
+  secret. Don't change the default permissions or events.
+manifest:
+  name: Terraform Enterprise
+  url: https://developer.hashicorp.com/terraform/enterprise
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    contents: read
+    metadata: read
+    pull_requests: read
+    statuses: write
+  default_events:
+    - create
+    - delete
+    - pull_request
+    - push
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

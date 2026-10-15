@@ -1,0 +1,84 @@
+# "/verified [slug ...]" on a pull request, by a code owner of entries/, records
+# the verification: sets last_verified, verified_by, status "ok" and the current
+# documentation fingerprint, commits that to the PR branch, and re-runs CI.
+#
+# Safety: only the default branch's scripts run, and the PR branch is never
+# checked out. The entries are read through the API at the head commit the plan
+# saw, and the stamp commit is a fast-forward from it, so a push made after the
+# plan makes the update fail instead of stamping unreviewed content. Fork PRs
+# get a comment with the values to set instead, because GITHUB_TOKEN can't
+# push to forks.
+name: Record verification
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+concurrency:
+  group: stamp-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  stamp:
+    name: Record verification
+    if: >-
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/verified') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: write
+    env:
+      PR_NUMBER: ${{ github.event.issue.number }}
+      COMMENTER: ${{ github.event.comment.user.login }}
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout trusted scripts (default branch)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          path: trusted
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: trusted/.nvmrc
+
+      - name: Plan
+        id: plan
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          printf '%s' "${COMMENT_BODY}" > "${RUNNER_TEMP}/body.txt"
+          node trusted/scripts/stamp-verified.mjs plan --pr "${PR_NUMBER}" --commenter "${COMMENTER}" --body-file "${RUNNER_TEMP}/body.txt"
+
+      - name: Explain why nothing was pushed
+        if: steps.plan.outputs.message != '' && steps.plan.outputs.message != 'Not a /verified command.'
+        env:
+          MESSAGE: ${{ steps.plan.outputs.message }}
+        run: gh pr comment "${PR_NUMBER}" --repo "${GITHUB_REPOSITORY}" --body "${MESSAGE}"
+
+      - name: Stamp, commit and push
+        if: steps.plan.outputs.ok == 'true' && steps.plan.outputs.same_repo == 'true'
+        env:
+          HEAD_REF: ${{ steps.plan.outputs.head_ref }}
+          HEAD_SHA: ${{ steps.plan.outputs.head_sha }}
+          SLUGS: ${{ steps.plan.outputs.slugs }}
+        run: |
+          read -r -a slugs <<< "${SLUGS}"
+          node trusted/scripts/stamp-verified.mjs push --head-ref "${HEAD_REF}" --head-sha "${HEAD_SHA}" --login "${COMMENTER}" --fetch "${slugs[@]}"
+          gh workflow run ci.yml --repo "${GITHUB_REPOSITORY}" --ref "${HEAD_REF}"
+          gh workflow run validate.yml --repo "${GITHUB_REPOSITORY}" --ref "${HEAD_REF}"
+          gh pr comment "${PR_NUMBER}" --repo "${GITHUB_REPOSITORY}" --body "Recorded the verification of ${SLUGS} by @${COMMENTER} and re-ran CI."

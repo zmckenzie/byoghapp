@@ -1,0 +1,34 @@
+# Normally opened by the scheduled verification workflow with fields prefilled.
+# Maintainers can also open it by hand.
+name: Verification failed
+description: An entry's source documentation changed and the entry needs a human review.
+title: "Verify entry: "
+labels: ["verification-failed"]
+body:
+  - type: input
+    id: entry
+    attributes:
+      label: Entry slug
+    validations:
+      required: true
+  - type: input
+    id: doc_url
+    attributes:
+      label: Documentation URL checked
+    validations:
+      required: true
+  - type: input
+    id: last_verified
+    attributes:
+      label: Entry's last_verified date
+  - type: textarea
+    id: change
+    attributes:
+      label: What changed
+      description: Hash mismatch, HTTP status, or the permission text that differs.
+      render: text
+  - type: textarea
+    id: resolution
+    attributes:
+      label: Resolution
+      description: For the maintainer who closes this. Was the entry updated, or was the change irrelevant?

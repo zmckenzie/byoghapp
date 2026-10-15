@@ -1,0 +1,38 @@
+# The site links here with fields prefilled through the URL. Each field `id` is a prefill key,
+# so don't rename `entry` or `doc_url` without updating the site.
+name: Report a problem with an entry
+description: A registry entry is wrong, incomplete or out of date.
+title: "Problem with entry: "
+labels: ["entry-problem", "triage"]
+body:
+  - type: input
+    id: entry
+    attributes:
+      label: Entry slug
+      placeholder: axonius
+    validations:
+      required: true
+  - type: input
+    id: doc_url
+    attributes:
+      label: Vendor documentation URL
+  - type: dropdown
+    id: problem_type
+    attributes:
+      label: What's wrong?
+      options:
+        - Permissions are wrong or missing
+        - Webhook events are wrong or missing
+        - The launcher produced a broken GitHub form
+        - Documentation link is broken or moved
+        - The vendor no longer needs a customer-created app
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Quote or link the vendor documentation that shows the correct value.
+    validations:
+      required: true

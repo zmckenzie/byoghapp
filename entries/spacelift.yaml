@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: spacelift
+name: Spacelift (self-hosted)
+vendor: Spacelift
+category: iac
+website: https://spacelift.io
+documentation_url: >-
+  https://docs.spacelift.io/self-hosted/latest/getting-started/integrate-source-code/GitHub
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - private_key
+two_step_webhook: true
+manual_steps:
+  - >-
+    Create the integration in Spacelift first: it generates the webhook URL and secret to paste into
+    the app.
+  - Generate a private key and enter it with the app ID in Spacelift.
+notes: >-
+  Spacelift's setup wizard can create the app for you; its docs recommend the wizard over manual
+  setup.
+manifest:
+  name: Spacelift
+  url: https://spacelift.io
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-webhook-url
+    active: true
+  public: false
+  default_permissions:
+    checks: write
+    contents: read
+    deployments: write
+    members: read
+    metadata: read
+    pull_requests: write
+    repository_hooks: write
+    statuses: write
+  default_events:
+    - organization
+    - pull_request
+    - pull_request_review
+    - push
+    - repository
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-15
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-15. Awaiting maintainer
+      verification.

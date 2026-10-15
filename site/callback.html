@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src https://api.github.com https://*.ghe.com; form-action 'none'; base-uri 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finish creating your app: byoghapp</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="callback.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <p class="brand"><a href="./">byoghapp</a></p>
+    <p class="tagline">A registry of GitHub App definitions you own</p>
+  </header>
+  <main>
+    <section id="step-loading" data-step>
+      <p class="muted">Checking GitHub's response…</p>
+    </section>
+    <section id="step-confirm" data-step hidden>
+      <h1>Get your app's credentials</h1>
+      <p>GitHub created the app on <strong id="host"></strong> and sent back a one-time code. When you click the button, your browser exchanges the code with GitHub's API for the app's private key, client secret and webhook secret.</p>
+      <ul>
+        <li>They are shown once, on this page only. Nothing is stored or sent anywhere else.</li>
+        <li>The code works once. If anything fails, generate a new private key and client secret in the app's settings on GitHub instead.</li>
+      </ul>
+      <p><button id="convert" type="button">Show the credentials</button></p>
+    </section>
+    <section id="step-done" data-step hidden>
+      <h1>Your app <span id="app-name" data-secret></span> is ready</h1>
+      <p class="warning">Save these now. Leaving or reloading this page clears them, and GitHub won't show the private key or secrets again.</p>
+      <label for="app-id">App ID</label>
+      <input id="app-id" readonly data-secret>
+      <label for="client-id">Client ID</label>
+      <input id="client-id" readonly data-secret>
+      <label for="client-secret">Client secret</label>
+      <input id="client-secret" readonly data-secret>
+      <label for="webhook-secret">Webhook secret</label>
+      <input id="webhook-secret" readonly data-secret>
+      <label for="pem">Private key</label>
+      <textarea id="pem" rows="10" readonly spellcheck="false" data-secret></textarea>
+      <p><a id="download" class="button" href="#">Download private key</a> <button id="clear" type="button">Clear from page</button></p>
+      <p>Next: <a id="app-link" href="#" rel="noreferrer">open the app on GitHub</a> to install it, then follow the vendor's setup steps.</p>
+    </section>
+    <section id="step-cleared" data-step hidden>
+      <h1>Cleared</h1>
+      <p>The credentials were removed from this page. <a href="./">Back to the registry</a></p>
+    </section>
+    <section id="step-error" data-step hidden>
+      <h1>Couldn't finish</h1>
+      <p id="error-message" class="error" role="alert"></p>
+      <p><a href="./">Back to the registry</a></p>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <p>byoghapp is an independent community project, not affiliated with or endorsed by GitHub or any vendor listed.
+      <a href="https://github.com/zmckenzie/byoghapp/blob/main/SECURITY.md">How this page handles credentials</a></p>
+  </footer>
+</body>
+</html>
