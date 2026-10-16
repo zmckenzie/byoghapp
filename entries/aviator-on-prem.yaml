@@ -1,0 +1,95 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: aviator-on-prem
+name: Aviator (on-premise)
+vendor: Aviator
+category: ci-cd
+website: https://aviator.co
+documentation_url: https://docs.aviator.co/manage/on-premise-installation/github-app-for-on-prem
+documentation_urls:
+  - https://docs.aviator.co/manage/on-premise-installation/github-oauth-for-on-prem
+  - https://docs.aviator.co/manage/on-premise-installation/use-docker-compose
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the callback URL to https://<AV_HOSTNAME>/login/oauth/callback/github, turn on "Expire user
+    authorization tokens" and leave "Request user authorization (OAuth) during installation" and
+    Device Flow off.
+  - >-
+    Set the setup URL to https://<AV_HOSTNAME>/api/setup/complete with "Redirect on update" on,
+    and the webhook URL to https://<AV_HOSTNAME>/api/webhook.
+  - >-
+    The webhook secret is optional; if you set one, pass it as GITHUB_WEBHOOK_SECRET. Note the App
+    ID and generate a private key for GITHUB_APP_ID and MERGEQUEUE_PEM_FILE.
+  - >-
+    For the optional GitHub OAuth connection, set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET from
+    the app's general settings.
+notes: >-
+  The docs also subscribe the app to Workflow run, which needs the Actions permission; the docs
+  don't grant Actions, so the event is left out here. The docs set "Where can GitHub App be
+  installed" to "Any account", recorded as public: true. A $GITHUB_URL setting ("Hostname where
+  GitHub is hosted") exists, but the docs don't state that GitHub Enterprise Server is supported.
+  The docs say "any mismatch here could result in unexpected behavior of the app."
+manifest:
+  name: Aviator
+  url: https://aviator.co
+  description: >-
+    Automate merge workflows for GitHub, manage queues in teams and improve code quality.
+  hook_attributes:
+    url: https://example.invalid/aviator-api-webhook
+    active: true
+  public: true
+  default_permissions:
+    administration: read # "Administration: Read-only"
+    checks: write # "Checks: Read and write"
+    contents: write # "Contents: Read and write"
+    issues: write # "Issues: Read and write"
+    members: read # Organization "Members: Read-only"
+    metadata: read # "Metadata: Read-only"
+    pull_requests: write # "Pull requests: Read and write"
+    statuses: read # "Commit statuses: Read-only"
+    workflows: write # "Workflows: Read and write"
+  default_events:
+    - branch_protection_rule
+    - check_run
+    - check_suite
+    - issue_comment
+    - label
+    - member
+    - membership
+    - public
+    - pull_request
+    - pull_request_review
+    - pull_request_review_comment
+    - pull_request_review_thread
+    - push
+    - repository
+    - status
+    - team
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
