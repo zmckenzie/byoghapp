@@ -1,0 +1,79 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: kargo
+name: Kargo (repository credentials)
+vendor: Akuity
+category: gitops
+website: https://kargo.io
+documentation_url: https://docs.kargo.io/user-guide/security/managing-secrets
+documentation_urls:
+  - https://docs.kargo.io/user-guide/reference-docs/webhook-receivers/github
+own_app: optional
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: selected
+  level: org-or-user
+credentials_needed:
+  - client_id
+  - private_key
+  - installation_id
+two_step_webhook: false
+manual_steps:
+  - >-
+    Keep Where can this GitHub App be installed? on Only on this account, note the Client ID and
+    generate a private key.
+  - >-
+    Install the app with Only select repositories and note the installation ID at the end of the
+    installation page URL.
+  - >-
+    Create a Kubernetes Secret labelled kargo.akuity.io/cred-type: git with githubAppClientID,
+    githubAppPrivateKey, githubAppInstallationID and repoURL in the project namespace.
+notes: >-
+  A personal access token is the documented alternative. The app gets the same Contents access on
+  every repository it is installed on; the docs suggest one app per Kargo project for least
+  privilege and note that an organization can register at most 100 apps. The webhook is disabled
+  for credentials. Kargo documents a separate app for its GitHub webhook receiver (Contents
+  read-only, Pull requests and Packages read-only when needed, events Push, Pull requests and
+  Registry package); that app is not covered by this entry.
+manifest:
+  name: Kargo
+  url: https://kargo.io
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    contents: read  # "Contents, select whether the App will require Read-only or Read and write"
+    metadata: read  # always added by GitHub
+  default_events: []
+variants:
+  - id: read-only
+    name: Contents read-only
+    description: Kargo can read the repositories but not push to them.
+    default_permissions:
+      contents: read
+      metadata: read
+    default_events: []
+  - id: read-write
+    name: Contents read and write
+    description: Contents read and write, for promotions that push to the repositories.
+    default_permissions:
+      contents: write
+      metadata: read
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
