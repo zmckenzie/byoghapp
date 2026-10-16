@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: codescene-on-prem
+name: CodeScene On-Prem (GitHub Checks)
+vendor: CodeScene
+category: code-quality
+website: https://codescene.com
+documentation_url: https://docs.enterprise.codescene.io/latest/guides/pr-integration/configure-github-app.html
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+  notes: CodeScene receives webhook calls for pull requests on every repository where the app is installed.
+credentials_needed:
+  - app_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Generate a private key. In the CodeScene project's PR integration tab, select GitHub App, enter
+    the App ID, upload the .pem file, choose a webhook secret and save.
+  - >-
+    Copy the webhook URL from CodeScene's GitHub App configuration into the app's webhook settings,
+    set the same webhook secret and make the webhook active.
+notes: >-
+  The docs have you create the app with the webhook inactive and activate it after CodeScene is
+  configured, because the webhook URL comes from CodeScene. They say the Homepage URL can be any
+  value. The docs don't mention GitHub Enterprise Server or personal accounts.
+manifest:
+  name: CodeScene
+  url: https://codescene.com
+  hook_attributes:
+    url: https://example.invalid/codescene-webhook
+    active: true
+  public: false
+  default_permissions:
+    checks: write # "Checks: Read & write"
+    metadata: read
+    pull_requests: write # "Pull Requests: Read & write"
+  default_events:
+    - check_run
+    - check_suite
+    - pull_request
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
