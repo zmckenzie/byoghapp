@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: google-cloud-build-ghes
+name: Google Cloud Build (GitHub Enterprise Server)
+vendor: Google Cloud
+category: ci-cd
+website: https://cloud.google.com/build
+documentation_url: https://docs.cloud.google.com/build/docs/automating-builds/github/connect-host-github-enterprise
+own_app: ghes-only
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+  notes: Install the app on the user account or organization whose repositories Cloud Build should build.
+credentials_needed:
+  - app_id
+  - installation_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the webhook URL to
+    https://cloudbuild.googleapis.com/v2/projects/<project number>/locations/<region>/connections:processWebhook,
+    using your connection's region, and set a random webhook secret.
+  - Clear the box for Expire user authorization tokens.
+  - >-
+    Generate a private key, install the app, and note the app ID, app slug and installation ID.
+  - >-
+    Store the private key and webhook secret in Secret Manager and create the connection with
+    gcloud builds connections create github-enterprise or Terraform.
+notes: >-
+  These are the permissions and events the docs give for registering the app by hand ("Connect to a
+  GitHub Enterprise host programmatically"). In the console flow, Cloud Build asks you to create the
+  app on your GitHub Enterprise Server host itself. The docs say to allow installation on Any
+  account. The host needs a custom domain with a valid SSL certificate; hosts on a private network
+  also need a Service Directory service and, optionally, a CA certificate.
+manifest:
+  name: Google Cloud Build
+  url: https://cloud.google.com/build
+  hook_attributes:
+    url: https://example.invalid/cloud-build-process-webhook
+    active: true
+  public: true
+  default_permissions:
+    checks: write # "Checks: Read and write"
+    contents: write # "Contents: Read and write"
+    issues: read # "Issues: Read-only"
+    metadata: read # "Metadata Read-only"
+    pull_requests: read # "Pull requests: Read-only"
+    statuses: read # "Commit statuses: Read-only"
+  default_events:
+    - check_run
+    - check_suite
+    - commit_comment
+    - issue_comment
+    - pull_request
+    - pull_request_review_comment
+    - push
+    - repository
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
