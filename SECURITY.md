@@ -47,8 +47,9 @@ Each [release](https://github.com/zmckenzie/byoghapp/releases) publishes:
 - `byoghapp-site-<version>.tar.gz`, the site ready to serve;
 - `byoghapp-registry-<version>.json`, the registry data on its own;
 - `SHA256SUMS`;
-- `byoghapp-<version>.sigstore.json`, a Sigstore-signed
-  [SLSA build provenance](https://slsa.dev/provenance) attestation for both files.
+- `byoghapp-<version>.intoto.jsonl`, a Sigstore-signed
+  [SLSA build provenance](https://slsa.dev/provenance) attestation for both files, as a Sigstore
+  bundle on one line. Releases up to 0.2.0 named it `byoghapp-<version>.sigstore.json`.
 
 The release workflow (`.github/workflows/release.yml`) builds them from the released commit and,
 only after a maintainer approves the `release` environment, signs the provenance with its GitHub
@@ -56,10 +57,11 @@ Actions identity. A file that verifies was built by this repository's workflow f
 [GitHub CLI](https://cli.github.com/):
 
 ```sh
-gh attestation verify byoghapp-site-0.1.0.tar.gz --repo zmckenzie/byoghapp
+VERSION=0.2.1 # the release you downloaded
+gh attestation verify "byoghapp-site-${VERSION}.tar.gz" --repo zmckenzie/byoghapp
 # or offline, with the bundle from the release:
-gh attestation verify byoghapp-site-0.1.0.tar.gz --repo zmckenzie/byoghapp \
-  --bundle byoghapp-0.1.0.sigstore.json
+gh attestation verify "byoghapp-site-${VERSION}.tar.gz" --repo zmckenzie/byoghapp \
+  --bundle "byoghapp-${VERSION}.intoto.jsonl"
 sha256sum --check SHA256SUMS
 ```
 

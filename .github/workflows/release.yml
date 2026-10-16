@@ -17,7 +17,7 @@
 #   byoghapp-site-<version>.tar.gz     the site, ready to serve (registry.json included)
 #   byoghapp-registry-<version>.json   the registry data on its own
 #   SHA256SUMS                         checksums of the two files above
-#   byoghapp-<version>.sigstore.json   the signed provenance (Sigstore bundle)
+#   byoghapp-<version>.intoto.jsonl    the signed provenance (one Sigstore bundle per line)
 #
 # Verify with `gh attestation verify <file> --repo zmckenzie/byoghapp`; see SECURITY.md.
 name: Release
@@ -178,7 +178,9 @@ jobs:
           VERSION: ${{ needs.build.outputs.version }}
           BUNDLE: ${{ steps.attest.outputs.bundle-path }}
         run: |
-          cp "${BUNDLE}" "dist/byoghapp-${VERSION}.sigstore.json"
+          # The .intoto.jsonl name is how OpenSSF Scorecard finds provenance, and
+          # `gh attestation verify --bundle` reads it as JSON lines.
+          jq -c . "${BUNDLE}" > "dist/byoghapp-${VERSION}.intoto.jsonl"
           # Draft first so every asset is attached before the release goes public
           # (required with immutable releases). Publishing the draft creates the
           # tag at the commit that was built.
