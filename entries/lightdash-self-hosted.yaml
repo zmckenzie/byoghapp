@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: lightdash-self-hosted
+name: Lightdash (self-hosted)
+vendor: Lightdash
+category: data
+website: https://www.lightdash.com
+documentation_url: https://docs.lightdash.com/self-host/customize-deployment/configure-github-for-lightdash
+documentation_urls:
+  - https://docs.lightdash.com/self-host/customize-deployment/environment-variables
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Set the callback URL to https://<your Lightdash domain>/api/v1/github/oauth/callback.
+  - >-
+    Check "Expire user authorization tokens", "Request user authorization (OAuth) during
+    installation" and "Redirect on update".
+  - >-
+    Create a client secret and a private key, then set GITHUB_APP_ID, GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET, GITHUB_PRIVATE_KEY (base64) and GITHUB_APP_NAME on the Lightdash server.
+notes: >-
+  This app enables the GitHub integration on a self-hosted Lightdash instance, which writes to dbt
+  repositories. The setup page says to deactivate webhooks and lists no events, so the webhook is
+  left off. The environment variables page also lists an optional GITHUB_WEBHOOK_SECRET "for dbt
+  PR previews", which the setup page doesn't mention. The setup page says the app can be installed
+  on "Any account", so the app is public. Workflows is marked optional. The docs don't mention
+  GitHub Enterprise Server. Metadata read is added by GitHub with any repository permission.
+manifest:
+  name: Lightdash
+  url: https://www.lightdash.com
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: true  # "Where can this GitHub App be installed? Any account"
+  default_permissions:
+    checks: write  # "Checks: Read and write"
+    contents: write  # "Contents: Read and write"
+    metadata: read
+    pull_requests: write  # "Pull requests: Read and write"
+  default_events: []
+variants:
+  - id: default
+    name: Without Workflows
+    description: The required repository permissions.
+    default_permissions:
+      checks: write
+      contents: write
+      metadata: read
+      pull_requests: write
+    default_events: []
+  - id: with-workflows
+    name: With Workflows
+    description: Adds the optional Workflows read and write permission.
+    default_permissions:
+      checks: write
+      contents: write
+      metadata: read
+      pull_requests: write
+      workflows: write  # "Workflows (optional): Read and write"
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
