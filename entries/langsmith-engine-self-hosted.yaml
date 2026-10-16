@@ -1,0 +1,74 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: langsmith-engine-self-hosted
+name: LangSmith Engine (self-hosted)
+vendor: LangChain
+category: ai-coding
+website: https://www.langchain.com/langsmith
+documentation_url: https://docs.langchain.com/langsmith/engine-self-hosted-github
+documentation_urls:
+  - https://docs.langchain.com/langsmith/engine-repositories
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: true
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+  notes: Enterprise-owned apps are installed in each organization; they can't be installed on personal accounts.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the Homepage URL to your LangSmith URL and the Callback URL to
+    https://<your LangSmith host>/api-host/v1/integrations/forge/github/callback (include any base
+    path). Keep Request user authorization (OAuth) during installation and Redirect on update on.
+  - >-
+    Set the webhook URL to https://<your LangSmith host>/api-host/v1/integrations/forge/github/webhook
+    and a webhook secret of at least 32 random bytes.
+  - >-
+    Generate a client secret and a private key, and set the ENGINE_GITHUB_* Helm values, including
+    the app's public link and a separate OAuth state secret.
+notes: >-
+  For self-hosted LangSmith; LangSmith Cloud uses a LangChain-managed app. Works with GitHub.com,
+  Enterprise Cloud with data residency (ghe.com) and GitHub Enterprise Server; on GHES,
+  enterprise-owned apps need version 3.17 or later. The docs leave organization, account and
+  enterprise permissions unset and say Engine doesn't need Administration, Workflows or Checks.
+  Without webhook delivery, Engine still reads code and opens pull requests, but doesn't link pull
+  requests to issues or complete issues after a merge. Requires LangSmith Helm chart 0.17.2 or later.
+manifest:
+  name: LangSmith Engine
+  url: https://www.langchain.com/langsmith
+  hook_attributes:
+    url: https://example.invalid/api-host/v1/integrations/forge/github/webhook
+    active: true
+  callback_urls:
+    - https://example.invalid/api-host/v1/integrations/forge/github/callback
+  setup_on_update: true
+  request_oauth_on_install: true
+  public: false
+  default_permissions:
+    contents: write  # "Contents: Read and write"
+    metadata: read  # "Metadata: Read-only, selected automatically"
+    pull_requests: write  # "Pull requests: Read and write"
+  default_events:
+    - pull_request
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
