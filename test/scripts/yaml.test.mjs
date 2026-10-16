@@ -329,6 +329,15 @@ describe('edge cases', () => {
     assert.deepEqual(parse(stringify({ t: 'a\tb', r: 'a\rb' })), { t: 'a\tb', r: 'a\rb' });
   });
 
+  test('isPlainSafe rejects control characters', () => {
+    for (const s of ['a\bb', 'a\u0000', '\u001fx', 'a\u007f']) assert.equal(isPlainSafe(s), false, JSON.stringify(s));
+    assert.equal(stringify({ b: 'a\bb' }), 'b: "a\\bb"\n');
+    assert.deepEqual(parse(stringify({ b: 'a\bb', d: 'x\u007f' })), { b: 'a\bb', d: 'x\u007f' });
+    const long = `${'word '.repeat(20)}\u0007end`; // too long for one line, but can't be folded
+    assert.equal(stringify({ l: long }), `l: ${JSON.stringify(long)}\n`);
+    assert.deepEqual(parse(stringify({ l: long, 'k\u007f': 1 })), { l: long, 'k\u007f': 1 });
+  });
+
   test('folding starts above 80 characters and wraps at 100 columns', () => {
     const words = (n) => Array.from({ length: n }, () => 'abcd').join(' ');
     const at80 = words(16); // 16 * 5 - 1 = 79 characters

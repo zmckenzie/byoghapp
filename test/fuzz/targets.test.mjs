@@ -21,6 +21,7 @@ const FOUND = [
   '__proto__:\n  slug: evil\nname: x', // prototype set from the document
   'r{ : -0\n\n', // -0 written back as 0
   '# y_id\n-  p riva\0erific', // top-level list (now rejected for its NUL)
+  'eed:\n- "\uFFFD,a\\b" ', // escaped control character written back unquoted
 ];
 
 describe('fuzz_yaml', () => {
@@ -29,7 +30,7 @@ describe('fuzz_yaml', () => {
   });
 
   test('passes every input fuzzing has found', () => {
-    assert.deepEqual(FOUND.map((input) => fuzzYaml(bytes(input))), ['rejected', 'rejected', 'rejected', 'checked', 'rejected']);
+    assert.deepEqual(FOUND.map((input) => fuzzYaml(bytes(input))), ['rejected', 'rejected', 'rejected', 'checked', 'rejected', 'checked']);
   });
 
   test('round-trips mappings and skips other documents', () => {
@@ -60,7 +61,7 @@ describe('fuzz_render', () => {
 
   test('skips inputs that are not valid entries', () => {
     const inherited = stringify(makeEntry({ manifest: { default_permissions: { constructor: 'read' } } })); // once crashed the validator
-    assert.deepEqual(FOUND.map((input) => fuzzRender(bytes(input))), ['rejected', 'rejected', 'rejected', 'skipped', 'rejected']);
+    assert.deepEqual(FOUND.map((input) => fuzzRender(bytes(input))), ['rejected', 'rejected', 'rejected', 'skipped', 'rejected', 'skipped']);
     for (const input of ['- a', '[]', 'a: 1', stringify(makeEntry({ category: 'nope' })), inherited]) {
       assert.equal(fuzzRender(bytes(input)), 'skipped', input);
     }
