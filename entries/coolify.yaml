@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: coolify
+name: Coolify
+vendor: Coolify
+category: ci-cd
+website: https://coolify.io
+documentation_url: https://coolify.io/docs/applications/sources/github/app
+documentation_urls:
+  - https://coolify.io/docs/applications/sources/github/preview-deploy
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+  notes: >-
+    Create the app under the personal account or organization that owns the repositories, and choose
+    all or selected repositories when you install it.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - installation_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the webhook URL to https://<your Coolify URL>/webhooks/source/github/events, generate a long
+    random webhook secret and enable SSL verification.
+  - >-
+    Generate a client secret and a private key, install the app, and copy the Installation ID from
+    the URL after /installations/.
+  - >-
+    In Coolify, add the private key under Keys & Tokens, then enter the App ID, Installation ID,
+    Client ID, Client Secret and webhook secret on the GitHub App source and select Sync name.
+notes: >-
+  Coolify can create the app itself through GitHub's manifest flow (Sources > New source > GitHub
+  App > Register with GitHub); the docs recommend that for GitHub.com and the manual setup for GitHub
+  Enterprise Server or custom permissions. The docs list Email addresses with the repository
+  permissions; it is an account permission. A deploy key is the alternative for read-only access to
+  one repository.
+manifest:
+  name: Coolify
+  url: https://coolify.io
+  hook_attributes:
+    url: https://example.invalid/coolify-webhooks-source-github-events
+    active: true
+  public: false
+  default_permissions:
+    contents: read # "Contents | Read-only"
+    emails: read # "Email addresses | Read-only"
+    metadata: read # "Metadata | Read-only"
+  default_events:
+    - push
+variants:
+  - id: deployments
+    name: Deployments
+    description: The mandatory permissions and the Push event.
+    default_permissions:
+      contents: read
+      emails: read
+      metadata: read
+    default_events:
+      - push
+  - id: preview-deployments
+    name: With preview deployments
+    description: Adds Pull requests read and write and the Pull request event for preview deployments.
+    default_permissions:
+      contents: read
+      emails: read
+      metadata: read
+      pull_requests: write # "Read and write only when preview deployments are required"
+    default_events:
+      - pull_request
+      - push
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
