@@ -1,0 +1,85 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: plane-self-hosted
+name: Plane (self-hosted)
+vendor: Plane
+category: other
+website: https://plane.so
+documentation_url: https://developers.plane.so/self-hosting/govern/integrations/github
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: true
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+  notes: >-
+    The docs create the app in your GitHub organization; on GHE.com they create it under the
+    enterprise's settings.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+two_step_webhook: true
+manual_steps:
+  - >-
+    GitHub.com: set the webhook URL to https://<your-domain>/silo/api/github/github-webhook, the
+    callback URLs to https://<your-domain>/silo/api/github/auth/callback and
+    .../auth/user/callback, and the setup URL to the first callback URL.
+  - >-
+    GitHub Enterprise Server: use https://<your-plane-domain>/silo/api/github-enterprise/github-webhook
+    and the /silo/api/oauth/github-enterprise/auth/callback and .../auth/user/callback URLs instead.
+  - Opt out of Expire user authorization tokens, and turn on Redirect on update.
+  - For an organization-owned app, make the app public if connecting accounts fails.
+  - >-
+    Generate a client secret and a private key. GitHub.com: set GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET, GITHUB_APP_NAME (the app slug), GITHUB_APP_ID and GITHUB_PRIVATE_KEY
+    (base64) and restart Plane.
+  - >-
+    GitHub Enterprise Server: note the App ID, app slug, client ID, client secret and base64
+    private key, then activate the GitHub Enterprise integration in Plane.
+notes: >-
+  The docs also list the Push event, but Push needs Contents permission, which the docs don't grant,
+  so it is left out. Installation target is sent to every app and can't be selected. The
+  troubleshooting section says an "Invalid request callback URL" error when connecting an
+  organization or personal account can mean the app isn't marked public; this entry leaves public
+  off because the docs create enterprise-owned apps on GHE.com, which ignore it. The GitHub
+  integration is a paid (Pro) feature on self-hosted Plane. For GitHub Enterprise Server, Plane Cloud
+  uses the same app setup with silo.plane.so URLs.
+manifest:
+  name: Plane
+  url: https://plane.so
+  hook_attributes:
+    url: https://example.invalid/plane-silo-github-webhook
+    active: true
+  public: false
+  default_permissions:
+    emails: read # "Email addresses Read-only" (account permission)
+    issues: write # "Issues Read and write"
+    metadata: read # "Metadata Read-only"
+    profile: write # "Profile Read and write" (account permission)
+    pull_requests: write # "Pull requests Read and write"
+  default_events:
+    - issue_comment
+    - issues
+    - meta
+    - pull_request
+    - pull_request_review
+    - pull_request_review_comment
+    - pull_request_review_thread
+    - sub_issues
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
