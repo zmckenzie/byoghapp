@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: posit-connect-git-backed
+name: Posit Connect (Git-backed content)
+vendor: Posit
+category: data
+website: https://posit.co
+documentation_url: https://docs.posit.co/connect/admin/content-management/git-backed/
+documentation_urls:
+  - https://docs.posit.co/connect/admin/integrations/oauth-integrations/github/
+own_app: optional
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+  notes: >-
+    Install on every private repository that Git-backed content uses. One integration names one
+    installation, which covers one organization or user account.
+credentials_needed:
+  - client_id
+  - installation_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Generate a private key, then give the Connect administrator the Client ID (not the App ID), the
+    Installation ID from the installation URL, the .pem contents and, for GHES, the hostname.
+  - >-
+    In Connect, create a GitHub App integration restricted to administrators. If you set its
+    permissions field, include contents:read.
+  - >-
+    Add a [GitCredential "github"] section with Username = x-access-token and OAuthIntegration set
+    to the integration name, then restart Connect.
+notes: >-
+  This entry covers only the Git-backed content use, where Posit's docs say to "Grant the app read
+  access to repository contents". For content that calls GitHub at run time, the docs leave the
+  permissions to the customer ("configure the repository and organization permissions your content
+  requires"), so that use is not covered here. The docs say webhooks are not needed. A personal
+  access token in GitCredential.Password is the documented alternative for reaching private
+  repositories in several organizations.
+manifest:
+  name: Posit Connect
+  url: https://posit.co
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    contents: read  # "Grant the app read access to repository contents"
+    metadata: read
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
