@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: kodus-self-hosted
+name: Kodus (Kody, self-hosted)
+vendor: Kodus
+category: ai-review
+website: https://kodus.io
+documentation_url: https://docs.kodus.io/en/how_to_deploy/platforms/github/github_app
+documentation_urls:
+  - https://docs.kodus.io/en/how_to_use/code_review/general_config/github_pat
+own_app: optional
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - client_secret
+  - private_key
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the Callback URL to <WEB_DOMAIN>/api/auth/callback/github and the Setup URL to
+    <WEB_DOMAIN>/setup/github, and check Redirect on update.
+  - >-
+    Set the webhook URL to <WEBHOOK_DOMAIN>/github/webhook (the webhooks service, port 3332) and keep
+    it Active.
+  - >-
+    Generate a client secret and a private key, and set API_GITHUB_APP_ID,
+    API_GITHUB_CLIENT_SECRET, API_GITHUB_PRIVATE_KEY and WEB_GITHUB_INSTALL_URL in Kodus's .env.
+notes: >-
+  Kodus can also use a fine-grained personal access token instead of a GitHub App. "Sign in with
+  GitHub" for Kodus users is a separate OAuth App. The docs say Contents write is only needed for
+  features that commit repository files, without naming them, so Contents is read-only here. The
+  docs don't mention a webhook secret.
+manifest:
+  name: Kody
+  url: https://kodus.io
+  hook_attributes:
+    url: https://example.invalid/github/webhook
+    active: true
+  callback_urls:
+    - https://example.invalid/api/auth/callback/github
+  setup_url: https://example.invalid/setup/github
+  setup_on_update: true
+  public: false
+  default_permissions:
+    checks: write  # "Checks: Read and write"
+    contents: read  # "Contents: Read-only"
+    issues: write  # "Issues: Read and write"
+    metadata: read  # "Metadata: Read-only"
+    pull_requests: write  # "Pull requests: Read and write"
+  default_events:
+    - issue_comment
+    - pull_request
+    - pull_request_review_comment
+    - push
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
