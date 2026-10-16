@@ -1,0 +1,132 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: sentry-self-hosted
+name: Sentry (self-hosted)
+vendor: Sentry
+category: observability
+website: https://sentry.io
+documentation_url: https://develop.sentry.dev/self-hosted/sso/
+documentation_urls:
+  - https://develop.sentry.dev/integrations/github/
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Name the app without spaces (the docs' form uses <org>-Sentry-Integration). Set the homepage
+    URL to your Sentry URL prefix.
+  - >-
+    Add callback URLs <url-prefix>/auth/sso/ and <url-prefix>/extensions/github/setup/, set the
+    setup URL to <url-prefix>/extensions/github/setup/ and the webhook URL to
+    <url-prefix>/extensions/github/webhook/ with a webhook secret.
+  - >-
+    Generate a private key and set github-app.id, github-app.name, github-app.webhook-secret,
+    github-app.client-id, github-app.client-secret and github-app.private-key in
+    sentry/config.yaml, then re-run ./install.sh.
+notes: >-
+  The self-hosted page lists permissions but no events in its text; the two events come from the
+  page's "Create GitHub App" form link (events push and pull_request). The same app enables both
+  GitHub SSO and the GitHub integration. Sentry's developer docs (integrations/github, written for
+  a local development setup with ngrok) list a larger set with Actions, Checks, Commit statuses,
+  Code quality and Code scanning alerts, Contents read and write, and 18 events; that set is the
+  "Developer docs set" variant. On that page Members and Email addresses are marked optional and
+  "Enabling optional permissions will also enable the GitHub SSO for your instance." The form on
+  both pages also offers a Personal account type; the text says to create the app under your
+  organization.
+manifest:
+  name: Sentry-Integration
+  url: https://sentry.io
+  hook_attributes:
+    url: https://example.invalid/sentry-extensions-github-webhook
+    active: true
+  public: false
+  default_permissions:
+    administration: read # "Repository administration: Read-only"
+    contents: read # "Repository contents: Read-only"
+    emails: read # "User permissions / Email addresses: Read-only"
+    issues: write # "Issues: Read & write"
+    members: read # "Organization permissions / members: Read-only"
+    metadata: read
+    pull_requests: write # "Pull requests: Read & write"
+    repository_hooks: write # "Repository webhooks: Read & write"
+  default_events:
+    - pull_request
+    - push
+variants:
+  - id: self-hosted
+    name: Self-hosted docs set
+    description: The permissions on the self-hosted SSO page, used for SSO and the GitHub integration.
+    default_permissions:
+      administration: read
+      contents: read
+      emails: read
+      issues: write
+      members: read
+      metadata: read
+      pull_requests: write
+      repository_hooks: write
+    default_events:
+      - pull_request
+      - push
+  - id: developer-docs
+    name: Developer docs set
+    description: >-
+      The larger set and events from Sentry's developer docs page for the GitHub integration.
+    default_permissions:
+      actions: write # "Repository / Actions: Read & write"
+      administration: read # "Repository / Administration: Read-only"
+      checks: write # "Repository / Checks: Read & write"
+      code_quality: read # "Repository / Code quality: Read-only"
+      contents: write # "Repository / Contents: Read & write"
+      emails: read # "Account permissions / Email addresses (optional): Read-only"
+      issues: write # "Repository / Issues: Read & write"
+      members: read # "Organization permissions / members (optional): Read-only"
+      metadata: read
+      pull_requests: write # "Repository / Pull requests: Read & write"
+      repository_hooks: write # "Repository / Webhooks: Read & write"
+      security_events: read # "Repository / Code scanning alerts: Read-only"
+      statuses: write # "Repository / Commit Statuses: Read & write"
+    default_events:
+      - check_run
+      - check_suite
+      - delete
+      - fork
+      - issue_comment
+      - issues
+      - member
+      - membership
+      - organization
+      - public
+      - pull_request
+      - pull_request_review
+      - pull_request_review_comment
+      - push
+      - release
+      - repository
+      - status
+      - team_add
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
