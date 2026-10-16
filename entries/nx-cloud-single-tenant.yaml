@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: nx-cloud-single-tenant
+name: Nx Cloud single-tenant (custom GitHub App)
+vendor: Nx
+category: ci-cd
+website: https://nx.dev
+documentation_url: https://nx.dev/docs/enterprise/single-tenant/custom-github-app
+documentation_urls:
+  - https://nx.dev/docs/kb/github-app-permissions
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the callback URL to https://<your Nx Cloud URL>/callbacks/github-user and the webhook URL
+    to https://<your Nx Cloud URL>/nx-cloud/github-webhook-handler, with a webhook secret.
+  - >-
+    Generate a client secret and a private key. Give the client ID, client secret, App ID, private
+    key and webhook secret to your developer productivity engineer to connect Nx Cloud.
+notes: >-
+  For Nx Cloud single-tenant (Enterprise) installations. The custom app page points to Nx's GitHub
+  App Permissions reference for "the full list of required permissions"; that page describes the
+  Nx Cloud GitHub App in general. It notes that Administration (read and write) is no longer
+  requested; the remaining organization permissions are Administration (read) and Members
+  (read). The custom app page says to subscribe to the "Organization" events. The docs do not
+  mention GitHub Enterprise Server.
+manifest:
+  name: Nx Cloud
+  url: https://nx.dev
+  hook_attributes:
+    url: https://example.invalid/nx-cloud-github-webhook-handler
+    active: true
+  public: false
+  default_permissions:
+    actions: read  # "Actions: Read"
+    checks: write  # "Checks: Read & Write"
+    contents: write  # "Contents: Read & Write"
+    issues: write  # "Issues: Read & Write"
+    members: read  # Organization: "Members: Read Only"
+    metadata: read  # "Metadata: Read"
+    organization_administration: read  # Organization: "Administration: Read Only"
+    pull_requests: write  # "Pull requests: Read & Write"
+    statuses: write  # "Commit Statuses: Read & Write"
+    workflows: write  # "Workflows: Read & Write"
+  default_events:
+    - organization  # "subscribe to the "Organization" events"
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
