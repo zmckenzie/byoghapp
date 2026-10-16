@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: hcl-appscan-on-cloud
+name: HCL AppScan on Cloud (AppScan Presence for GitHub Enterprise Server)
+vendor: HCL Software
+category: security
+website: https://cloud.appscan.com
+documentation_url: https://help.hcl-software.com/appscan/ASoC/appseccloud_git_connect.html
+own_app: ghes-only
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+  notes: >-
+    Install the app on the account that owns it; the docs say it need not be granted access to
+    private repositories.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Set the callback URL to your AppScan Presence web application URL plus /signin-github, for
+    example https://my-presence-host-fqdn/signin-github.
+  - >-
+    Generate a private key, rename it GitHubAppKey.pem and copy it to the Presence installation
+    folder.
+  - >-
+    In git_connect_settings.json, set GithubAppId, GithubAppUrl (the app's public link), ClientId,
+    ClientSecret, GitConnectUrl, GitPlatformDomain and Active: true, and configure HTTPS in the
+    kestrel section.
+notes: >-
+  The docs describe this for GitHub Enterprise Server only, through an AppScan Presence on your
+  network. One Presence connects to one server with one GitHub App. The docs tell you to leave the
+  webhook inactive and list no webhook events. They set the app to be installable on any account.
+  Users sign in to GitHub through the Presence (OAuth), so each user's own repository access also
+  applies.
+manifest:
+  name: AppScan on Cloud
+  url: https://cloud.appscan.com # "Homepage URL: The HCL AppScan on Cloud URL"
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: true # "Where can this GitHub App be installed? Any account."
+  default_permissions:
+    contents: read # "Contents and Metadata set to Read-only"
+    emails: read # "Account permissions: Email addresses set to Read-only"
+    metadata: read
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
