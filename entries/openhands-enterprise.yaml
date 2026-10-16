@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: openhands-enterprise
+name: OpenHands Enterprise
+vendor: All Hands AI
+category: ai-coding
+website: https://openhands.dev
+documentation_url: https://docs.openhands.dev/enterprise/integrations/github
+documentation_urls:
+  - https://github.com/OpenHands/OpenHands-Cloud/tree/main/scripts/create_github_app
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the Homepage URL to https://app.<your base domain> and the Callback URL to
+    https://auth.<your base domain>/realms/allhands/broker/github/endpoint (auth.app.<your base
+    domain> in the Legacy hostname mode).
+  - >-
+    Set the webhook URL to https://app.<your base domain>/integration/github/events and set a
+    webhook secret.
+  - >-
+    In the Replicated Admin Console, enable GitHub Authentication and enter the client ID, client
+    secret, app ID, app slug and webhook secret, upload the private key, then deploy.
+notes: >-
+  OpenHands documents a helper script (create_github_app.py) that creates this app through GitHub's
+  manifest flow; its manifest matches the permissions and events here, with
+  request_oauth_on_install off. Each user must also sign in to OpenHands with GitHub: the agent
+  performs repository changes and formal reviews with the triggering user's authorization, while
+  the app posts acknowledgements and completion comments. Installing more than one OpenHands app on
+  a repository produces duplicate responses.
+manifest:
+  name: OpenHands
+  url: https://openhands.dev
+  hook_attributes:
+    url: https://example.invalid/integration/github/events
+    active: true
+  callback_urls:
+    - https://example.invalid/realms/allhands/broker/github/endpoint
+  request_oauth_on_install: false
+  public: false
+  default_permissions:
+    actions: write  # "write access to ... Actions"
+    contents: write  # "write access to repository contents"
+    emails: read  # "read access to ... user email addresses"
+    issues: write  # "write access to ... issues"
+    metadata: read  # "read access to metadata"
+    organization_events: read  # "read access to ... organization events"
+    pull_requests: write  # "write access to ... pull requests"
+    repository_hooks: write  # "write access to ... repository webhooks"
+    statuses: write  # "write access to ... commit statuses"
+    workflows: write  # "write access to ... workflows"
+  default_events:
+    - issue_comment
+    - pull_request
+    - pull_request_review_comment
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
