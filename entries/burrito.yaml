@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: burrito
+name: Burrito
+vendor: Padok
+category: iac
+website: https://docs.burrito.tf
+documentation_url: https://docs.burrito.tf/latest/operator-manual/git-authentication/github-app/
+documentation_urls:
+  - https://docs.burrito.tf/latest/operator-manual/git-authentication/
+  - https://docs.burrito.tf/latest/operator-manual/git-webhook/
+own_app: optional
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: selected
+  level: org-or-user
+  notes: Burrito's docs say to choose "Only select repositories" and pick the repositories Burrito manages.
+credentials_needed:
+  - app_id
+  - installation_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Install the app, then copy the Installation ID from the installation's URL and the App ID from
+    the app's General tab. Generate a private key.
+  - >-
+    Store githubAppID, githubAppInstallationID and githubAppPrivateKey in a Burrito credential
+    secret (type credentials.burrito.tf/repository or credentials.burrito.tf/shared).
+  - >-
+    For the pull request workflow and drift detection on push, add a repository webhook (not the
+    app webhook) to https://<your Burrito server>/api/webhook with content type application/json,
+    the push and pull_request events and a secret; put the secret in the credential as webhookSecret.
+notes: >-
+  A GitHub personal access token is the alternative. Burrito's docs say to leave the app webhook
+  inactive ("The app doesn't use this webhook events mechanism at the moment") and to use a
+  repository webhook instead. The docs also say to set "Where can this GitHub App be installed" to
+  "Any account", which makes the app public; this entry follows the docs. Without a webhook,
+  Burrito polls repositories for changes.
+manifest:
+  name: Burrito
+  url: https://docs.burrito.tf
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: true  # "Where can this GitHub App be installed: Select Any account."
+  default_permissions:
+    contents: read  # "Contents: Select Read-only."
+    metadata: read  # "Metadata: Select Read-only."
+    pull_requests: write  # "Pull requests: Select Read & write. This is required to issue comments on pull requests."
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
