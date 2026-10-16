@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: appcircle-self-hosted
+name: Appcircle (self-hosted server)
+vendor: Appcircle
+category: ci-cd
+website: https://appcircle.io
+documentation_url: >-
+  https://docs.appcircle.io/self-hosted-appcircle/install-server/linux-package/configure-server/integrations-and-access/git-providers
+documentation_urls:
+  - https://docs.appcircle.io/build/manage-the-connections/connection-guides/connecting-to-github
+own_app: optional
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - client_id
+  - client_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the homepage URL to your Appcircle dashboard URL and the webhook URL to your API URL plus
+    /build/v1/hooks/github. Enable SSL verification if GitHub trusts your certificate.
+  - >-
+    Add two callback URLs: your API URL plus /build/v1/callback?gitProvider=GithubApp, and your IAM
+    URL plus /auth/realms/appcircle/broker/githubapp/endpoint?gitProvider=GithubApp.
+  - >-
+    Check "Request user authorization (OAuth) during installation" and "Redirect on update".
+  - >-
+    Create a client secret and set clientId, clientSecret and authorizeUrl (the app's public link
+    plus /installations/new) under build.oauths.githubAppOauth in global.yaml.
+notes: >-
+  The self-hosted server page says to create your own GitHub App for your organization to connect
+  to GitHub Cloud; SSH and personal access token connections are the alternatives. The same page
+  says the GitHub App can't be used for a GitHub Enterprise Server connection. It points to the
+  build-profile page for the repository permissions; that table is titled "OAuth2 and Personal
+  Access Token Permissions" and lists Commit statuses, Contents, Metadata, Pull requests and
+  Webhooks. Organization Webhooks and the events come from the self-hosted server page. The
+  "GitHub App Cloud OAuth2" option needs Appcircle server 3.29.3 or later.
+manifest:
+  name: Appcircle
+  url: https://appcircle.io
+  hook_attributes:
+    url: https://example.invalid/appcircle-api-build-v1-hooks-github
+    active: true
+  public: false
+  default_permissions:
+    contents: read  # "Contents Read"
+    metadata: read  # "Metadata (Mandatory) Read"
+    organization_hooks: write  # "Select "Webhooks" as "Read and Write" in the "Organization" permissions."
+    pull_requests: read  # "Pull requests Read"
+    repository_hooks: write  # "Webhooks Read & Write"
+    statuses: write  # "Commit statuses Read & Write"
+  default_events:
+    - commit_comment
+    - create
+    - delete
+    - pull_request
+    - push
+    - repository
+    - status
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
