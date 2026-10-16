@@ -1,0 +1,85 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: matrix-hookshot
+name: Matrix Hookshot
+vendor: matrix.org
+category: other
+website: https://matrix-org.github.io/matrix-hookshot/
+documentation_url: https://matrix-org.github.io/matrix-hookshot/latest/setup/github.html
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the webhook URL to the public address of your Hookshot instance at the /github/webhook path,
+    with a secret that matches github.webhook.secret in your config.
+  - >-
+    Set the callback URL to the public /oauth path of the webhooks listener; it must match
+    github.oauth.redirect_uri exactly.
+  - >-
+    Generate a private key and put the app ID, key file, client ID and client secret in the github
+    section of the Hookshot config.
+notes: >-
+  The docs also ask for the organization permission Team Discussions (read & write), which has no
+  key in byoghapp's permission list, so it is left out: add it on GitHub's form if you need it. The
+  docs list Metadata without a level; it is read-only. You can turn off any of the events to stop
+  Hookshot handling them. For GitHub Enterprise Server set github.enterpriseUrl to your instance's
+  base URL.
+manifest:
+  name: Matrix Hookshot
+  url: https://matrix-org.github.io/matrix-hookshot/
+  hook_attributes:
+    url: https://example.invalid/hookshot-github-webhook
+    active: true
+  public: false
+  default_permissions:
+    actions: read # "Actions (read)"
+    contents: read # "Contents (read)"
+    discussions: write # "Discussions (read & write)"
+    issues: write # "Issues (read & write)"
+    metadata: read # "Metadata"
+    pull_requests: write # "Pull requests (read & write)"
+    repository_projects: write # "Projects (read & write)" (repository)
+  default_events:
+    - commit_comment
+    - create
+    - delete
+    - discussion
+    - discussion_comment
+    - issue_comment
+    - issues
+    - project
+    - project_card
+    - project_column
+    - pull_request
+    - pull_request_review
+    - pull_request_review_comment
+    - push
+    - release
+    - repository
+    - workflow_run
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
