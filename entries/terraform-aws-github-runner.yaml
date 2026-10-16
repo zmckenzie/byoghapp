@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: terraform-aws-github-runner
+name: terraform-aws-github-runner (self-hosted runners on AWS)
+vendor: github-aws-runners
+category: ci-cd
+website: https://github-aws-runners.github.io/terraform-aws-github-runner/
+documentation_url: https://github-aws-runners.github.io/terraform-aws-github-runner/getting-started/
+documentation_urls:
+  - https://github-aws-runners.github.io/terraform-aws-github-runner/configuration/
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Create the app with the webhook disabled, note the App ID and Client ID, and generate a
+    private key for the Terraform module.
+  - >-
+    After terraform apply, enable the webhook, set the URL from the Terraform output (the API
+    gateway endpoint) and the webhook secret from terraform output -raw.
+  - >-
+    Subscribe to either Workflow Job or Check Run, not both, then install the app on the
+    organization for all or selected repositories.
+notes: >-
+  The docs say only organization-level apps are supported. Instead of the app's webhook you can
+  create a separate repository, organization or enterprise webhook with the same URL, secret and
+  event. Ephemeral runners only work with the workflow_job event. The configuration page says the
+  module supports github.com, GHE.com data residency and GitHub Enterprise Server, with GHES support
+  and testing left to the community; JIT runner configuration is not supported on GHES.
+manifest:
+  name: terraform-aws-github-runner
+  url: https://github-aws-runners.github.io/terraform-aws-github-runner/
+  hook_attributes:
+    url: https://example.invalid/terraform-output-webhook-endpoint
+    active: true
+  public: false
+  default_permissions:
+    actions: read  # "Actions: Read-only (check for queued jobs)"
+    checks: read  # "Checks: Read-only (receive events for new builds)"
+    metadata: read  # "Metadata: Read-only (default/required)"
+    organization_self_hosted_runners: write  # "Self-hosted runners: Read & write (to register runner)"
+  default_events:
+    - workflow_job
+variants:
+  - id: org-workflow-job
+    name: Organization runners, Workflow Job event
+    description: Organization-level runners triggered by the workflow_job event.
+    default_permissions:
+      actions: read
+      checks: read
+      metadata: read
+      organization_self_hosted_runners: write
+    default_events:
+      - workflow_job
+  - id: repo-workflow-job
+    name: Repository runners, Workflow Job event
+    description: >-
+      Repository-level runners use Administration read and write to register runners instead of
+      organization Self-hosted runners.
+    default_permissions:
+      actions: read
+      administration: write
+      checks: read
+      metadata: read
+    default_events:
+      - workflow_job
+  - id: org-check-run
+    name: Organization runners, Check Run event
+    description: Organization-level runners triggered by the check_run event instead of workflow_job.
+    default_permissions:
+      actions: read
+      checks: read
+      metadata: read
+      organization_self_hosted_runners: write
+    default_events:
+      - check_run
+  - id: repo-check-run
+    name: Repository runners, Check Run event
+    description: Repository-level runners triggered by the check_run event instead of workflow_job.
+    default_permissions:
+      actions: read
+      administration: write
+      checks: read
+      metadata: read
+    default_events:
+      - check_run
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
