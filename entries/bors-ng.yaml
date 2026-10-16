@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: bors-ng
+name: bors-ng
+vendor: bors-ng
+category: ci-cd
+website: https://bors.tech
+documentation_url: https://github.com/bors-ng/bors-ng#how-to-set-up-your-own-real-instance
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the user authorization callback URL to <DASHBOARD URL>/auth/github/callback, leave the
+    setup URL blank and set the webhook URL to <DASHBOARD URL>/webhook/github.
+  - >-
+    Generate a webhook secret (for example with mix phx.gen.secret) and give the same value to
+    bors-ng.
+  - >-
+    After creating the app, note its ID, generate a private key and an OAuth client secret, and
+    pass them to bors-ng.
+notes: >-
+  The README carries a deprecation notice: new features are not accepted and GitHub's built-in
+  merge queue is suggested instead. The first ping to the webhook fails until bors-ng is running;
+  the docs say this is expected. GITHUB_URL_ROOT_API and GITHUB_URL_ROOT_HTML "should allow you to
+  connect bors-ng to an instance of GitHub Enterprise", but the author adds "I've never actually
+  used GitHub Enterprise, so I'm kinda guessing", so GitHub Enterprise Server is not marked as
+  supported. The docs describe the app as owned by an organization or a user, and installable
+  only by its owner when set to "Internal".
+manifest:
+  name: bors-ng
+  url: https://bors.tech
+  hook_attributes:
+    url: https://example.invalid/bors-webhook-github
+    active: true
+  public: false
+  default_permissions:
+    checks: write # "Checks: Read & Write"
+    contents: write # "Repository contents: Read & write"
+    issues: write # "Issues: Read & write"
+    members: read # "Organization members: Read-only"
+    metadata: read # "Repository metadata: Read-only (no choice)"
+    pull_requests: write # "Pull requests: Read & write"
+    statuses: write # "Commit statuses: Read & write"
+  default_events:
+    - check_run
+    - check_suite
+    - issue_comment
+    - member
+    - membership
+    - organization
+    - pull_request
+    - pull_request_review
+    - pull_request_review_comment
+    - repository
+    - status
+    - team
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
