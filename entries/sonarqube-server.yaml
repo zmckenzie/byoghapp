@@ -1,0 +1,118 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: sonarqube-server
+name: SonarQube Server
+vendor: SonarSource
+category: code-quality
+website: https://www.sonarsource.com/products/sonarqube/
+documentation_url: https://docs.sonarsource.com/sonarqube-server/devops-platform-integration/github-integration/setting-up-at-global-level/setting-up-github-app
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Recommended: in SonarQube, Administration > Configuration > General settings > DevOps platform
+    integrations > GitHub > Create GitHub App. SonarQube sends you to GitHub with a preconfigured
+    app and saves the credentials.
+  - >-
+    For a manual app, set Homepage URL and Redirect URI to your SonarQube Server base URL and
+    enable Allow wildcard matching on the Redirect URI.
+  - >-
+    For a manual app, enter the GitHub API URL (https://api.github.com/ or
+    https://<GHES host>/api/v3), App ID, Client ID, Client Secret and private key in SonarQube.
+notes: >-
+  The docs recommend a public app (Any account); a private app works if you have only one GitHub
+  organization. Read-only Contents is enough for analysis and quality gate reporting; the
+  Remediation Agent needs read and write. Administration (repository and organization) is only
+  for user provisioning, and Email addresses only for authentication and provisioning. The docs
+  recommend leaving the webhook off; reporting security alerts to GitHub needs a manual app with
+  Code scanning alerts read and write, the Code scanning alert event and a webhook secret, which
+  this entry doesn't model. GitHub Copilot Business read-only, for the deprecated Autodetect AI
+  code feature, is also left out. Multiple GitHub instances need Enterprise or Data Center Edition.
+manifest:
+  name: SonarQube Server
+  url: https://www.sonarsource.com/products/sonarqube/
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: true
+  default_permissions:
+    administration: read
+    checks: write
+    contents: write
+    emails: read
+    members: read
+    metadata: read
+    organization_administration: read
+    organization_projects: read
+    pull_requests: write
+  default_events: []
+variants:
+  - id: create-github-app
+    name: Create GitHub App flow
+    description: >-
+      The set SonarQube pre-configures in its Create GitHub App flow, with Contents read and write
+      for the Remediation Agent.
+    default_permissions:
+      administration: read
+      checks: write
+      contents: write
+      emails: read
+      members: read
+      metadata: read
+      organization_administration: read
+      organization_projects: read
+      pull_requests: write
+    default_events: []
+  - id: manual-read-only-contents
+    name: Manual app, Contents read-only
+    description: >-
+      The manual table with Contents read-only, enough for analysis and quality gate reporting.
+    default_permissions:
+      administration: read
+      checks: write
+      contents: read
+      emails: read
+      members: read
+      metadata: read
+      organization_administration: read
+      organization_projects: read
+      pull_requests: write
+    default_events: []
+  - id: no-provisioning
+    name: Manual app, no user provisioning or sign-in
+    description: >-
+      Drops the Administration and Email addresses permissions, which the docs mark as needed only
+      for user provisioning and authentication.
+    default_permissions:
+      checks: write
+      contents: read
+      members: read
+      metadata: read
+      organization_projects: read
+      pull_requests: write
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
