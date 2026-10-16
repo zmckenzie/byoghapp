@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: huly-self-hosted
+name: Huly (self-hosted GitHub service)
+vendor: Huly
+category: other
+website: https://huly.io
+documentation_url: https://github.com/hcengineering/huly-selfhost
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the Callback URL and the Setup URL (with Redirect on update) to https://<your Huly host>/github.
+  - >-
+    Set the webhook URL to https://<your Huly host>/_github/api/webhook and set a webhook secret.
+  - >-
+    Generate a client secret and a private key, and pass the app ID, app slug, client ID, client
+    secret, private key and webhook secret to the github service (GITHUB_APPID, GITHUB_APP_SLUG,
+    GITHUB_CLIENTID, GITHUB_CLIENT_SECRET, GITHUB_PRIVATE_KEY, GITHUB_WEBHOOK_SECRET).
+notes: >-
+  From the "GitHub Service" section of the huly-selfhost README. The README lists Custom
+  properties, Projects and Webhooks without saying whether they are repository or organization
+  permissions; they are mapped here to the repository permissions of the same names, because every
+  other permission in the list is a repository permission. The README doesn't say whether the app
+  may be owned by a personal account or used with GitHub Enterprise Server. Sign-in with GitHub
+  uses a separate OAuth App.
+manifest:
+  name: Huly
+  url: https://huly.io
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-huly-host
+    active: true
+  callback_urls:
+    - https://example.invalid/github
+  setup_url: https://example.invalid/github
+  setup_on_update: true
+  public: false
+  default_permissions:
+    contents: write  # "Contents: Read and write"
+    discussions: write  # "Discussions: Read and write"
+    issues: write  # "Issues: Read and write"
+    metadata: read  # "Metadata: Read-only"
+    pages: write  # "Pages: Read and write"
+    pull_requests: write  # "Pull requests: Read and write"
+    repository_custom_properties: write  # "Custom properties: Read and write" (scope not stated)
+    repository_hooks: write  # "Webhooks: Read and write" (scope not stated)
+    repository_projects: write  # "Projects: Read and write" (scope not stated)
+    statuses: write  # "Commit statuses: Read and write"
+  default_events:
+    - issues
+    - pull_request
+    - pull_request_review
+    - pull_request_review_comment
+    - pull_request_review_thread
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
