@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: bitrise-ghes
+name: Bitrise (GitHub Enterprise Server)
+vendor: Bitrise
+category: ci-cd
+website: https://bitrise.io
+documentation_url: https://docs.bitrise.io/en/bitrise-platform/repository-access/integrating-github-enterprise-with-bitrise
+own_app: ghes-only
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+  notes: >-
+    Create the app in the organization that owns your repositories. Choose Any account under where
+    the app can be installed to use it for other organizations on the instance.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Copy the webhook URL from Bitrise (Workspace settings > Integrations > Git provider > GitHub
+    Enterprise Server). It has the form https://app.bitrise.io/organization/<org_slug>/github_webhooks.
+  - Set a webhook secret; Bitrise requires one.
+  - >-
+    Note the app ID and client ID, generate a client secret and a private key, then enter them with
+    the webhook secret and your instance's base URL under Connect to Instance in Bitrise.
+  - Install the app on the organization and select the repositories Bitrise should access.
+notes: >-
+  On GitHub.com Bitrise uses its own GitHub App; this entry is for GitHub Enterprise Server only. The
+  docs say Bitrise will use these permissions and events for Checks and selective builds. If your
+  instance restricts access by IP address, allowlist the Bitrise background workers, whose range
+  differs from the build machines'.
+manifest:
+  name: Bitrise
+  url: https://bitrise.io
+  hook_attributes:
+    url: https://example.invalid/bitrise-workspace-github-webhooks
+    active: true
+  public: false
+  default_permissions:
+    checks: write # "Checks read and write"
+    contents: read # "Contents read only"
+    metadata: read # "Metadata read only"
+    pull_requests: read # "Pull requests read only"
+    statuses: write # "Commit statuses read and write"
+  default_events:
+    - check_run
+    - check_suite
+    - pull_request
+    - push
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
