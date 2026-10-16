@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: sentry-github-enterprise
+name: Sentry (GitHub Enterprise integration)
+vendor: Sentry
+category: observability
+website: https://sentry.io
+documentation_url: https://docs.sentry.io/organization/integrations/source-code-mgmt/github/
+own_app: ghes-only
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - private_key
+  - webhook_secret
+two_step_webhook: false
+manual_steps:
+  - Allow Sentry's IP ranges on your GitHub Enterprise instance.
+  - >-
+    Generate a webhook secret (the docs use openssl rand) and enter it in the app's webhook
+    settings.
+  - >-
+    In Sentry, go to Organization Settings > Integrations > GitHub Enterprise > Install > Add
+    Installation, fill in the form from the app's settings page and paste the private key.
+notes: >-
+  For GitHub Enterprise instances that can't be reached from github.com; github.com users install
+  Sentry's own app. The installation URL must be resolvable over the internet. The docs subscribe
+  the app to the Status event but set Commit statuses to "No Access"; Status needs Commit
+  statuses, so it is left out here. For a custom app on github.com, the docs give the webhook URL
+  https://sentry.io/extensions/github-enterprise/webhook/github-com/ instead. The Sentry install
+  form is shown only as a screenshot, so credentials beyond the private key and webhook secret
+  aren't listed.
+manifest:
+  name: sentry-app
+  url: https://sentry.io
+  hook_attributes:
+    url: https://sentry.io/extensions/github-enterprise/webhook/
+    active: true
+  callback_urls:
+    - https://sentry.io/extensions/github-enterprise/setup/
+  setup_url: https://sentry.io/extensions/github-enterprise/setup/
+  public: false
+  default_permissions:
+    administration: read # "Repository Administration: Read-only"
+    contents: write # "Repository Contents: Read & Write"
+    issues: write # "Issues: Read & Write"
+    members: read # "Organization members: Read-only"
+    metadata: read
+    pull_requests: write # "Pull Requests: Read & Write"
+  default_events:
+    - delete
+    - fork
+    - issue_comment
+    - issues
+    - member
+    - membership
+    - organization
+    - public
+    - pull_request
+    - push
+    - release
+    - repository
+    - team_add
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
