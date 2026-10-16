@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: flagsmith-self-hosted
+name: Flagsmith (self-hosted)
+vendor: Flagsmith
+category: other
+website: https://flagsmith.com
+documentation_url: https://docs.flagsmith.com/third-party-integrations/project-management/github
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the Setup URL to https://<your Flagsmith dashboard>/login?github-redirect=true and check
+    Redirect on update.
+  - >-
+    Set the webhook URL to https://<your Flagsmith API>/api/v1/github-webhook/, keep it Active, and
+    set a high-entropy webhook secret.
+  - Set the GitHub App environment variables on your Flagsmith instance.
+notes: >-
+  For self-hosted Flagsmith; Flagsmith SaaS uses its app from the GitHub Marketplace. The docs
+  point to the environment variables page for the app's configuration, but that page doesn't list
+  the GitHub App variables, so the credentials Flagsmith needs besides the webhook secret are not
+  documented.
+manifest:
+  name: Flagsmith
+  url: https://flagsmith.com
+  hook_attributes:
+    url: https://example.invalid/api/v1/github-webhook/
+    active: true
+  setup_url: https://example.invalid/login?github-redirect=true
+  setup_on_update: true
+  public: false
+  default_permissions:
+    issues: write  # "Issues: Read and write."
+    metadata: read  # "Metadata: Read only (Mandatory)"
+    pull_requests: write  # "Pull requests: Read and write."
+  default_events:
+    - issues
+    - pull_request
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
