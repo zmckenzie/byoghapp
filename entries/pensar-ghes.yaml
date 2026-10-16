@@ -1,0 +1,66 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: pensar-ghes
+name: Pensar (GitHub Enterprise Server)
+vendor: Pensar
+category: security
+website: https://console.pensar.dev
+documentation_url: https://docs.pensar.dev/console/integrations/git-hub-enterprise-server
+documentation_urls:
+  - https://docs.pensar.dev/console/integrations/git-hub
+own_app: ghes-only
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+  notes: Install from Pensar Console's Install GitHub App link so the installation is saved.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - Generate a client secret and a private key.
+  - >-
+    In Pensar Console, go to Settings > Integrations > Source control > GitHub > GitHub Enterprise
+    Server and enter the hostname without https://, the App ID, client ID, client secret and private
+    key.
+  - Install the app with the Install GitHub App link in Pensar Console, not from GitHub directly.
+notes: >-
+  On github.com Pensar uses its own GitHub App; you create your own only for GitHub Enterprise
+  Server. The docs call the webhook optional and list no webhook events, so this entry leaves it
+  off. The cloud page says the write permissions are only used when you opt into auto-remediation.
+  Your server must be reachable from Pensar.
+manifest:
+  name: Pensar
+  url: https://console.pensar.dev # "Homepage URL: https://console.pensar.dev"
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  setup_url: https://console.pensar.dev/integrations/github/enterprise/redirect
+  setup_on_update: true # "Check Redirect on update"
+  public: false
+  default_permissions:
+    actions: write # "Actions: Read & Write"
+    checks: write # "Checks: Read & Write"
+    contents: write # "Contents: Read & Write"
+    metadata: read # not listed in the docs; GitHub always adds it
+    pull_requests: write # "Pull requests: Read & Write"
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
