@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: terrakube
+name: Terrakube
+vendor: Terrakube
+category: iac
+website: https://terrakube.io
+documentation_url: https://docs.terrakube.io/user-guide/vcs-providers/github-app
+own_app: optional
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Start in Terrakube: organization Settings > VCS Providers > Github App. Terrakube 2.23.0 or
+    later is required.
+  - Copy the App ID into Terrakube and generate a private key.
+  - >-
+    Convert the key to PKCS8 before adding it to Terrakube, for example with openssl pkcs8 -topk8
+    -inform PEM -outform PEM -nocrypt -in <downloaded key> -out pkcs8.key.
+  - Install the app on your account and select the repositories Terrakube should use.
+notes: >-
+  GitHub OAuth is the documented alternative for GitHub.com; the GitHub Enterprise page uses an
+  OAuth application, not a GitHub App. The docs say to disable the webhook. They also ask for
+  "Webhooks" with "Read and Write" when workspaces have webhooks enabled; the page's screenshot
+  shows the repository Webhooks permission ("Manage the post-receive hooks for a repository"), so
+  it is in the "Workspace webhooks" variant. If several VCS providers share one App ID, Terrakube
+  only refreshes the token for the first one.
+manifest:
+  name: Terrakube
+  url: https://terrakube.io
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    contents: read  # "Contents" with "Read-Only"
+    metadata: read  # always added by GitHub
+    statuses: write  # "Commit statuses" to "Read and write"
+  default_events: []
+variants:
+  - id: default
+    name: Without workspace webhooks
+    description: Contents read-only and Commit statuses read and write.
+    default_permissions:
+      contents: read
+      metadata: read
+      statuses: write
+    default_events: []
+  - id: workspace-webhooks
+    name: Workspace webhooks
+    description: >-
+      Adds repository Webhooks read and write, which the docs ask for when workspaces have webhooks
+      enabled.
+    default_permissions:
+      contents: read
+      metadata: read
+      repository_hooks: write  # "Webhooks" with "Read and Write"
+      statuses: write
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
