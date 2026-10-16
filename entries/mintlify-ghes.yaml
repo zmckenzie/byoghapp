@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: mintlify-ghes
+name: Mintlify (GitHub Enterprise Server)
+vendor: Mintlify
+category: other
+website: https://mintlify.com
+documentation_url: https://www.mintlify.com/docs/deploy/ghes
+own_app: ghes-only
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+  notes: Mintlify recommends installing on selected repositories only.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - installation_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - Set the User authorization callback URL to your GHES base URL, for example https://<your GHES host>/.
+  - >-
+    Set the webhook URL to https://leaves.mintlify.com/github-enterprise/<subdomain>, using the
+    subdomain Mintlify gives you, and set a webhook secret of 32 or more characters.
+  - >-
+    Install the app on the organization and note the installation ID from the installation URL.
+  - >-
+    Send Mintlify the GHES base URL, app ID, client ID, client secret, installation ID, installation
+    owner, private key and webhook secret through a secure transfer method.
+notes: >-
+  Mintlify's docs say the app needs no organization, account or enterprise permissions. The docs
+  also list the Installation and Installation Target events; GitHub sends those to every app
+  automatically, so they are left out here. The GHES instance must reach leaves.mintlify.com
+  over HTTPS, and Mintlify reaches the instance from 54.242.90.151. Mintlify says the webhook URL
+  may change after it tests the integration. Air-gapped GHES is not supported.
+manifest:
+  name: Mintlify
+  url: https://mintlify.com
+  description: Integration with Mintlify services
+  hook_attributes:
+    url: https://example.invalid/mintlify-provides-this-url
+    active: true
+  public: false
+  default_permissions:
+    checks: write  # "Checks: Read and write"
+    contents: write  # "Contents: Read and write"
+    deployments: write  # "Deployments: Read and write"
+    metadata: read  # "Metadata: Read-only"
+    pull_requests: write  # "Pull Requests: Read and write"
+  default_events:
+    - create
+    - delete
+    - public
+    - pull_request
+    - push
+    - repository
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
