@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: actions-runner-controller
+name: Actions Runner Controller (runner scale sets)
+vendor: GitHub
+category: ci-cd
+website: https://github.com/actions/actions-runner-controller
+documentation_url: https://docs.github.com/en/actions/how-tos/manage-runners/use-actions-runner-controller/authenticate-to-the-api
+documentation_urls:
+  - https://docs.github.com/en/enterprise-server@latest/actions/how-tos/manage-runners/use-actions-runner-controller/authenticate-to-the-api
+own_app: optional
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - installation_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Create the app under the organization, generate a private key, install it on the
+    organization and note the installation ID from the installation page URL.
+  - >-
+    Store the app ID, installation ID and private key as a Kubernetes secret in the namespace of
+    the gha-runner-scale-set chart.
+notes: >-
+  A personal access token (classic or fine-grained) is the alternative. The docs say a GitHub App
+  can't be used for runners at the enterprise level; those need a personal access token (classic).
+  Administration read and write is only needed to register runners at the repository scope. The
+  docs list no webhook events. The GitHub Enterprise Server version of the page gives the same
+  permissions.
+manifest:
+  name: actions-runner-controller
+  url: https://github.com/actions/actions-runner-controller
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    metadata: read  # "Metadata: Read-only"
+    organization_self_hosted_runners: write  # "Self-hosted runners: Read and write"
+  default_events: []
+variants:
+  - id: org-runners
+    name: Organization-scope runners
+    description: Runners registered at the organization scope.
+    default_permissions:
+      metadata: read
+      organization_self_hosted_runners: write
+    default_events: []
+  - id: repo-runners
+    name: Repository-scope runners
+    description: >-
+      Adds Administration read and write, which the docs say is only required to register runners
+      at the repository scope.
+    default_permissions:
+      administration: write
+      metadata: read
+      organization_self_hosted_runners: write
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
