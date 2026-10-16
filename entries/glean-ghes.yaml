@@ -1,0 +1,84 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: glean-ghes
+name: Glean GitHub Enterprise Server connector
+vendor: Glean
+category: other
+website: https://www.glean.com
+documentation_url: https://docs.glean.com/connectors/native/github-enterprise-server/setup
+own_app: ghes-only
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+  notes: Install the app on every organization Glean should crawl.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Copy the User authorization callback URL and the webhook URL from Glean's setup page, and leave
+    Request user authorization unchecked.
+  - >-
+    Set a webhook secret and enter the same value in Glean.
+  - >-
+    Enter the app ID, client ID, client secret and private key in Glean.
+  - >-
+    Create a classic personal access token with no expiration and the user:email, read:enterprise
+    and read:org scopes, and enter it in Glean as the Admin Personal Access Token.
+notes: >-
+  An organization owner must create the app. Glean also needs a classic admin personal access
+  token alongside the app. The docs set the app to be installable on any account (public). The GHES
+  instance must be reachable from Glean's crawler. The docs' example webhook secret is a literal
+  sample value; generate your own.
+manifest:
+  name: Glean
+  url: https://app.glean.com
+  hook_attributes:
+    url: https://example.invalid/copy-from-glean-setup-page
+    active: true
+  request_oauth_on_install: false
+  public: true
+  default_permissions:
+    administration: read  # "Administration" (read-only)
+    contents: read  # "Contents" (read-only)
+    emails: read  # User permissions: "Email addresses" (read-only)
+    issues: read  # "Issues" (read-only)
+    members: read  # Organization permissions: "Members" (read-only)
+    metadata: read  # "Metadata" (read-only)
+    pages: read  # "Pages" (read-only)
+    pull_requests: read  # "Pull requests" (read-only)
+    statuses: read  # "Commit statuses" (read-only)
+  default_events:
+    - commit_comment
+    - issue_comment
+    - issues
+    - member
+    - organization
+    - pull_request
+    - pull_request_review
+    - pull_request_review_comment
+    - push
+    - repository
+    - team
+    - team_add
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
