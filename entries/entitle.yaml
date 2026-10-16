@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: entitle
+name: Entitle
+vendor: BeyondTrust
+category: security
+website: https://www.beyondtrust.com
+documentation_url: https://docs.beyondtrust.com/entitle/docs/github-app-recommended
+documentation_urls:
+  - https://docs.beyondtrust.com/entitle/docs/entitle-integration-github
+own_app: optional
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: all
+  level: org
+  notes: Install on the organization and choose All repositories, as the docs instruct.
+credentials_needed:
+  - app_id
+  - installation_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Generate a private key, then note the App ID and the installation ID from the URL shown after
+    installing.
+  - >-
+    In Entitle, add a GitHub integration with Connection set to GitHub App and paste installation_id,
+    app_id and private_key into the connection JSON. Escape the key's newlines as \n (the docs give a
+    sed script).
+notes: >-
+  Entitle also supports a personal access token; its docs call the GitHub App the recommended
+  method. The docs tell you to leave the webhook inactive and list no webhook events. They set the
+  app to be installable on any account because Entitle must be installed on the organization, not on
+  the user who created it. The docs list IP addresses to allowlist for Entitle's EU, US and CA
+  deployments.
+manifest:
+  name: Entitle
+  url: https://www.beyondtrust.com
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: true # "Where can this GitHub App be installed, choose Any account"
+  default_permissions:
+    administration: write # "Administration: Read and write (In order to handle repo collaborators)"
+    members: write # "Members: Read and write (In order to handle organization and teams members)"
+    metadata: read # "Metadata: Read-only (Mandatory)"
+    organization_administration: read # "Administrations: Read" (Organization permissions)
+    organization_custom_org_roles: read # "Custom organization roles: Read"
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
