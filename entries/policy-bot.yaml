@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: policy-bot
+name: policy-bot
+vendor: Palantir
+category: ci-cd
+website: https://github.com/palantir/policy-bot
+documentation_url: https://github.com/palantir/policy-bot#github-app-configuration
+documentation_urls:
+  - https://github.com/palantir/policy-bot/blob/develop/config/policy-bot.example.yml
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the user authorization callback URL to https://<your-policy-bot-domain>/api/github/auth and
+    leave "Request user authorization (OAuth) during installation" unchecked.
+  - >-
+    Set the webhook URL to https://<your-policy-bot-domain>/api/github/hook and a webhook secret
+    matching github.app.webhook_secret in the server configuration.
+  - >-
+    Put the App ID, client ID, client secret and private key in github.app.integration_id,
+    github.oauth.client_id, github.oauth.client_secret and github.app.private_key.
+notes: >-
+  Self-hosted server from Palantir's open-source repository. The README's Security section
+  describes an auditing feature "for older versions of GitHub Enterprise"; the example
+  configuration sets web_url, v3_api_url and v4_api_url for the GitHub host. Set policy-bot as the
+  expected source of its required status check so other users can't forge it.
+manifest:
+  name: policy-bot
+  url: https://github.com/palantir/policy-bot
+  hook_attributes:
+    url: https://example.invalid/policy-bot-api-github-hook
+    active: true
+  public: false
+  default_permissions:
+    actions: read # "Actions: Read-only"
+    administration: read # "Administration: Read-only"
+    checks: read # "Checks: Read-only"
+    contents: read # "Contents: Read-only"
+    issues: read # "Issues: Read-only"
+    members: read # organization "Members: Read-only"
+    merge_queues: read # "Merge Queues: Read-only"
+    metadata: read # "Metadata: Read-only"
+    pull_requests: write # "Pull requests: Read & write"
+    repository_custom_properties: read # repository "Custom properties: Read-only"
+    statuses: write # "Commit statuses: Read & write"
+  default_events:
+    - check_run
+    - issue_comment
+    - merge_group
+    - pull_request
+    - pull_request_review
+    - status
+    - workflow_run
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
