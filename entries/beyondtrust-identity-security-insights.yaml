@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: beyondtrust-identity-security-insights
+name: Identity Security Insights
+vendor: BeyondTrust
+category: security
+website: https://www.beyondtrust.com
+documentation_url: https://docs.beyondtrust.com/insights/docs/github
+documentation_urls:
+  - https://docs.beyondtrust.com/insights/docs/set-up-github-copilot-metrics
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org
+  notes: Create the app in the organization's developer settings and install it there.
+credentials_needed:
+  - app_id
+  - installation_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Generate a private key, then install the app and copy the installation URL from the browser's
+    address bar.
+  - >-
+    In Insights, go to Connectors > Create Connector > GitHub and enter the App ID, the PEM key and
+    the installed GitHub App URL.
+  - >-
+    In the organization's audit log settings, turn on Enable source IP disclosure; several detections
+    rely on it.
+notes: >-
+  Insights reads GitHub audit logs. The docs tell you to leave the webhook inactive and list no
+  webhook events. They say the secret-related permissions do not allow retrieval of the encrypted
+  values. Actions and Self-hosted runners were added in Insights 24.08: apps created earlier must be
+  updated and the new permissions accepted. Copilot metrics need an enterprise policy, not an extra
+  app permission, according to the docs.
+manifest:
+  name: BeyondTrust Insights
+  url: https://app.beyondtrust.io # "Homepage URL: https://app.beyondtrust.io"
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false # "select Only on this account"
+  default_permissions:
+    # Repository permissions, all "Read only"
+    actions: read
+    administration: read
+    codespaces_lifecycle_admin: read
+    metadata: read
+    repository_hooks: read # "Webhooks" (repository)
+    secret_scanning_alerts: read
+    # Organization permissions, all "Read only"
+    members: read
+    organization_administration: read # "Administration"
+    organization_codespaces_secrets: read
+    organization_custom_org_roles: read # "Custom organization roles"
+    organization_custom_roles: read # "Custom repository roles"
+    organization_dependabot_secrets: read
+    organization_events: read # "Events"
+    organization_hooks: read # "Webhooks" (organization)
+    organization_secrets: read # "Secrets"
+    organization_self_hosted_runners: read
+    organization_user_blocking: read # "Blocking users"
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
