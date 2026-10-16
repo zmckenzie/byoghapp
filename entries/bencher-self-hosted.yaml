@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: bencher-self-hosted
+name: Bencher (self-hosted)
+vendor: Bencher
+category: ci-cd
+website: https://bencher.dev
+documentation_url: https://bencher.dev/docs/how-to/github-app/
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org-or-user
+  notes: The app is used to sign in to Bencher with GitHub; it requests no repository permissions.
+credentials_needed:
+  - client_id
+  - client_secret
+two_step_webhook: false
+manual_steps:
+  - >-
+    Set the homepage URL to your Bencher console URL and the callback URL to your console URL plus
+    /auth/github.
+  - >-
+    Check "Expire user authorization tokens", "Request user authorization (OAuth) during
+    installation" and "Enable Device Flow".
+  - >-
+    Create a client secret, add client_id and client_secret to the plus.github section of the API
+    server config, and run bencher-console with OAUTH_GITHUB=true.
+notes: >-
+  Only Bencher Self-Hosted needs its own app, and the docs say it requires a Bencher Plus
+  Enterprise plan; Bencher Cloud uses Bencher's own GitHub login. The docs say to uncheck the
+  webhook's Active box and list no events. They set "Where can this GitHub App be installed?" to
+  "Any account", so the app is public. The docs also say to generate a private key, but the
+  console and API server configuration only take the client ID and client secret. The docs don't
+  mention GitHub Enterprise Server.
+manifest:
+  name: Bencher
+  url: https://bencher.dev
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: true  # "Where can this GitHub App be installed? Any account"
+  default_permissions:
+    emails: read  # "Account permissions: Email addresses: Read-only"
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
