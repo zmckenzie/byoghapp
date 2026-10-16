@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: appwrite-self-hosted
+name: Appwrite (self-hosted)
+vendor: Appwrite
+category: ci-cd
+website: https://appwrite.io
+documentation_url: https://appwrite.io/docs/advanced/self-hosting/configuration/version-control
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org-or-user
+  notes: >-
+    The docs set the app to install on Any account so it can be installed for several Appwrite
+    projects.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - Set the webhook URL to https://<HOSTNAME_OR_IP>/v1/vcs/github/events and set a webhook secret.
+  - >-
+    Add the callback URLs in this order: https://<HOSTNAME_OR_IP>/v1/vcs/github/callback, then
+    https://<HOSTNAME_OR_IP>/v1/account/sessions/oauth2/callback/github/console.
+  - >-
+    Check Request user authentication (OAuth) during installation, and Redirect on update under
+    Post installation.
+  - >-
+    Set _APP_VCS_GITHUB_APP_NAME (the app's slug), _APP_VCS_GITHUB_APP_ID, _APP_VCS_GITHUB_CLIENT_ID,
+    _APP_VCS_GITHUB_CLIENT_SECRET, _APP_VCS_GITHUB_PRIVATE_KEY and _APP_VCS_GITHUB_WEBHOOK_SECRET,
+    then run docker compose up -d.
+notes: >-
+  The Appwrite instance must be reachable from the internet so GitHub can deliver webhooks; on
+  localhost the docs suggest a proxy such as ngrok. The callback URLs depend on your host, so this
+  entry leaves them and the OAuth-on-install setting to the manual steps. The docs don't mention
+  GitHub Enterprise Server.
+manifest:
+  name: Appwrite
+  url: https://appwrite.io
+  hook_attributes:
+    url: https://example.invalid/appwrite-v1-vcs-github-events
+    active: true
+  public: true
+  default_permissions:
+    administration: write # "Administration Read and write"
+    checks: write # "Checks Read and write"
+    contents: write # "Contents Read and write"
+    emails: read # "Email address Read-only" (account permission)
+    issues: write # "Issues Read and write"
+    metadata: read # "Metadata Read-only"
+    pull_requests: write # "Pull requests Read and write"
+    repository_hooks: write # "Webhooks Read and write" (repository permission)
+    statuses: write # "Commit Statuses Read and write"
+  default_events:
+    - pull_request
+    - push
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
