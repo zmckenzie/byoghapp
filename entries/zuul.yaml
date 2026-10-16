@@ -1,0 +1,79 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: zuul
+name: Zuul CI
+vendor: Zuul
+category: ci-cd
+website: https://zuul-ci.org
+documentation_url: https://zuul-ci.org/docs/zuul/latest/drivers/github.html
+own_app: optional
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+  notes: >-
+    The docs create the app in an organization and set it to install on Any account; project and
+    organization owners then install it from the app's public page.
+credentials_needed:
+  - app_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the webhook URL to http://<zuul-hostname>:<port>/api/connection/<connection-name>/payload and
+    create a webhook secret.
+  - Optionally set the Setup URL to your own setup documentation.
+  - >-
+    Generate a private key, then set webhook_token, app_id, app_key and optionally api_token in
+    zuul.conf and restart zuul-scheduler.
+  - Check in the app's Advanced tab that the ping delivery returned 200.
+notes: >-
+  A per-project webhook with a user api_token is the alternative; the docs recommend the app. For
+  GitHub Enterprise Server set server (and verify_ssl if needed) on the connection. Contents write
+  lets Zuul merge changes. Pull requests that change .github/workflows can't be merged with app
+  credentials. The docs don't list Metadata; GitHub adds it to every app.
+manifest:
+  name: Zuul
+  url: https://zuul-ci.org
+  hook_attributes:
+    url: https://example.invalid/zuul-api-connection-payload
+    active: true
+  public: true
+  default_permissions:
+    administration: read # "Repository administration: Read"
+    checks: write # "Checks: Read & Write"
+    contents: write # "Repository contents: Read & Write (write to let zuul merge change)"
+    issues: write # "Issues: Read & Write"
+    metadata: read # added by GitHub; not listed in the docs
+    pull_requests: write # "Pull requests: Read & Write"
+    statuses: write # "Commit statuses: Read & Write"
+  default_events:
+    - check_run
+    - commit_comment
+    - create
+    - issue_comment
+    - issues
+    - label
+    - pull_request
+    - pull_request_review
+    - pull_request_review_comment
+    - push
+    - release
+    - status
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
