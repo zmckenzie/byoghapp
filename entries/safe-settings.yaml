@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: safe-settings
+name: Safe Settings
+vendor: GitHub
+category: other
+website: https://github.com/github/safe-settings
+documentation_url: https://github.com/github/safe-settings/blob/main-enterprise/docs/deploy.md
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: all
+  level: org
+  notes: The docs say "Install this App for All repos in the Org".
+credentials_needed:
+  - app_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - Once safe-settings is deployed, set the webhook URL to the deployed app's URL.
+  - >-
+    Generate a webhook secret (openssl rand -base64 32) and pass it as WEBHOOK_SECRET with APP_ID
+    and PRIVATE_KEY (base64-encoded). Set GHE_HOST for GitHub Enterprise Server.
+  - Install the app on all repositories in the organization.
+notes: >-
+  Self-hosted Probot app. The docs recommend creating it with the manifest flow from the
+  repository's app.yml; this entry follows the permissions and events listed in docs/deploy.md.
+  app.yml differs: it also requests Custom organization roles write (not read), Custom repository
+  roles write and two enterprise installation permissions, and subscribes to repository_dispatch.
+manifest:
+  name: Safe Settings
+  url: https://github.com/github/safe-settings
+  hook_attributes:
+    url: https://example.invalid/safe-settings-webhook
+    active: true
+  public: false
+  default_permissions:
+    actions: read # "Actions: Read-only"
+    actions_variables: write # repository "Variables: Read & Write"
+    administration: write # repository "Administration: Read & Write"
+    checks: write # "Checks: Read & Write"
+    contents: write # "Contents: Read & Write"
+    environments: write # "Environments: Read & Write"
+    issues: write # "Issues: Read & Write"
+    members: write # organization "Members: Read & Write"
+    metadata: read # "Metadata: Read-only"
+    organization_administration: write # organization "Administration: Read & Write"
+    organization_custom_org_roles: read # "Custom organization roles: Read-only"
+    organization_custom_properties: admin # organization "Custom properties: Admin"
+    pull_requests: write # "Pull requests: Read & Write"
+    repository_custom_properties: write # repository "Custom properties: Read & Write"
+    statuses: write # "Commit statuses: Read & Write"
+  default_events:
+    - branch_protection_rule
+    - check_run
+    - check_suite
+    - create
+    - custom_property_values
+    - member
+    - pull_request
+    - push
+    - repository
+    - repository_ruleset
+    - team
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
