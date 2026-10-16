@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: c1-github
+name: C1 GitHub connector (GitHub App)
+vendor: C1 (ConductorOne)
+category: security
+website: https://www.c1.ai
+documentation_url: https://www.c1.ai/docs/baton/github
+documentation_urls:
+  - https://www.c1.ai/docs/baton/github-enterprise
+own_app: optional
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+  notes: >-
+    One app and one connector per organization. On GitHub Enterprise Cloud the app can also be
+    installed on the enterprise account to provision the Enterprise Owner role.
+credentials_needed:
+  - app_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Name the app (C1 suggests c1-integration-<org name>), enter a placeholder Callback URL, and
+    check Expire user authorization tokens and Enable Device Flow.
+  - >-
+    Generate a private key and enter the App ID, key and organization name in C1 (plus the
+    Instance URL for the GitHub Enterprise connector).
+  - >-
+    GitHub Enterprise connector only: to sync and provision Enterprise Owner, add Enterprise people
+    (read and write), Custom enterprise roles (read) and Enterprise custom properties for
+    organizations (read) by hand.
+notes: >-
+  A personal access token is the alternative; license sync and syncing several organizations need
+  a PAT. The docs say to leave the webhook inactive. Use the GitHub connector for github.com and
+  the GitHub Enterprise connector for a custom domain. The GitHub Enterprise page also asks for
+  three enterprise permissions; byoghapp has no key for Enterprise people or Custom enterprise
+  roles, so all three are left out and listed in the manual steps. Enterprise roles only work on
+  GitHub Enterprise Cloud.
+manifest:
+  name: C1 integration
+  url: https://www.c1.ai
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    administration: write # Repository "Administration: Read and write access"
+    members: write # Organization "Members: Read and write access"
+    metadata: read # Repository "Metadata: Read-only access"
+    organization_administration: read # Organization "Administration: Read-only access"
+    organization_custom_org_roles: write # Organization "Custom organization roles: Read and write access"
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
