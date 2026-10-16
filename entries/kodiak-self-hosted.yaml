@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: kodiak-self-hosted
+name: Kodiak (self-hosted)
+vendor: Kodiak
+category: ci-cd
+website: https://kodiakhq.com
+documentation_url: https://github.com/chdsbd/kodiak/blob/master/docs/docs/self-hosting.md
+documentation_urls:
+  - https://github.com/chdsbd/kodiak/blob/master/docs/docs/permissions.md
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the webhook URL to your Kodiak host with /api/github/hook appended, and set a webhook
+    secret (Kodiak requires one).
+  - >-
+    Generate a private key and run Kodiak with GITHUB_APP_ID, SECRET_KEY (the webhook secret),
+    GITHUB_PRIVATE_KEY and GITHUB_APP_NAME.
+  - >-
+    On GitHub Enterprise Server, also set GITHUB_V3_API_ROOT and GITHUB_V4_API_URL to your
+    instance's API URLs.
+notes: >-
+  The self-hosting page points to the Permissions page, which lists the permissions of the hosted
+  Kodiak app. It lists Workflows as "read & write"; GitHub only offers write for Workflows. The
+  self-hosting page links github.com/settings/apps/new (a personal account); it doesn't mention
+  organization-owned apps.
+manifest:
+  name: Kodiak
+  url: https://kodiakhq.com
+  hook_attributes:
+    url: https://example.invalid/api/github/hook
+    active: true
+  public: false
+  default_permissions:
+    administration: read # "administration | repository | read"
+    checks: write # "checks | repository | write"
+    contents: write # "contents | repository | write"
+    issues: write # "issues | repository | write"
+    members: read # "members | organization | read"
+    metadata: read
+    pull_requests: write # "pull requests | repository | write"
+    statuses: read # "commit statuses | repository | read"
+    workflows: write # "workflows | repository | read & write"
+  default_events:
+    - check_run
+    - pull_request
+    - pull_request_review
+    - pull_request_review_comment
+    - push
+    - status
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
