@@ -1,0 +1,93 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: veza
+name: Veza GitHub integration
+vendor: Veza
+category: security
+website: https://veza.com
+documentation_url: https://docs.veza.com/4yItIzMvkpAvMVFAamTf/integrations/integrations/github
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+  notes: >-
+    Install on each organization to discover. Veza recommends All repositories. To cover several
+    organizations with one app, the docs say to make the app public.
+credentials_needed:
+  - app_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    For enterprise roles on GitHub Enterprise Cloud, also add Enterprise permissions > Custom
+    enterprise roles (read-only) by hand; byoghapp has no key for it.
+  - >-
+    Generate a private key and enter the App ID and key in Veza. For GitHub Enterprise Server, set
+    Server URL; for GitHub Enterprise Cloud, optionally set the Enterprise Cloud Slug.
+notes: >-
+  The docs list no webhook settings or events, so the webhook is off. Custom repository roles are
+  only discovered on GitHub Enterprise Cloud. Lifecycle Management adds write access to repository
+  Administration and organization Administration and Members; the docs say LCM operations use
+  site-admin endpoints and only work on GitHub Enterprise Server. Self-managed servers connect
+  through an Insight Point or by allowing Veza's IPs. Personal accounts without an organization
+  are not supported.
+manifest:
+  name: Veza
+  url: https://veza.com
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    administration: read # "Repository permissions - Administration" (read-only)
+    members: read # "Organization permissions - Members"
+    metadata: read # "Repository permissions - Metadata"
+    organization_administration: read # "Organization permissions - Administration"
+    organization_custom_roles: read # "Organization permissions - Custom repository roles"
+    organization_personal_access_tokens: read # "Organization permissions - Personal Access Tokens"
+    repository_advisories: read # "Repository permissions - Repository security advisories"
+  default_events: []
+variants:
+  - id: read-only
+    name: Read-only discovery
+    description: The read-only permissions the docs list for discovery.
+    default_permissions:
+      administration: read
+      members: read
+      metadata: read
+      organization_administration: read
+      organization_custom_roles: read
+      organization_personal_access_tokens: read
+      repository_advisories: read
+    default_events: []
+  - id: lifecycle-management
+    name: With Lifecycle Management
+    description: >-
+      Adds write access to Members, organization Administration and repository Administration for
+      provisioning. The docs say LCM only works on GitHub Enterprise Server.
+    default_permissions:
+      administration: write
+      members: write
+      metadata: read
+      organization_administration: write
+      organization_custom_roles: read
+      organization_personal_access_tokens: read
+      repository_advisories: read
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
