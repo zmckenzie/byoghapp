@@ -100,9 +100,9 @@ describe('site in a browser', { skip }, () => {
   });
 
   test('restores filters from the URL and submitting does nothing', async () => {
-    await load(`${base}#q=argo&tier=critical`);
+    await load(`${base}#q=argo-cd&tier=critical`);
     await page.waitFor("document.querySelectorAll('.card').length > 0");
-    assert.equal(await $eval("document.querySelector('#q').value"), 'argo');
+    assert.equal(await $eval("document.querySelector('#q').value"), 'argo-cd');
     assert.equal(await count('.card'), 1);
     await $eval("document.querySelector('#filters').dispatchEvent(new Event('submit', { cancelable: true }))");
     assert.equal(await count('.card'), 1);
