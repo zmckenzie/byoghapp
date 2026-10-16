@@ -271,13 +271,17 @@ export function parse(src) {
 export function isPlainSafe(s) {
   // Line breaks would be split by the parser; everything else unsafe either
   // throws in parseScalar or reads back differently (trimmed, comment cut off).
-  if (/[\n\r]/.test(s)) return false;
+  // Control characters must be written escaped in a double-quoted string.
+  if (/[\n\r]/.test(s) || CONTROL_CHAR.test(s)) return false;
   try {
     return parseScalar(s) === s;
   } catch {
     return false;
   }
 }
+
+/** A double-quoted string; JSON leaves DEL unescaped, but the parser rejects it raw. */
+const quoted = (s) => JSON.stringify(s).replaceAll('\u007f', '\\u007f');
 
 function scalarText(value) {
   if (value === null) return 'null';
@@ -286,12 +290,12 @@ function scalarText(value) {
     if (!Number.isSafeInteger(value)) throw new TypeError(`only safe integers can be written, got ${value}`);
     return String(value);
   }
-  if (typeof value === 'string') return isPlainSafe(value) ? value : JSON.stringify(value);
+  if (typeof value === 'string') return isPlainSafe(value) ? value : quoted(value);
   throw new TypeError(`cannot write ${typeof value}`);
 }
 
 function keyText(key) {
-  return PLAIN_KEY.test(key) && isPlainSafe(key) ? key : JSON.stringify(key);
+  return PLAIN_KEY.test(key) && isPlainSafe(key) ? key : quoted(key);
 }
 
 const isMap = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -300,7 +304,7 @@ const WRAP_WIDTH = 100;
 
 /** Long single-line prose is written as a folded block that reads back identically. */
 function foldable(value) {
-  return typeof value === 'string' && value.length > FOLD_AT && !/[\n\r\t]|\s\s|^\s|\s$/.test(value);
+  return typeof value === 'string' && value.length > FOLD_AT && !/[\n\r\t]|\s\s|^\s|\s$/.test(value) && !CONTROL_CHAR.test(value);
 }
 
 function foldedBlock(value, indent) {
