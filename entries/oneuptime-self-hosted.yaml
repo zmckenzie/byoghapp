@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: oneuptime-self-hosted
+name: OneUptime (self-hosted)
+vendor: OneUptime
+category: observability
+website: https://oneuptime.com
+documentation_url: https://oneuptime.com/docs/en/self-hosted/github-integration
+own_app: required
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org-or-user
+  notes: Start the installation from OneUptime (Code Repositories > Connect with GitHub App), not from the app's page on GitHub.
+credentials_needed:
+  - app_id
+  - client_id
+  - client_secret
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Set the Homepage URL to https://<your OneUptime host>, the Callback URL to
+    https://<your OneUptime host>/api/github/auth/callback, and keep Request user authorization
+    (OAuth) during installation on.
+  - >-
+    Set the webhook URL to https://<your OneUptime host>/api/github/webhook and set a webhook secret;
+    OneUptime rejects unsigned webhooks.
+  - >-
+    Generate a client secret and a private key, and set GITHUB_APP_ID, GITHUB_APP_NAME,
+    GITHUB_APP_CLIENT_ID, GITHUB_APP_CLIENT_SECRET, GITHUB_APP_PRIVATE_KEY and
+    GITHUB_APP_WEBHOOK_SECRET on the OneUptime server.
+notes: >-
+  OneUptime needs no organization or account permissions. Checks read is optional: without it,
+  the CI status of fix pull requests stays unverified. The docs also mention the installation and
+  installation_repositories events, which GitHub sends to every app automatically. The webhook
+  events let people hand work to the app from GitHub; without them the app still syncs repositories
+  and opens fix pull requests. The docs describe GitHub.com and say the firewall settings don't
+  configure GitHub Enterprise Server support.
+manifest:
+  name: OneUptime
+  url: https://oneuptime.com
+  hook_attributes:
+    url: https://example.invalid/replace-with-your-oneuptime-host
+    active: true
+  callback_urls:
+    - https://example.invalid/api/github/auth/callback
+  request_oauth_on_install: true
+  public: false
+  default_permissions:
+    contents: write  # "Contents: Read and write"
+    issues: write  # "Issues: Read and write"
+    metadata: read  # "Metadata: Read-only"
+    pull_requests: write  # "Pull requests: Read and write"
+  default_events:
+    - issue_comment
+    - issues
+    - pull_request
+    - pull_request_review
+    - pull_request_review_comment
+variants:
+  - id: default
+    name: Required permissions
+    description: The permissions OneUptime requires.
+    default_permissions:
+      contents: write
+      issues: write
+      metadata: read
+      pull_requests: write
+    default_events:
+      - issue_comment
+      - issues
+      - pull_request
+      - pull_request_review
+      - pull_request_review_comment
+  - id: with-checks
+    name: With CI status of fix pull requests
+    description: Adds the optional Checks read permission so OneUptime can read the CI result of its fix pull requests.
+    default_permissions:
+      checks: read  # "Checks: Read-only. Optional."
+      contents: write
+      issues: write
+      metadata: read
+      pull_requests: write
+    default_events:
+      - issue_comment
+      - issues
+      - pull_request
+      - pull_request_review
+      - pull_request_review_comment
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
