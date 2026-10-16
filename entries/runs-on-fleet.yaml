@@ -1,0 +1,88 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: runs-on-fleet
+name: RunsOn Fleet (organization mode)
+vendor: RunsOn
+category: ci-cd
+website: https://runs-on.com
+documentation_url: https://runs-on.com/installation/fleet/
+documentation_urls:
+  - https://runs-on.com/docs/control-plane/security/
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+  notes: >-
+    RunsOn says to install the app on exactly one organization. Runner access is controlled by
+    the GitHub runner group, not by the app's repository selection.
+credentials_needed:
+  - app_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    Name the app after your organization, as RunsOn's link does: "RunsOn Fleet [<your org>]".
+  - >-
+    Generate a private key and install the app on the organization. Pass the App ID and the .pem
+    contents to the Terraform module as github_app_id and github_app_private_key.
+  - >-
+    On GitHub Enterprise Server, create the app on your GHES host and pass the host root to the
+    module as github_base_url.
+notes: >-
+  This covers RunsOn Fleet in organization mode. Fleet in enterprise mode uses a classic personal
+  access token (manage_runners:enterprise), because, as RunsOn says, GitHub does not yet let a
+  GitHub App manage enterprise runners. RunsOn's link turns the webhook off. Actions read and
+  write lets Fleet re-run jobs after a Spot interruption; the docs say jobs run normally without
+  it. RunsOn Flex is different: the RunsOn stack creates its own app from a manifest when you
+  click Register GitHub App, with Administration, Actions, Single file (.github/runs-on.yml),
+  Deployments, Members and Metadata. Flex's webhook events are not listed in the docs, so Flex is
+  not part of this entry.
+manifest:
+  name: RunsOn Fleet
+  url: https://runs-on.com
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    actions: write  # "Actions (read and write), which Fleet uses to re-run jobs after a spot interruption"
+    metadata: read  # added by GitHub to every app
+    organization_self_hosted_runners: write  # "organization self-hosted runners (read and write)"
+  default_events: []
+variants:
+  - id: with-reruns
+    name: With Spot re-runs
+    description: >-
+      Self-hosted runners and Actions read and write, as RunsOn's link pre-fills. Actions lets
+      Fleet re-run jobs after a Spot interruption.
+    default_permissions:
+      actions: write
+      metadata: read
+      organization_self_hosted_runners: write
+    default_events: []
+  - id: runners-only
+    name: Runners only
+    description: >-
+      Self-hosted runners only. The docs say jobs run normally without Actions, but Fleet can't
+      re-run jobs after a Spot interruption.
+    default_permissions:
+      metadata: read
+      organization_self_hosted_runners: write
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
