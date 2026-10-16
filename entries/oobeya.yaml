@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: oobeya
+name: Oobeya
+vendor: Oobeya
+category: eng-intelligence
+website: https://oobeya.io
+documentation_url: >-
+  https://docs.oobeya.io/integrations/all-integrations/scm-addons/step-by-step-integration-instructions-for-the-oobeya-github-application
+own_app: optional
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: false
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - client_id
+  - client_secret
+  - app_id
+  - installation_id
+  - private_key
+two_step_webhook: false
+manual_steps:
+  - >-
+    For the OAuth option (GitHub Own GitHub App), set the callback URL to
+    {OOBEYA_DOMAIN}/api/platform/datasources/github and enter the client ID and client secret in
+    the Oobeya data source.
+  - >-
+    For the Installation Token option, generate a private key, install the app, and enter the numeric
+    App ID (not the client ID), the installation ID and the .pem file in the Oobeya data source.
+notes: >-
+  Oobeya also offers its own GitHub App on the Marketplace; registering your own is optional. Your
+  own app works with either of two data source versions: GitHub Own GitHub App (client ID and
+  secret, OAuth) or GitHub Installation Token (App ID, installation ID and private key). The docs
+  don't mention webhooks or list any events, so this entry leaves the webhook off. The docs name
+  the permission "Code"; GitHub calls it Contents.
+manifest:
+  name: Oobeya
+  url: https://oobeya.io
+  hook_attributes:
+    url: https://example.invalid/webhook-not-used
+    active: false
+  public: false
+  default_permissions:
+    # The docs: select "Read-only" for each of these
+    actions: read
+    administration: read
+    contents: read # "Code"
+    deployments: read
+    issues: read
+    members: read
+    metadata: read
+    organization_administration: read # "Organization Administration"
+    organization_events: read # "Organization Events"
+    organization_projects: read # "Organization Projects"
+    pull_requests: read
+  default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
