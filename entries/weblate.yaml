@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: weblate
+name: Weblate (self-hosted GitHub App)
+vendor: Weblate
+category: other
+website: https://weblate.org
+documentation_url: https://docs.weblate.org/en/latest/admin/code-hosting.html
+own_app: optional
+supports:
+  user: true
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org-or-user
+credentials_needed:
+  - app_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - >-
+    Register the app from Weblate: Manage > Code-hosting connections > Register Weblate GitHub
+    App. Weblate builds the manifest with its callback, setup and per-app webhook URLs and stores
+    the credentials it gets back.
+  - >-
+    In Weblate's form, set the GitHub host (github.com by default, or your GitHub Enterprise
+    hostname) and leave Organization blank for a personal account or enter an organization slug.
+  - >-
+    The webhook URL has the form https://<your Weblate host>/hooks/integrations/<webhook_token>/,
+    where the token is unique to each registered app.
+  - >-
+    Apps registered before Weblate 2026.10.1 lack the Repository event: enable Repository under
+    Subscribe to events in the app settings.
+notes: >-
+  For self-hosted Weblate. Hosted Weblate uses Weblate's own app instead. A personal access token
+  or a dedicated SSH user are the documented alternatives to a GitHub App. Weblate says the
+  credentials are stored in its database and there is no settings-based configuration, so the app
+  is created through Weblate's own registration flow. The docs also name the Installation event,
+  which GitHub sends to every app automatically; it is left out here. "Organization
+  administration read-only" is mapped to the organization Administration permission.
+manifest:
+  name: Weblate
+  url: https://weblate.org
+  hook_attributes:
+    url: https://example.invalid/weblate-hooks-integrations-token
+    active: true
+  public: false
+  default_permissions:
+    contents: write  # "Contents and Pull requests read/write"
+    metadata: read  # "Metadata read-only"
+    organization_administration: read  # "Organization administration read-only"
+    pull_requests: write  # "Contents and Pull requests read/write"
+    workflows: write  # "Workflows read/write"
+  default_events:
+    - meta
+    - push
+    - repository
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
