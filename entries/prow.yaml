@@ -1,0 +1,138 @@
+# yaml-language-server: $schema=../schema/entry.schema.json
+slug: prow
+name: Prow
+vendor: Kubernetes SIG Testing
+category: ci-cd
+website: https://docs.prow.k8s.io
+documentation_url: https://docs.prow.k8s.io/docs/getting-started-deploy/
+own_app: required
+supports:
+  user: false
+  org: true
+  enterprise: false
+  ghes: true
+install_scope:
+  repositories: either
+  level: org
+  notes: >-
+    To install the app on accounts other than the one that created it, make it public (Advanced >
+    Make this GitHub app public).
+credentials_needed:
+  - app_id
+  - private_key
+  - webhook_secret
+two_step_webhook: true
+manual_steps:
+  - In Subscribe to events, select all events.
+  - >-
+    Generate a private key and store it with the app ID in the github-token secret; generate an
+    HMAC token (openssl rand -hex 20), store it in the hmac-token secret and set it as the webhook
+    secret.
+  - Once Prow is deployed, set the webhook URL to https://prow.<your-domain>/hook.
+  - Install the app on the organizations or repositories Prow should manage.
+notes: >-
+  The docs give these as the minimum permissions and say the exact set depends on the features you
+  use; changing them later requires everyone to reinstall the app. The docs say to select all
+  webhook events but don't list them, so this entry stores none: select them on GitHub's form. For
+  GitHub Enterprise Server, point ghproxy (--upstream) and the components (--github-endpoint,
+  --github-graphql-endpoint) at your instance.
+manifest:
+  name: Prow
+  url: https://docs.prow.k8s.io
+  hook_attributes:
+    url: https://example.invalid/prow-hook
+    active: true
+  public: false
+  default_permissions:
+    administration: read # "Administration: Read-Only (Required to fetch teams and collaborators ...)"
+    contents: read # "Contents: Read"
+    issues: write # "Issues: Read & write"
+    members: read # "Members: Read-Only"
+    metadata: read # "Metadata: Read-Only"
+    pull_requests: write # "Pull Requests: Read & write"
+    statuses: write # "Commit statuses: Read & write"
+    workflows: write # "Workflows: Read & write"
+  default_events: []
+variants:
+  - id: minimum
+    name: Minimum
+    description: The minimum set the docs list.
+    default_permissions:
+      administration: read
+      contents: read
+      issues: write
+      members: read
+      metadata: read
+      pull_requests: write
+      statuses: write
+      workflows: write
+    default_events: []
+  - id: tide
+    name: With Tide merge automation
+    description: Adds Actions read, Checks read and Contents read and write for Tide.
+    default_permissions:
+      actions: read # "Actions: Read-Only (Only needed when using the merge automation tide)"
+      administration: read
+      checks: read # "Checks: Read-Only (Only needed when using the merge automation tide)"
+      contents: write # "Contents: ... Read & write needed when using the merge automation tide"
+      issues: write
+      members: read
+      metadata: read
+      pull_requests: write
+      statuses: write
+      workflows: write
+    default_events: []
+  - id: branch-protection
+    name: With branch protection automation
+    description: Administration read and write for branch protection automation.
+    default_permissions:
+      administration: write # "Read & write needed when using branch protection automation"
+      contents: read
+      issues: write
+      members: read
+      metadata: read
+      pull_requests: write
+      statuses: write
+      workflows: write
+    default_events: []
+  - id: peribolos
+    name: With peribolos
+    description: Members read and write for peribolos.
+    default_permissions:
+      administration: read
+      contents: read
+      issues: write
+      members: write # "Members: ... Read & write when using peribolos"
+      metadata: read
+      pull_requests: write
+      statuses: write
+      workflows: write
+    default_events: []
+  - id: projects
+    name: With the projects plugin
+    description: Repository and organization Projects admin for the projects plugin.
+    default_permissions:
+      administration: read
+      contents: read
+      issues: write
+      members: read
+      metadata: read
+      organization_projects: admin # "Projects: Admin when using the projects plugin" (organization)
+      pull_requests: write
+      repository_projects: admin # "Projects: Admin when using the projects plugin" (repository)
+      statuses: write
+      workflows: write
+    default_events: []
+last_verified: null
+verified_by: null
+verification:
+  status: needs-review
+  method: doc-hash
+  doc_hash: null
+changelog:
+  - date: 2026-10-16
+    version: 1.0.0
+    author: zmckenzie
+    summary: >-
+      Initial entry from the vendor's documentation, read on 2026-10-16. Awaiting maintainer
+      verification.
